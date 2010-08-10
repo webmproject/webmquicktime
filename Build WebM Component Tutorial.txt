@@ -45,4 +45,4 @@ G. Test the component
 
 H.  Play your file
   - Use Chrome (dev channel) or other player listed here: 
-      http://www.webmproject.org/users/. 
+      http://www.webmproject.org/users/.
