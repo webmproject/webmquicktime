@@ -180,7 +180,7 @@ static ComponentResult setCompressionSettingFromAC(QTAtomContainer ac, ICMCompre
 
     if (err) goto bail;
 
-    SInt32 keyFrameRate = FixedToInt(ts.keyFrameRate);
+    SInt32 keyFrameRate = ts.keyFrameRate;
 
     if (keyFrameRate != 0)
     {
