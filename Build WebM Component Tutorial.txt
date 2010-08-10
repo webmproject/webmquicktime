@@ -7,9 +7,9 @@ Note: You should be able to build it in a different environment but this is what
 
 B. Prerequisites
  1. Ogg Component
-    a. Download from http://www.xiph.org/quicktime/download.html 
+    a. Download from http://www.xiph.org/quicktime/download.html
  2. VP8 SDK
-   - cd ~ 
+   - cd ~
    - mkdir webm
    - cd webm
    - git clone git://review.webmproject.org/libvpx.git
@@ -35,15 +35,14 @@ E. Build the project
   - hit the build button
 
 F. Copy the component
-  - cp -r build/Development\ Intel/WebM.component ~/Library/QuickTime/. 
+  - cp -r build/Development\ Intel/WebM.component ~/Library/QuickTime/.
 
 G. Test the component
   - open avideoFile.mov  (should open the file in quicktime pro)
-  - File ->export 
+  - File ->export
   - Export:->Movie to WebM
-  - Hit Save 
+  - Hit Save
 
 H.  Play your file
   - Use Chrome (dev channel) or other player listed here: 
-	http://www.webmproject.org/users/. 
-
+      http://www.webmproject.org/users/. 
