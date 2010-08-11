@@ -193,9 +193,8 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
     {
         EbmlLoc cueHead;
         WebMCuePoint *cue = &(*globals->cueHandle)[globals->cueCount-1];
-        unsigned long long cueLoc = *(SInt64 *)&cue->loc;
         dbg_printf("[WebM] Writing Cue track %d time %ld loc %lld\n",
-                   cue->track, cue->timeVal, cueLoc);
+                   cue->track, cue->timeVal, cue->loc);
         Ebml_StartSubElement(ebml, &cueHead, CuePoint);
         Ebml_SerializeUnsigned(ebml, CueTime, cue->timeVal);
 
@@ -203,7 +202,7 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
         Ebml_StartSubElement(ebml, &trackLoc, CueTrackPositions);
         //TODO this is wrong, get the conversion right
         Ebml_SerializeUnsigned(ebml, CueTrack, cue->track);
-        Ebml_SerializeUnsigned64(ebml, CueClusterPosition, cueLoc);
+        Ebml_SerializeUnsigned64(ebml, CueClusterPosition, cue->loc);
         Ebml_SerializeUnsigned(ebml, CueBlockNumber, 1);
         Ebml_EndSubElement(ebml, &trackLoc);
 
