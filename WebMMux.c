@@ -75,8 +75,6 @@ static ComponentResult _writeMetaData(WebMExportGlobalsPtr globals, EbmlGlobal *
                                       EbmlLoc *startSegment, double duration)
 {
     ComponentResult err = noErr;
-    writeHeader(ebml);
-    Ebml_StartSubElement(ebml, startSegment, Segment);
     int i;
     dbg_printf("[WebM]) Write segment information\n");
     writeSegmentInformation(ebml, globals->webmTimeCodeScale, duration * 1000000000.0);  //TODO timecodeScale currently hardcoded to millisecondes
@@ -357,6 +355,10 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
     EbmlLoc startSegment;
     globals->progressOpen = false;
+	
+	writeHeader(&ebml);
+    Ebml_StartSubElement(&ebml, &startSegment, Segment);
+	SInt64 firstL1Offset = *(SInt64*) &ebml.offset;  //The first level 1 element is the offset needed for cuepoints according to Matroska's specs
 
     _writeMetaData(globals, &ebml, &startSegment, duration);
 
@@ -427,7 +429,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         if (minTimeStream->trackType == VideoMediaType)
         {
             VideoStreamPtr vs = &minTimeStream->stream.vid;
-            _writeVideo(globals, vs, &ebml, loc);
+            _writeVideo(globals, vs, &ebml, loc - firstL1Offset);
 
         }  //end if VideoMediaType
         else if (minTimeStream->trackType == SoundMediaType)
