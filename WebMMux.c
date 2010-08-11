@@ -192,7 +192,7 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
     for (i = 0; i < globals->cueCount; i ++)
     {
         EbmlLoc cueHead;
-        WebMCuePoint *cue = &(*globals->cueHandle)[globals->cueCount-1];
+        WebMCuePoint *cue = &(*globals->cueHandle)[i];
         dbg_printf("[WebM] Writing Cue track %d time %ld loc %lld\n",
                    cue->track, cue->timeVal, cue->loc);
         Ebml_StartSubElement(ebml, &cueHead, CuePoint);
