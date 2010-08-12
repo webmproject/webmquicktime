@@ -71,18 +71,16 @@ static double getMaxDuration(WebMExportGlobalsPtr globals)
     return duration;
 }
 
-static ComponentResult _writeMetaData(WebMExportGlobalsPtr globals, EbmlGlobal *ebml,
-                                      EbmlLoc *startSegment, double duration)
+
+static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
 {
     ComponentResult err = noErr;
     int i;
-    dbg_printf("[WebM]) Write segment information\n");
-    writeSegmentInformation(ebml, globals->webmTimeCodeScale, duration * 1000000000.0);  //TODO timecodeScale currently hardcoded to millisecondes
     {
         EbmlLoc trackStart;
         Ebml_StartSubElement(ebml, &trackStart, Tracks);
 
-        // loop over all the data sources and find the max duration
+        // Write tracks
         for (i = 0; i < globals->streamCount; i++)
         {
             ComponentResult gErr = noErr;
@@ -138,7 +136,7 @@ static ComponentResult _writeMetaData(WebMExportGlobalsPtr globals, EbmlGlobal *
 
         Ebml_EndSubElement(ebml, &trackStart);
     }
-    dbg_printf("[webM] mux metadata = %d\n", err);
+    dbg_printf("[webM] exit write trakcs = %d\n", err);
     return err;
 }
 
@@ -212,7 +210,8 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
     Ebml_EndSubElement(ebml, &cuesHead);
 }
 
-void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time, unsigned int track)
+void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time, 
+             unsigned int track, unsigned int blockNum)
 {
     dbg_printf("[webm] _addCue time %ld loc %llu\n", time, dataLoc);
     globals->cueCount ++;
@@ -226,6 +225,7 @@ void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time, u
     newCue->loc = dataLoc;
     newCue->timeVal = time;
     newCue->track = track;
+    newCue->blockNumber = blockNum;
 }
 static ComponentResult _compressVideo(WebMExportGlobalsPtr globals, VideoStreamPtr vs)
 {
@@ -234,10 +234,7 @@ static ComponentResult _compressVideo(WebMExportGlobalsPtr globals, VideoStreamP
     if (vs->source.bQdFrame || vs->source.eos)
         return err; //paranoid check
 
-    StreamSource *source =  &vs->source;
-    double fps = FixedToFloat(globals->movie_fps);
-
-    dbg_printf("[webM] call Compress Next frame %d at %f fps \n", vs->currentFrame, fps);
+    dbg_printf("[webM] call Compress Next frame %d\n", vs->currentFrame);
     // get next frame as vp8 frame
     err = compressNextFrame(globals, vs);
 
@@ -246,12 +243,6 @@ static ComponentResult _compressVideo(WebMExportGlobalsPtr globals, VideoStreamP
         dbg_printf("[webM] compressNextFrame error %d\n", err);
     }
 
-    if (fps != 0)
-        source->time = (SInt32)((vs->currentFrame * 1.0) / fps * source->timeScale); //TODO  -- I am assuming that each frame has a similar fps
-    else
-        source->time += source->params.durationPerSample * source->timeScale
-                        / source->params.sourceTimeScale;  //TODO might get clipping here
-
     if (!vs->source.eos)
         vs->source.bQdFrame = true;
 
@@ -259,38 +250,44 @@ static ComponentResult _compressVideo(WebMExportGlobalsPtr globals, VideoStreamP
 
 }
 
-static void _startNewCluster(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, unsigned long newTime)
+static void _startNewCluster(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
 {
-    globals->clusterTime = newTime;
-    Ebml_EndSubElement(ebml, &globals->clusterStart);
+    dbg_printf("[webm] Starting new cluster at %ld\n", globals->clusterTime);
+    if (globals->clusterTime != 0)  //case of: first cluster (don't end non-existant previous)
+        Ebml_EndSubElement(ebml, &globals->clusterStart);
+    
     Ebml_StartSubElement(ebml, &globals->clusterStart, Cluster);
     Ebml_SerializeUnsigned(ebml, Timecode, globals->clusterTime);
 }
 
-static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, VideoStreamPtr vs, EbmlGlobal *ebml,
-                                   SInt64 dataLoc)
+static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, VideoStreamPtr vs, EbmlGlobal *ebml)
 {
     ComponentResult err = noErr;
+    StreamSource *source =  &vs->source;
     unsigned long lastTime = getTimeAsSeconds(&vs->source) * 1000;
     int isKeyFrame = vs->frame_type == kICMFrameType_I;
     dbg_printf("[webM] video write simple block track %d keyframe %d frame #%ld time %d data size %ld\n",
-               vs->source.trackID, isKeyFrame,
+               source->trackID, isKeyFrame,
                vs->currentFrame, lastTime, vs->outBuf.size);
     unsigned long relativeTime = lastTime - globals->clusterTime;
 
-    if (isKeyFrame && vs->currentFrame != 0  || relativeTime > kSInt16Max / 2)
-    {
-        _startNewCluster(globals, ebml, lastTime);
-        UInt64 tmpU = dataLoc;  ///should be able to use ebml->offset, but the compiler is messing this up somehow... don't rewrite this workaround
-        _addCue(globals, tmpU, globals->clusterTime, vs->source.trackID);
-        relativeTime =  0;
-    }
 
-    writeSimpleBlock(ebml, vs->source.trackID, (short)relativeTime,
+    writeSimpleBlock(ebml, source->trackID, (short)relativeTime,
                      isKeyFrame, 0 /*unsigned char lacingFlag*/, 0/*int discardable*/,
                      vs->outBuf.data, vs->outBuf.size);
     vs->source.bQdFrame = false;
-    vs->currentFrame += 1;  //only advancing after the frame is written
+    
+    //this now represents the next frame we want to encode
+    double fps = FixedToFloat(globals->movie_fps);
+    vs->currentFrame += 1;  
+    if (fps != 0)
+        source->time = (SInt32)((vs->currentFrame * 1.0) / fps * source->timeScale); //TODO  -- I am assuming that each frame has a similar fps
+    else
+        /*source->time += source->params.durationPerSample * source->timeScale
+            / source->params.sourceTimeScale;  //TODO precision loss??*/
+        source->time = vs->currentFrame * source->params.durationPerSample * source->timeScale
+                        / source->params.sourceTimeScale;
+
     return err;
 }
 
@@ -323,11 +320,6 @@ static ComponentResult _writeAudio(WebMExportGlobalsPtr globals, AudioStreamPtr 
     dbg_printf("[WebM] writing %d size audio packet with relative time %d, finishing time %f\n",
                as->outBuf.offset, relativeTime, getTimeAsSeconds(&as->source));
 
-    if (relativeTime > kSInt16Max / 2)
-    {
-        _startNewCluster(globals, ebml, lastTime);
-        relativeTime =  0;
-    }
 
     writeSimpleBlock(ebml, as->source.trackID, (short)relativeTime,
                      1 /*audio always key*/, 0 /*unsigned char lacingFlag*/, 0/*int discardable*/,
@@ -342,7 +334,9 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     ComponentResult err = noErr;
     double duration = getMaxDuration(globals);
     dbg_printf("[WebM-%08lx] :: muxStreams( duration %d)\n", (UInt32) globals, duration);
-
+    //TODO:  this is sometimes returning large numbers, duration should be calcualted and rewritten at the end.
+    
+    
     UInt32 iStream;
     Boolean allStreamsDone = false;
 
@@ -355,15 +349,15 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     EbmlLoc startSegment;
     globals->progressOpen = false;
 	
-	writeHeader(&ebml);
+	writeHeader(&ebml);    
+    dbg_printf("[WebM]) Write segment information\n");
     Ebml_StartSubElement(&ebml, &startSegment, Segment);
 	SInt64 firstL1Offset = *(SInt64*) &ebml.offset;  //The first level 1 element is the offset needed for cuepoints according to Matroska's specs
 
-    _writeMetaData(globals, &ebml, &startSegment, duration);
+    writeSegmentInformation(ebml, globals->webmTimeCodeScale, duration * 1000000000.0);  //TODO timecodeScale currently hardcoded to millisecondes
 
-    globals->clusterTime = 0 ;
-    Ebml_StartSubElement(&ebml, &globals->clusterStart, Cluster);
-    Ebml_SerializeUnsigned(&ebml, Timecode, globals->clusterTime);
+    _writeTracks(globals, &ebml);
+
     Boolean bExportVideo = globals->bMovieHasVideo && globals->bExportVideo;
     Boolean bExportAudio = globals->bMovieHasAudio && globals->bExportAudio;
 
@@ -373,14 +367,17 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     double minTime = 1.e30; //very large number
     GenericStream *minTimeStream;
 
+    globals->clusterTime = 0;  //assuming 0 start time
+    Boolean startNewCluster = true;  //cluster should start very first
+    unsigned int blocksInCluster=0;  //this increments any time a block added
     while (!allStreamsDone /*&& lastTime < duration*/)
     {
         minTime = 1.e30;
         minTimeStream = NULL;
         allStreamsDone = true;
-        SInt64 loc = *(SInt64 *)& ebml.offset;
-
-        dbg_printf("[WebM]          ebml.offset  %lld\n", loc);
+        SInt64 blockOffset = *(SInt64 *)& ebml.offset;
+        
+        dbg_printf("[WebM]          ebml.offset  %lld\n", blockOffset);
 
         //find the stream with the earliest time
         for (iStream = 0; iStream < globals->streamCount; iStream++)
@@ -393,7 +390,12 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
                 source =  &gs->stream.vid.source;
 
                 if (!source->bQdFrame && globals->bExportVideo)
+                {
                     err = _compressVideo(globals, &gs->stream.vid);
+                    //I need to know if there's a video keyframe in the Queue
+                    if (!startNewCluster)
+                        startNewCluster = gs->stream.vid.frame_type == kICMFrameType_I;
+                }
             }
 
             if (gs->trackType == SoundMediaType)
@@ -409,8 +411,14 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
                 dbg_printf("[webm] _compress error = %d\n", err);
                 goto bail;
             }
-
-            if (getTimeAsSeconds(source) < minTime && source->bQdFrame && !err)
+			
+            Boolean smallerTime = false;
+            if (gs->trackType == VideoMediaType)
+                smallerTime = getTimeAsSeconds(source) < minTime;
+            else if (gs->trackType == SoundMediaType)
+                smallerTime = getTimeAsSeconds(source) <= minTime; //similar time audio first (see webm specs)									
+			
+            if (smallerTime && source->bQdFrame && !err)
             {
                 minTime = getTimeAsSeconds(source);
                 minTimeStream = gs;
@@ -421,20 +429,40 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         //write the stream with the earliest time
         if (minTimeStream == NULL)
             break;
+        
+        
+        dbg_printf("[Webm] Stream with smallest time %f  %s: start Cluster %d\n",
+                   minTime, minTimeStream->trackType == VideoMediaType ? "video" : "audio", startNewCluster);
+        
+        if (minTime * 1000 - globals->clusterTime > 32767)
+            startNewCluster = true; //keep in mind the block time offset to the cluster is SInt16
+        
+        if (startNewCluster)
+        {
+            globals->clusterTime = minTime * 1000;
+            blocksInCluster =0;
+            _startNewCluster(globals, &ebml);
+            startNewCluster = false;
+        }
 
-        dbg_printf("[Webm] Stream with smallest time %f  %s\n",
-                   minTime, minTimeStream->trackType == VideoMediaType ? "video" : "audio");
-
+        
         if (minTimeStream->trackType == VideoMediaType)
         {
             VideoStreamPtr vs = &minTimeStream->stream.vid;
-            _writeVideo(globals, vs, &ebml, loc - firstL1Offset);
+            _writeVideo(globals, vs, &ebml);
+            blocksInCluster ++;            
+            if( vs->frame_type == kICMFrameType_I)
+            {
+                UInt64 tmpU = blockOffset - firstL1Offset;  
+                _addCue(globals, tmpU , globals->clusterTime, vs->source.trackID, blocksInCluster);
+            }
 
         }  //end if VideoMediaType
         else if (minTimeStream->trackType == SoundMediaType)
         {
             AudioStreamPtr as = &minTimeStream->stream.aud;
             _writeAudio(globals, as, &ebml);
+            blocksInCluster ++;
         } //end SoundMediaType
 
         Ebml_EndSubElement(&ebml, &globals->clusterStart);   //this writes cluster size multiple times, but works
