@@ -66,6 +66,7 @@ typedef struct
     UInt64 loc;
     unsigned long timeVal;
     unsigned int  track;
+    unsigned int blockNumber;
 } WebMCuePoint;
 
 typedef struct

@@ -26,6 +26,7 @@ void Ebml_WriteUTF8(EbmlGlobal *glob, const wchar_t *wstr);
 void Ebml_WriteID(EbmlGlobal *glob, unsigned long class_id);
 void Ebml_SerializeUnsigned64(EbmlGlobal *glob, unsigned long class_id, unsigned long long ui);
 void Ebml_SerializeUnsigned(EbmlGlobal *glob, unsigned long class_id, unsigned long ui);
+void Ebml_SerializeBinary(EbmlGlobal *glob, unsigned long class_id, unsigned long ui);
 void Ebml_SerializeFloat(EbmlGlobal *glob, unsigned long class_id, double d);
 //TODO make this more generic to signed
 void Ebml_WriteSigned16(EbmlGlobal *glob, short val);

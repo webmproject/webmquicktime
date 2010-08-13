@@ -16,7 +16,6 @@
 
 void writeHeader(EbmlGlobal *glob)
 {
-    //assert(m_classId != 0x1A45DFA3);
     EbmlLoc start;
     Ebml_StartSubElement(glob, &start, EBML);
     Ebml_SerializeUnsigned(glob, EBMLVersion, 1);
@@ -65,11 +64,6 @@ void writeVideoTrack(EbmlGlobal *glob, unsigned int trackNumber, int flagLacing,
     Ebml_SerializeUnsigned(glob, TrackNumber, trackNumber);
     UInt64 trackID = generateTrackID(trackNumber);
     Ebml_SerializeUnsigned(glob, TrackUID, trackID);
-    //I am using defaults for thesed required fields
-    /*  Ebml_SerializeUnsigned(glob,FlagEnabled, 1);
-        Ebml_SerializeUnsigned(glob,FlagDefault, 1);
-        Ebml_SerializeUnsigned(glob,FlagForced, 1);
-        Ebml_SerializeUnsigned(glob,FlagLacing, flagLacing);*/
     Ebml_SerializeString(glob, CodecName, "VP8");  //TODO shouldn't be fixed
 
     Ebml_SerializeUnsigned(glob, TrackType, 1); //video is always 1
@@ -102,11 +96,6 @@ void writeAudioTrack(EbmlGlobal *glob, unsigned int trackNumber, int flagLacing,
     Ebml_SerializeString(glob, CodecID, codecId);
     Ebml_SerializeData(glob, CodecPrivate, private, privateSize);
 
-    if (privateSize < kVorbisPrivateMaxSize)
-    {
-        Ebml_WriteVoid(glob, kVorbisPrivateMaxSize - privateSize); //TODO: ask matt h why dshow likes this private chunk.
-    }
-
     Ebml_SerializeString(glob, CodecName, "VORBIS");  //fixed for now
     {
         EbmlLoc AudioStart;
@@ -122,7 +111,7 @@ void writeSegmentInformation(EbmlGlobal *ebml, unsigned long timeCodeScale, doub
     EbmlLoc startInfo;
     Ebml_StartSubElement(ebml, &startInfo, Info);
     Ebml_SerializeUnsigned(ebml, TimecodeScale, timeCodeScale);
-    Ebml_SerializeFloat(ebml, Segment_Duration, duration);
+    Ebml_SerializeFloat(ebml, Segment_Duration, duration * 1000.0); //Currently fixed to using milliseconds
     Ebml_SerializeString(ebml, 0x4D80, "QTmuxingAppLibWebM-0.0.1");
     Ebml_SerializeString(ebml, 0x5741, "QTwritingAppLibWebM-0.0.1");
     Ebml_EndSubElement(ebml, &startInfo);

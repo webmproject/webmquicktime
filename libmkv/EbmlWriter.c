@@ -97,6 +97,17 @@ void Ebml_SerializeUnsigned(EbmlGlobal *glob, unsigned long class_id, unsigned l
     Ebml_Serialize(glob, &ui, size);
 }
 
+void Ebml_SerializeBinary(EbmlGlobal *glob, unsigned long class_id, unsigned long bin)
+{
+    int size;
+    for (size=4; size > 1; size--)
+    {
+        if (bin & 0x000000ff << ((size-1) * 8))
+            break;
+    }
+    Ebml_SerializeData(glob, class_id, (void*) &bin, size);
+}
+
 void Ebml_SerializeFloat(EbmlGlobal *glob, unsigned long class_id, double d)
 {
     Ebml_WriteID(glob, class_id);
@@ -105,7 +116,6 @@ void Ebml_SerializeFloat(EbmlGlobal *glob, unsigned long class_id, double d)
     Ebml_Serialize(glob,  &d, 8);
 }
 
-//TODO make this more generic to signed
 void Ebml_WriteSigned16(EbmlGlobal *glob, short val)
 {
     signed long out = ((val & 0x003FFFFF) | 0x00200000) << 8;

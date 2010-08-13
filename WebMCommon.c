@@ -91,6 +91,7 @@ ComponentResult initStreamSource(StreamSource *source, TimeScale scale,
     source->params.sourceTimeScale = scale;
     source->eos = false;
     source->bQdFrame = false;
+    source->blockTimeMs =0;
 
     return err;
 }

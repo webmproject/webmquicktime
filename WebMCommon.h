@@ -42,6 +42,7 @@ typedef struct
     TimeScale timeScale;
     long trackID;
     Boolean bQdFrame;
+    unsigned long blockTimeMs;
 } StreamSource;
 
 

@@ -71,30 +71,22 @@ void Ebml_StartSubElement(EbmlGlobal *glob, EbmlLoc *ebmlLoc, unsigned long clas
 {
     Ebml_WriteID(glob, class_id);
     assignWide(&ebmlLoc->offset, &glob->offset);
-    //todo this is always taking 8 bytes, this may need later optimization
+    //TODO this is always taking 8 bytes, this may need later optimization
     unsigned long long unknownLen =  0x01FFFFFFFFFFFFFFLLU;
-    Ebml_Serialize(glob, (void *)&unknownLen, 8); //this is a key that says lenght unknown
+    Ebml_Serialize(glob, (void *)&unknownLen, 8); //this is a key that says length unknown
 }
 
 void Ebml_EndSubElement(EbmlGlobal *glob, EbmlLoc *ebmlLoc)
 {
-    wide curOffset;
-    assignWide(&curOffset, &glob->offset);
+    wide currentEndOfFile;
+    assignWide(&currentEndOfFile, &glob->offset);
 
-    wide eight;
-    eight.hi = 0;
-    eight.lo = 8;
-
-    wide size;
-    assignWide(&size, &curOffset);
-    WideSubtract(&size, &ebmlLoc->offset);
-    WideSubtract(&size, &eight);
+    UInt64 sizeOfElement = *(SInt64 *)&currentEndOfFile - *(SInt64 *)&ebmlLoc->offset -8;
 
     assignWide(&glob->offset, &ebmlLoc->offset);
-    UInt64 outBuf = *(SInt64 *)&size;
-    outBuf |=  0x0100000000000000LLU;
-    Ebml_Serialize(glob, (void *)&outBuf, 8);
-    assignWide(&glob->offset, &curOffset);
+    sizeOfElement |=  0x0100000000000000LLU;
+    Ebml_Serialize(glob, (void *)&sizeOfElement, 8);
+    assignWide(&glob->offset, &currentEndOfFile);
 }
 
 void Ebml_GetEbmlLoc(EbmlGlobal *glob,  EbmlLoc *ebmlLoc)

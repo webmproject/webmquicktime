@@ -272,7 +272,7 @@ ComponentResult compressAudio(AudioStreamPtr as)
         {
             dbg_printf("[WebM] packet is %ld bytes, %ld frames\n", packetDesc[i].mDataByteSize,  packetDesc[i].mVariableFramesInPacket);
             if (packetDesc[i].mVariableFramesInPacket ==0)
-                as->currentEncodedFrames += 13230; //0 indicates fixed frames, TODO this number is not right
+                as->currentEncodedFrames += 13230; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
             else 
                 as->currentEncodedFrames += packetDesc[i].mVariableFramesInPacket;
             as->outBuf.offset += packetDesc[i].mDataByteSize;
