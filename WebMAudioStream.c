@@ -186,8 +186,8 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
                    params->actualSampleCount, params->dataSize);
         ioData->mBuffers[0].mDataByteSize = params->dataSize;
         ioData->mBuffers[0].mData = params->dataPtr;
-        //TODO see if this is needed when samplerate unknown. (not sure if this case exists)
-        //source->time += params->durationPerSample * params->actualSampleCount;
+
+        source->time += params->durationPerSample * params->actualSampleCount;
         *ioNumberDataPackets = params->actualSampleCount;
         params->actualSampleCount = 0;
     }
@@ -271,7 +271,10 @@ ComponentResult compressAudio(AudioStreamPtr as)
         for (i = 0; i < ioPackets; i++)
         {
             dbg_printf("[WebM] packet is %ld bytes, %ld frames\n", packetDesc[i].mDataByteSize,  packetDesc[i].mVariableFramesInPacket);
-            as->currentEncodedFrames += packetDesc[i].mVariableFramesInPacket;
+            if (packetDesc[i].mVariableFramesInPacket ==0)
+                as->currentEncodedFrames += 13230; //0 indicates fixed frames, TODO this number is not right
+            else 
+                as->currentEncodedFrames += packetDesc[i].mVariableFramesInPacket;
             as->outBuf.offset += packetDesc[i].mDataByteSize;
         }
     }
