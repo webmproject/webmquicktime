@@ -45,7 +45,7 @@ ComponentResult getInputBasicDescription(AudioStreamPtr as, AudioStreamBasicDesc
     ComponentResult err = noErr;
 
     initMovieGetParams(&as->source);
-    
+
     dbg_printf("[webm] getInputBasicDescription InvokeMovieExportGetDataUPP\n" );
     dbg_printDataParams(&as->source);
     err = InvokeMovieExportGetDataUPP(as->source.refCon, &as->source.params, as->source.dataProc);
@@ -97,10 +97,10 @@ ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, AudioStreamPtr
     ComponentResult err = noErr;
     if (globals->audioSettingsAtom == NULL)
         getDefaultVorbisAtom(globals);
-    
+
     //This chunk initializes the Component instance that will be used for decompression  : TODO put this in its own function
     err = OpenADefaultComponent(StandardCompressionType, StandardCompressionSubTypeAudio, &as->vorbisComponentInstance);
-    
+
     if (err) goto bail;
 
     AudioStreamBasicDescription *inFormat = NULL;
@@ -166,7 +166,7 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
         if (params->actualSampleCount > *ioNumberDataPackets)
         {
             //this error should not happen.
-            dbg_printf("[webm] *******TODO Potential unconsumed samples\n");
+            dbg_printf("[webm] *******error: TODO Potential unconsumed samples\n");
         }
     }
     else if (params->actualSampleCount == 0)
@@ -210,7 +210,7 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
     }
     if (as->framesIn ==0)
     {
-        dbg_printf("TODO REMOVE -- mDataByteSize = %ld, num Packets = %ld", 
+        dbg_printf("TODO REMOVE -- mDataByteSize = %ld, num Packets = %ld",
                    ioData->mBuffers[0].mDataByteSize, *ioNumberDataPackets);
     }
     as->framesIn += *ioNumberDataPackets;
@@ -284,10 +284,10 @@ ComponentResult compressAudio(AudioStreamPtr as)
                             audioBufferList, packetDesc);
     dbg_printf("[WebM] exit SCAudioFillBuffer %d packets, err = %d\n", ioPackets, err);
 
-    
+
     if (err == eofErr)
     {
-        dbg_printf("Total Frames in = %lld, Total Frames Out = %lld\n", 
+        dbg_printf("Total Frames in = %lld, Total Frames Out = %lld\n",
                    as->framesIn, as->currentEncodedFrames);
         if (ioPackets == 0)
             as->source.eos = true;
@@ -309,7 +309,7 @@ ComponentResult compressAudio(AudioStreamPtr as)
                 //as->currentEncodedFrames += 13230; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
                 as->currentEncodedFrames += 3092; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
             }
-            else 
+            else
                 as->currentEncodedFrames += packetDesc[i].mVariableFramesInPacket;
             as->outBuf.offset += packetDesc[i].mDataByteSize;
         }
@@ -494,6 +494,6 @@ ComponentResult initAudioStream(AudioStreamPtr as)
     as->currentEncodedFrames = 0;
     as->framesIn =0;
     initBuffer(&as->outBuf);
-    
+
     return noErr;
 }
