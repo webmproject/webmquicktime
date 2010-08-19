@@ -53,7 +53,7 @@ void initMovieGetParams(StreamSource *get)
     get->params.desc = NULL;
     get->params.descType = 0;
     get->params.descSeed = 0;
-    get->params.requestedSampleCount = 0;
+    get->params.requestedSampleCount = 1;
     get->params.actualSampleCount = 0;
     get->params.durationPerSample = 1;
     get->params.sampleFlags = 0;
@@ -92,6 +92,7 @@ ComponentResult initStreamSource(StreamSource *source, TimeScale scale,
     source->eos = false;
     source->bQdFrame = false;
     source->blockTimeMs =0;
+    source->time = 0;
 
     return err;
 }

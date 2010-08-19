@@ -35,6 +35,7 @@ typedef struct
     ComponentInstance vorbisComponentInstance;
     AudioStreamBasicDescription asbd;
     UInt64 currentEncodedFrames;
+    UInt64 framesIn;
 } AudioStream, *AudioStreamPtr;
 
 

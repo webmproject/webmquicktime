@@ -18,6 +18,11 @@
 
 static void _printSoundDesc(SoundDescriptionV2Ptr sd)
 {
+    if (sd == NULL)
+    {
+        dbg_printf("[WebM] SoundDesc NULL\n");
+        return;
+    }
     dbg_printf("[WebM] SoundDesc format '%4.4s', version %d, revlevel %d, vendor '%4.4s',"
                "[num channels %ld, bits per channel %ld, audio Samplereate %lf] "
                "[ LPCM Frames %ld, const Bytes %ld,  Format Flags%ld])\n",
@@ -36,14 +41,19 @@ static void _printAudioStreamDesc(AudioStreamBasicDescription *desc)
 
 ComponentResult getInputBasicDescription(AudioStreamPtr as, AudioStreamBasicDescription *inFormat)
 {
+    dbg_printf("[webm] enter getInputBasicDescription\n" );
     ComponentResult err = noErr;
 
     initMovieGetParams(&as->source);
+    
+    dbg_printf("[webm] getInputBasicDescription InvokeMovieExportGetDataUPP\n" );
+    dbg_printDataParams(&as->source);
     err = InvokeMovieExportGetDataUPP(as->source.refCon, &as->source.params, as->source.dataProc);
 
     if (err) goto bail;
 
     SoundDescriptionHandle sdh = NULL;
+    dbg_printf("[webm] getInputBasicDescription QTSoundDescriptionConvert\n" );
     err = QTSoundDescriptionConvert(kQTSoundDescriptionKind_Movie_AnyVersion,
                                     (SoundDescriptionHandle) as->source.params.desc,
                                     kQTSoundDescriptionKind_Movie_Version2,
@@ -83,7 +93,16 @@ bail:
 
 ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, AudioStreamPtr as)
 {
+    dbg_printf("[WebM] enter initVorbisComponent\n");
     ComponentResult err = noErr;
+    if (globals->audioSettingsAtom == NULL)
+        getDefaultVorbisAtom(globals);
+    
+    //This chunk initializes the Component instance that will be used for decompression  : TODO put this in its own function
+    err = OpenADefaultComponent(StandardCompressionType, StandardCompressionSubTypeAudio, &as->vorbisComponentInstance);
+    
+    if (err) goto bail;
+
     AudioStreamBasicDescription *inFormat = NULL;
     inFormat = calloc(1, sizeof(AudioStreamBasicDescription));
 
@@ -95,13 +114,6 @@ ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, AudioStreamPtr
 
     getInputBasicDescription(as, inFormat);
 
-    if (globals->audioSettingsAtom == NULL)
-        getDefaultVorbisAtom(globals);
-
-    //This chunk initializes the Component instance that will be used for decompression  : TODO put this in its own function
-    err = OpenADefaultComponent(StandardCompressionType, StandardCompressionSubTypeAudio, &as->vorbisComponentInstance);
-
-    if (err) goto bail;
 
     err = SCSetSettingsFromAtomContainer(as->vorbisComponentInstance, globals->audioSettingsAtom);
 
@@ -151,6 +163,11 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
     {
         //we already have samples
         dbg_printDataParams(source);
+        if (params->actualSampleCount > *ioNumberDataPackets)
+        {
+            //this error should not happen.
+            dbg_printf("[webm] *******TODO Potential unconsumed samples\n");
+        }
     }
     else if (params->actualSampleCount == 0)
     {
@@ -161,7 +178,7 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
 
         if (err == eofErr)
         {
-            source->eos = true;
+            //source->eos = true;
             dbg_printf("[Webm] Audio stream complete eos\n");
             return err;
         }
@@ -191,6 +208,12 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
         *ioNumberDataPackets = params->actualSampleCount;
         params->actualSampleCount = 0;
     }
+    if (as->framesIn ==0)
+    {
+        dbg_printf("TODO REMOVE -- mDataByteSize = %ld, num Packets = %ld", 
+                   ioData->mBuffers[0].mDataByteSize, *ioNumberDataPackets);
+    }
+    as->framesIn += *ioNumberDataPackets;
 
     return err;
 }
@@ -261,6 +284,16 @@ ComponentResult compressAudio(AudioStreamPtr as)
                             audioBufferList, packetDesc);
     dbg_printf("[WebM] exit SCAudioFillBuffer %d packets, err = %d\n", ioPackets, err);
 
+    
+    if (err == eofErr)
+    {
+        dbg_printf("Total Frames in = %lld, Total Frames Out = %lld\n", 
+                   as->framesIn, as->currentEncodedFrames);
+        if (ioPackets == 0)
+            as->source.eos = true;
+        err= noErr;
+    }
+    
     if (err) goto bail;
 
     if (ioPackets > 0)
@@ -272,7 +305,10 @@ ComponentResult compressAudio(AudioStreamPtr as)
         {
             dbg_printf("[WebM] packet is %ld bytes, %ld frames\n", packetDesc[i].mDataByteSize,  packetDesc[i].mVariableFramesInPacket);
             if (packetDesc[i].mVariableFramesInPacket ==0)
-                as->currentEncodedFrames += 13230; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
+            {
+                //as->currentEncodedFrames += 13230; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
+                as->currentEncodedFrames += 3092; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
+            }
             else 
                 as->currentEncodedFrames += packetDesc[i].mVariableFramesInPacket;
             as->outBuf.offset += packetDesc[i].mDataByteSize;
@@ -287,11 +323,7 @@ bail:
     if (packetDesc != NULL)
         free(packetDesc);
 
-    if (err == eofErr)
-    {
-        as->source.eos = true;
-        return noErr;
-    }
+
 
     return err;
 }
@@ -460,6 +492,8 @@ ComponentResult initAudioStream(AudioStreamPtr as)
     as->vorbisComponentInstance = NULL;
     memset(&as->asbd, 0, sizeof(AudioStreamBasicDescription));
     as->currentEncodedFrames = 0;
+    as->framesIn =0;
     initBuffer(&as->outBuf);
+    
     return noErr;
 }

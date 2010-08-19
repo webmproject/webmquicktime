@@ -536,18 +536,20 @@ static ComponentResult setBitrate(VP8EncoderGlobals glob,
     }
     else
     {
-        CodecQ temp = codecNormalQuality; //min = 0 max = 1024
+        CodecQ sliderVal = codecNormalQuality; //min = 0 max = 1024
         err = ICMCompressionSessionOptionsGetProperty(glob->sessionOptions,
                 kQTPropertyClass_ICMCompressionSessionOptions,
                 kICMCompressionSessionOptionsPropertyID_Quality,
-                sizeof(CodecQ), &temp, NULL);
+                sizeof(CodecQ), &sliderVal, NULL);
 
         if (err) return err;
 
-        if (temp > codecMaxQuality)
-            temp = codecMaxQuality;
-
-        bitrate = temp + 1;
+        if (sliderVal > codecMaxQuality)
+            sliderVal = codecMaxQuality;
+        //I want this to be bits per pixel
+        double totalPixels = glob->width * glob->height;
+        double tmp = totalPixels * sliderVal / (640.0 * 480.0);
+        bitrate = tmp+ 10;
         dbg_printf("[vp8e - %08lx] setting bitrate to %d (calculated from Quality Slider)\n", (UInt32)glob, bitrate);
     }
 
@@ -680,6 +682,7 @@ encodeThisSourceFrame(
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d  flags %x\n", (UInt32)glob, glob->codec, glob->raw, glob->frameCount,  flags);
     vpx_codec_err_t codecError = vpx_codec_encode(glob->codec, glob->raw, glob->frameCount,
                                  1, flags, VPX_DL_GOOD_QUALITY);
+    dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec exit\n", (UInt32)glob);
 
     if (codecError)
     {
