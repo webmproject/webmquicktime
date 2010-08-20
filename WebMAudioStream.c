@@ -149,7 +149,7 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
 
     ComponentResult err = noErr;
 
-    dbg_printf("[WebM]  :: _fillBuffer_callBack(%ld), current samples = %d\n",
+    dbg_printf("[WebM] _fillBuffer_callBack(%ld), current samples = %d\n",
                *ioNumberDataPackets, params->actualSampleCount);
 
     const UInt32 packetsRequested = *ioNumberDataPackets;
@@ -287,7 +287,7 @@ ComponentResult compressAudio(AudioStreamPtr as)
 
     if (err == eofErr)
     {
-        dbg_printf("Total Frames in = %lld, Total Frames Out = %lld\n",
+        dbg_printf("[WebM] Total Frames in = %lld, Total Frames Out = %lld\n",
                    as->framesIn, as->currentEncodedFrames);
         if (ioPackets == 0)
             as->source.eos = true;

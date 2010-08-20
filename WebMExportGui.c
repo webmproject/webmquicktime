@@ -178,7 +178,7 @@ pascal OSStatus SettingsWindowEventHandler(EventHandlerCallRef inHandler, EventR
         enableDisableControls(globals, window);
         rval = noErr;
         break;
-
+            
     default:
         break;
     }

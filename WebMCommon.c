@@ -41,22 +41,22 @@ int allocBuffer(WebMBuffer *buf, size_t size)
     buf->offset = 0;
 }
 
-void initMovieGetParams(StreamSource *get)
+void initMovieGetParams(StreamSource *source)
 {
-    get->params.recordSize = sizeof(MovieExportGetDataParams);
-    get->params.trackID = get->trackID;
-    get->params.requestedTime = get->time;
-    get->params.sourceTimeScale = get->timeScale;
-    get->params.actualTime = 0;
-    get->params.dataPtr = NULL;
-    get->params.dataSize = 0;
-    get->params.desc = NULL;
-    get->params.descType = 0;
-    get->params.descSeed = 0;
-    get->params.requestedSampleCount = 1;
-    get->params.actualSampleCount = 0;
-    get->params.durationPerSample = 1;
-    get->params.sampleFlags = 0;
+    source->params.recordSize = sizeof(MovieExportGetDataParams);
+    source->params.trackID = source->trackID;
+    source->params.requestedTime = source->time;
+    source->params.sourceTimeScale = source->timeScale;
+    source->params.actualTime = 0;
+    source->params.dataPtr = NULL;
+    source->params.dataSize = 0;
+    source->params.desc = NULL;
+    source->params.descType = 0;
+    source->params.descSeed = 0;
+    source->params.requestedSampleCount = 1; // NOTE: 1 sample here for first audio request
+    source->params.actualSampleCount = 0;
+    source->params.durationPerSample = 1;
+    source->params.sampleFlags = 0;
 }
 
 void dbg_printDataParams(StreamSource *get)

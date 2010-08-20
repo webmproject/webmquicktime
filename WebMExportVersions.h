@@ -11,9 +11,9 @@
 #define __WebMExport_versions_h__
 
 #ifdef DEBUG
-#define kMkv_spit__Version      (0x00FF0102)
+#define kMkv_spit__Version      (0x00FF0001)
 #else
-#define kMkv_spit__Version      (0x00000102)
+#define kMkv_spit__Version      (0x00000001)
 #endif /* DEBUG */
 
 

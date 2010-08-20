@@ -10,14 +10,7 @@
 #ifndef __MKV_EXPORT_H__
 #define __MKV_EXPORT_H__ 1
 
-//#include "config.h"
 #include "WebMExportVersions.h"
-
-
-
-//#define kExporterResID                  4040
-//#define kExporterNameStringResID        4040
-//#define kExporterInfoStringResID        4041
 
 #define kSoundComponentManufacturer     'goog'
 #define kCodecFormat                    'VP80'

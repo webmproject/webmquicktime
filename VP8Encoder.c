@@ -101,10 +101,10 @@ typedef struct
     int                             nextDecodeNumber;
 
     //VP8 Specific Variables
+    vpx_codec_err_t      res;
     vpx_codec_ctx_t      *codec;
     vpx_codec_enc_cfg_t  *cfg;
     vpx_image_t          *raw;
-    vpx_codec_err_t      res;Ï
     int                  frameCount;
 
 

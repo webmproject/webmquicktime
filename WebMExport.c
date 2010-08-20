@@ -90,7 +90,7 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr globals, ComponentIns
     ComponentDescription cd;
     ComponentResult err;
 
-    dbg_printf("[WebM]  >> [%08lx] :: Open()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] Open()\n", (UInt32) globals);
 
     globals = (WebMExportGlobalsPtr) NewPtrClear(sizeof(WebMExportGlobals));
     err = MemError();
@@ -123,9 +123,6 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr globals, ComponentIns
 
         SetComponentInstanceStorage(self, (Handle) globals);
 
-        // Get the QuickTime Movie export component
-        // Because we use the QuickTime Movie export component, search for
-        // the 'MooV' exporter using the following ComponentDescription values
         cd.componentType = MovieExportType;
         cd.componentSubType = kQTFileTypeMovie;
         cd.componentManufacturer = kAppleManufacturer;
@@ -135,14 +132,14 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr globals, ComponentIns
         err = OpenAComponent(FindNextComponent(NULL, &cd), &globals->quickTimeMovieExporter);
     }
 
-    dbg_printf("[WebM] <   [%08lx] :: Open()\n", (UInt32) globals);
+    dbg_printf("[WebM %08lx] Exit Open()\n", (UInt32) globals);
     return err;
 }
 
 
 pascal ComponentResult WebMExportClose(WebMExportGlobalsPtr globals, ComponentInstance self)
 {
-    dbg_printf("[WebM]  >> [%08lx] :: Close()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] :: Close()\n", (UInt32) globals);
 
     if (globals)
     {
@@ -161,18 +158,15 @@ pascal ComponentResult WebMExportClose(WebMExportGlobalsPtr globals, ComponentIn
         DisposePtr((Ptr) globals);
     }
 
-    dbg_printf("[WebM] <   [%08lx] :: Close()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] :: Close()\n", (UInt32) globals);
     return noErr;
 }
 
 pascal ComponentResult WebMExportVersion(WebMExportGlobalsPtr globals)
 {
-#pragma unused(globals)
-    dbg_printf("[WebM]  >> [%08lx] :: Version()\n", (UInt32) globals);
-    dbg_printf("[WebM] <   [%08lx] :: Version()\n", (UInt32) globals);
     return kMkv_spit__Version;
 }
-
+//TODO seems like I should be able to remove these empty functions ---
 pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr   globals,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
@@ -180,10 +174,7 @@ pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr  
         ByteCount              *outPropValueSize,
         UInt32                 *outPropertyFlags)
 {
-    ComponentResult err = noErr;
-    dbg_printf("[WebM]  >> [%08lx] :: GetComponentPropertyInfo('%4.4s', '%4.4s')\n", (UInt32) globals, (char *) &inPropClass, (char *) &inPropID);
-    dbg_printf("[WebM] <   [%08lx] :: GetComponentPropertyInfo() = %ld\n", (UInt32) globals, err);
-    return err;
+    return noErr;
 }
 
 pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  globals,
@@ -193,8 +184,6 @@ pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  glob
         ComponentValuePtr      outPropValueAddress,
         ByteCount              *outPropValueSizeUsed)
 {
-    dbg_printf("[WebM]  >> [%08lx] :: GetComponentProperty('%4.4s', '%4.4s', %ld)\n", (UInt32) globals, (char *) &inPropClass, (char *) &inPropID, inPropValueSize);
-    dbg_printf("[WebM] <   [%08lx] :: GetComponentProperty()\n", (UInt32) globals);
     return noErr;
 }
 
@@ -205,7 +194,7 @@ pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  glob
         ConstComponentValuePtr inPropValueAddress)
 {
     ComponentResult err = noErr;
-    dbg_printf("[WebM]  >> [%08lx] :: SetComponentProperty('%4.4s', '%4.4s', %ld)\n", (UInt32) globals, (char *) &inPropClass, (char *) &inPropID, inPropValueSize);
+    dbg_printf("[WebM %08lx] :: SetComponentProperty('%4.4s', '%4.4s', %ld)\n", (UInt32) globals, (char *) &inPropClass, (char *) &inPropID, inPropValueSize);
     //just pass on the property
     err = QTSetComponentProperty(globals->quickTimeMovieExporter, inPropClass,
                                  inPropID, inPropValueSize, inPropValueAddress);
@@ -219,9 +208,8 @@ pascal ComponentResult WebMExportValidate(WebMExportGlobalsPtr globals, Movie th
 {
     OSErr err;
 
-    dbg_printf("[WebM]  >> [%08lx] :: Validate()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] :: Validate()\n", (UInt32) globals);
 
-    // The QT movie export component must be cool with this before we can be
     err = MovieExportValidate(globals->quickTimeMovieExporter, theMovie, onlyThisTrack, valid);
 
     if (!err)
@@ -264,7 +252,7 @@ pascal ComponentResult WebMExportToFile(WebMExportGlobalsPtr globals, const FSSp
     AliasHandle alias;
     ComponentResult err;
 
-    dbg_printf("[WebM]  >> [%08lx] :: ToFile(%d, %ld, %ld)\n", (UInt32) globals, onlyThisTrack != NULL, startTime, duration);
+    dbg_printf("[WebM -- %08lx] ToFile(%d, %ld, %ld)\n", (UInt32) globals, onlyThisTrack != NULL, startTime, duration);
 
     err = QTNewAlias(theFilePtr, &alias, true);
 
@@ -275,7 +263,7 @@ pascal ComponentResult WebMExportToFile(WebMExportGlobalsPtr globals, const FSSp
         DisposeHandle((Handle) alias);
     }
 
-    dbg_printf("[WebM] <   [%08lx] :: ToFile()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] ToFile()\n", (UInt32) globals);
     return err;
 }
 
@@ -293,10 +281,9 @@ pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr globals, Handle 
     ComponentResult err;
     Boolean have_sources = false;
 
-    dbg_printf("[WebM]  >> [%08lx] :: ToDataRef(%d, %ld, %ld)\n", (UInt32) globals, onlyThisTrack != NULL, startTime, duration);
+    dbg_printf("[WebM -- %08lx] :: ToDataRef(%d, %ld, %ld)\n", (UInt32) globals, onlyThisTrack != NULL, startTime, duration);
     dbg_printf("[WebM] ToDataRef -- bMovieHasAudio %d, bMovieHasVideo %d, bExportAudio %d, bExportVideo %d\n",
                globals->bMovieHasAudio, globals->bMovieHasVideo, globals->bExportAudio, globals->bExportVideo);
-    // TODO: loop all tracks
 
     if (globals->bExportVideo && globals->bMovieHasVideo)
     {
@@ -411,13 +398,10 @@ pascal ComponentResult WebMExportNewGetDataAndPropertiesProcs(WebMExportGlobalsP
         void **refCon)
 {
     ComponentResult err;
-    dbg_printf("[WebM]  >> [%08lx] :: NewGetDataAndPropertiesProcs(%4.4s, %ld, %ld)\n", (UInt32) globals, (char *) &trackType, startTime, duration);
+    dbg_printf("[WebM -- %08lx] NewGetDataAndPropertiesProcs(%4.4s, %ld, %ld)\n", (UInt32) globals, (char *) &trackType, startTime, duration);
 
     err = MovieExportNewGetDataAndPropertiesProcs(globals->quickTimeMovieExporter, trackType, scale, theMovie, theTrack, startTime, duration,
             propertyProc, getDataProc, refCon);
-
-    dbg_printf("[WebM] <   [%08lx] :: NewGetDataAndPropertiesProcs() = %ld (movieGet.refCon = %08lx)\n",
-               (UInt32) globals, err, (UInt32)(refCon != NULL ? *refCon : NULL));
     return err;
 }
 
@@ -449,7 +433,7 @@ pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr globals, OST
 {
     ComponentResult err = noErr;
 
-    dbg_printf("[WebM - %08lx] :: AddDataSource('%4.4s')\n", (UInt32) globals, (char *) &trackType);
+    dbg_printf("[WebM - %08lx] AddDataSource('%4.4s')\n", (UInt32) globals, (char *) &trackType);
 
     *trackIDPtr = 0;
 
@@ -491,7 +475,7 @@ pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr globals, OST
 
 pascal ComponentResult WebMExportSetProgressProc(WebMExportGlobalsPtr globals, MovieProgressUPP proc, long refCon)
 {
-    dbg_printf("[WebM - %08lx] :: SetProgressProc()\n", (UInt32) globals);
+    dbg_printf("[WebM - %08lx] SetProgressProc()\n", (UInt32) globals);
 
     globals->progressProc = proc;
     globals->progressRefCon = refCon;
@@ -575,7 +559,7 @@ pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr
     Boolean b_true = true;
     Boolean b_false = false;
 
-    dbg_printf("[WebM]  [%08lx] GetSettingsAsAtomContainer()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] GetSettingsAsAtomContainer()\n", (UInt32) globals);
 
     if (!settings)
         return paramErr;
@@ -761,10 +745,8 @@ bail:
 
 pascal ComponentResult WebMExportGetFileNameExtension(WebMExportGlobalsPtr globals, OSType *extension)
 {
-#pragma unused(globals)
-    dbg_printf("[WebM]  >> [%08lx] :: GetFileNameExtension()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] :: GetFileNameExtension()\n", (UInt32) globals);
     *extension = 'webm';
-    dbg_printf("[WebM] <   [%08lx] :: GetFileNameExtension()\n", (UInt32) globals);
     return noErr;
 }
 
