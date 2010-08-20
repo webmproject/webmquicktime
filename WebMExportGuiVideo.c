@@ -42,7 +42,7 @@ ComponentResult getDefaultVP8Atom(WebMExportGlobalsPtr globals)
                            };
 
     SCTemporalSettings ts = {codecNormalQuality, 0, 64};
-    ts.frameRate = globals->movie_fps;
+    ts.frameRate = FloatToFixed(globals->framerate);
     SCDataRateSettings ds = {0, 0, 0, 0};
 
     err = SCSetInfo(stdVideo, scSpatialSettingsType, &ss);

@@ -59,7 +59,7 @@ typedef struct
     {
         VideoStream vid;
         AudioStream aud;
-    } stream;
+    } ;
 } GenericStream;
 
 typedef struct
@@ -87,9 +87,7 @@ typedef struct
 
     Boolean            canceled;
 
-    Boolean            use_hires_audio;
-
-    Fixed              movie_fps;
+    double              framerate;
     UInt32             webmTimeCodeScale;
 
     /* settings */

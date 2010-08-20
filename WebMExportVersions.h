@@ -22,7 +22,6 @@
 #define kGoogManufacturer         'goog'
 
 #define kAudioFormatXiphVorbis             'XiVs'
-//#define kAudioFormatXiphOggFramedVorbis    'XoVs'
 #define kPerian                            'Peri'
 
 #endif /* __WebMExport_versions_h__ */

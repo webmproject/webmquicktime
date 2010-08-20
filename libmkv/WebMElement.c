@@ -106,15 +106,14 @@ void writeAudioTrack(EbmlGlobal *glob, unsigned int trackNumber, int flagLacing,
     }
     Ebml_EndSubElement(glob, &start);
 }
-void writeSegmentInformation(EbmlGlobal *ebml, unsigned long timeCodeScale, double duration)
+void writeSegmentInformation(EbmlGlobal *ebml, EbmlLoc* startInfo, unsigned long timeCodeScale, double duration)
 {
-    EbmlLoc startInfo;
-    Ebml_StartSubElement(ebml, &startInfo, Info);
+    Ebml_StartSubElement(ebml, startInfo, Info);
     Ebml_SerializeUnsigned(ebml, TimecodeScale, timeCodeScale);
     Ebml_SerializeFloat(ebml, Segment_Duration, duration * 1000.0); //Currently fixed to using milliseconds
     Ebml_SerializeString(ebml, 0x4D80, "QTmuxingAppLibWebM-0.0.1");
     Ebml_SerializeString(ebml, 0x5741, "QTwritingAppLibWebM-0.0.1");
-    Ebml_EndSubElement(ebml, &startInfo);
+    Ebml_EndSubElement(ebml, startInfo);
 }
 
 /*

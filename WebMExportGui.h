@@ -8,7 +8,6 @@
 
 #ifndef _MKV_EXPORT_GUI_H_
 #define _MKV_EXPORT_GUI_H_
-#define USE_NIB_FILE 1
 
 
 #include "WebMExportGuiVideo.h"

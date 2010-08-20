@@ -13,7 +13,6 @@
 #endif
 
 #include "log.h"
-//#include <Ogg/ogg.h>
 #include "WebMExportStructs.h"
 #include "WebMExportVersions.h"
 #include "VP8CodecVersion.h"
@@ -21,7 +20,6 @@
 
 
 
-#define USE_NIB_FILE 1
 #include "WebMExportGui.h"
 /* component selector methods, TODO find out why only these 3 need to be declared */
 pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr   globals,
@@ -60,7 +58,7 @@ static void CloseAllStreams(WebMExportGlobalsPtr globals);
 
 static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr globals);
 
-static ComponentResult _movie_fps(Movie theMovie, Fixed *fps);
+static ComponentResult _getFrameRate(Movie theMovie, double *fps);
 
 static ComponentResult getMovieDimensions(Movie theMovie, Fixed *width, Fixed *height);
 
@@ -100,8 +98,7 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr globals, ComponentIns
     if (!err)
     {
         globals->self = self;
-        globals->use_hires_audio = false;
-        globals->movie_fps = 0;
+        globals->framerate = 0;
 
         globals->bExportVideo = 1;
         globals->bExportAudio = 1;
@@ -316,8 +313,8 @@ pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr globals, Handle 
                 have_sources = true;
         }
 
-        if (globals->movie_fps == 0)
-            _movie_fps(theMovie, &globals->movie_fps);
+        if (globals->framerate == 0)
+            _getFrameRate(theMovie, &globals->framerate);
     }
 
     if (globals->bExportAudio && globals->bMovieHasAudio)
@@ -470,13 +467,13 @@ pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr globals, OST
 
         if (trackType == VideoMediaType)
         {
-            VideoStreamPtr p = &gs->stream.vid;
+            VideoStreamPtr p = &gs->vid;
             initVideoStream(p);
             source = &p->source;
         }
         else if (trackType == SoundMediaType)
         {
-            AudioStreamPtr p = &gs->stream.aud;
+            AudioStreamPtr p = &gs->aud;
             initAudioStream(p);
             source = &p->source;
         }
@@ -773,10 +770,7 @@ pascal ComponentResult WebMExportGetFileNameExtension(WebMExportGlobalsPtr globa
 
 pascal ComponentResult WebMExportGetShortFileTypeString(WebMExportGlobalsPtr globals, Str255 typeString)
 {
-#pragma unused(globals)
     dbg_printf("[WebM %08lx] GetShortFileTypeString()\n", (UInt32) globals);
-
-    // return GetComponentIndString((Component)globals->self, typeString, kWebMExportShortFileTypeNamesResID, 1);
     typeString[0] = '\x04';
     typeString[1] = 'W';
     typeString[2] = 'e';
@@ -857,7 +851,7 @@ static void CloseAllStreams(WebMExportGlobalsPtr globals)
 
             if (gs->trackType == VideoMediaType)
             {
-                VideoStreamPtr p = &gs->stream.vid;
+                VideoStreamPtr p = &gs->vid;
 
                 if (p->decompressionSession != NULL)
                 {
@@ -874,7 +868,7 @@ static void CloseAllStreams(WebMExportGlobalsPtr globals)
                 buf = &p->outBuf;
             }
             else if (gs->trackType == SoundMediaType)
-                buf = &gs->stream.aud.outBuf;
+                buf = &gs->aud.outBuf;
 
             freeBuffer(buf);
         }
@@ -886,8 +880,8 @@ static void CloseAllStreams(WebMExportGlobalsPtr globals)
     globals->streams = NULL;
 }
 
-#define kCharacteristicHasVideoFrameRate FOUR_CHAR_CODE('vfrr');
-/*static OSErr __movie_fps(Movie theMovie, double *fps)
+#define kCharacteristicHasVideoFrameRate FOUR_CHAR_CODE('vfrr')
+static ComponentResult _getFrameRate(Movie theMovie, double *fps)
 {
     Track videoTrack = GetMovieIndTrackType(theMovie, 1, kCharacteristicHasVideoFrameRate,
                                             movieTrackCharacteristic | movieTrackEnabledOnly);
@@ -897,72 +891,5 @@ static void CloseAllStreams(WebMExportGlobalsPtr globals)
     TimeValue64 timeScale = GetMediaTimeScale(media);
     *fps = (double)sampleCount * (double) timeScale / (double) duration;
     return noErr;
-}*/
-
-//TODO surely this function can be more simple
-static ComponentResult _movie_fps(Movie theMovie, Fixed *fps)
-{
-    ComponentResult err = noErr;
-    UInt32 frames = 0;
-    TimeValue m_time = 0;
-    TimeValue m_time_tmp = 0;
-    TimeValue m_time_start = 0;
-    TimeValue m_time_end = 0;
-    TimeValue ts = 0;
-    OSType vis_type = VisualMediaCharacteristic;
-
-    dbg_printf("[WebM]  >> [%08lx] _movie_fps()\n", (UInt32) - 1);
-
-    GetMovieNextInterestingTime(theMovie, nextTimeStep, 1, &vis_type, m_time, fixed1, &m_time_start, NULL);
-
-    if (m_time_start > 0)
-    {
-        m_time = m_time_start;
-        frames = 1;
-
-        while (m_time >= 0)
-        {
-            GetMovieNextInterestingTime(theMovie, nextTimeStep, 1, &vis_type, m_time, fixed1, &m_time_tmp, NULL);
-
-            if (m_time_tmp > 0)
-                m_time_end = m_time;
-
-            m_time = m_time_tmp;
-            //dbg_printf("[WebM]     [%08lx] _movie_frame_count() = %ld [%ld]\n", (UInt32) -1, m_time, ret);
-            frames++;
-        }
-
-        frames--;
-
-        if (m_time_end > m_time_start)
-        {
-            m_time = m_time_end - m_time_start;
-            frames -= 2;
-        }
-    }
-
-    if (m_time > 0)
-    {
-        ts = GetMovieTimeScale(theMovie);
-        err = GetMoviesError();
-
-        if (!err)
-        {
-            // nominator = (double) (frames * ts * ts) / (double) m_time;
-            // denominator = ts;
-            *fps = FloatToFixed((double)(frames * ts) / (double) m_time);
-        }
-    }
-    else
-    {
-        err = GetMoviesError();
-    }
-
-    dbg_printf("[WebM] <   [%08lx] _movie_fps() = %ld (%ld.%04ld) [%ld, %ld, %ld, %ld, %ld]\n", (UInt32) - 1, err, *fps >> 16, (*fps & 0xffff) * 10000 / 65536, m_time, ts,
-    m_time_start, m_time_end, frames, *fps);
-    return err;
 }
-
-
-
 

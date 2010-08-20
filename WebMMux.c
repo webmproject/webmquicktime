@@ -50,9 +50,9 @@ static double getMaxDuration(WebMExportGlobalsPtr globals)
         StreamSource *source;
 
         if (gs->trackType == VideoMediaType)
-            source = &gs->stream.vid.source;
+            source = &gs->vid.source;
         else
-            source = &gs->stream.aud.source;
+            source = &gs->aud.source;
 
         // get the track duration if it is available
         if (InvokeMovieExportGetPropertyUPP(source->refCon, source->trackID,
@@ -88,8 +88,8 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
 
             if (gs->trackType == VideoMediaType)
             {
-                VideoStreamPtr vs = &gs->stream.vid;
-                double fps = FixedToFloat(globals->movie_fps);
+                VideoStreamPtr vs = &gs->vid;
+                double fps = FixedToFloat(globals->framerate);
                 if (fps == 0)
                 {
                     //framerate estime should be replaced with more accurate
@@ -107,7 +107,7 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
             }
             else if (gs->trackType == SoundMediaType)
             {
-                AudioStreamPtr as = &gs->stream.aud;
+                AudioStreamPtr as = &gs->aud;
                 unsigned int trackNumber;
                 double sampleRate = 0;
                 unsigned int channels = 0;
@@ -183,19 +183,24 @@ static ComponentResult _updateProgressBar(WebMExportGlobalsPtr globals, double p
     return err;
 }
 
-static void _writeSeekElement(EbmlGlobal* ebml, unsigned long binaryId, UInt64 Loc)
+static void _writeSeekElement(EbmlGlobal* ebml, unsigned long binaryId, EbmlLoc* Loc, UInt64 firstL1)
 {
+    UInt64 offset = *(SInt64*)&Loc->offset;
+    offset -= firstL1;
+    dbg_printf("[webm] Writing Element %ld at offset %lld\n", binaryId, offset);
+
     EbmlLoc start;
     Ebml_StartSubElement(ebml, &start, Seek);
-    Ebml_WriteBinary(ebml, SeekID, binaryId);
-    Ebml_SerializeUnsigned64(ebml, SeekPosition, Loc);
+    Ebml_SerializeBinary(ebml, SeekID, binaryId);
+    Ebml_SerializeUnsigned64(ebml, SeekPosition, offset);
     Ebml_EndSubElement(ebml, &start);
 }
 
-static void _writeMetaSeekInformation(EbmlGlobal *ebml, UInt64 trackLoc, UInt64 cueLoc,  
-                                      UInt64 clusterLoc, EbmlLoc* seekInfoLoc, Boolean firstWrite)
+static void _writeMetaSeekInformation(EbmlGlobal *ebml, EbmlLoc*  trackLoc, EbmlLoc*  cueLoc,  
+                                      EbmlLoc*  segmentInformation, EbmlLoc* seekInfoLoc, SInt64 sFirstL1, Boolean firstWrite)
 {
     EbmlLoc globLoc;
+    UInt64 firstL1 = sFirstL1;
     if (firstWrite)
     {
         Ebml_StartSubElement(ebml, seekInfoLoc, SeekHead);
@@ -206,9 +211,9 @@ static void _writeMetaSeekInformation(EbmlGlobal *ebml, UInt64 trackLoc, UInt64 
         Ebml_SetEbmlLoc(ebml, seekInfoLoc);
     }
     
-    _writeSeekElement(ebml, Tracks, trackLoc);
-    _writeSeekElement(ebml, Cues, cueLoc);
-    _writeSeekElement(ebml, Cluster, clusterLoc);
+    _writeSeekElement(ebml, Tracks, trackLoc, firstL1);
+    _writeSeekElement(ebml, Cues, cueLoc, firstL1);
+    _writeSeekElement(ebml, Info, segmentInformation, firstL1);
     
     if (firstWrite)
         Ebml_EndSubElement(ebml, seekInfoLoc);
@@ -312,7 +317,7 @@ static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, VideoStreamPtr 
     vs->source.bQdFrame = false;
     
     //this now represents the next frame we want to encode
-    double fps = FixedToFloat(globals->movie_fps);
+    double fps = FixedToFloat(globals->framerate);
     if (fps == 0)
         fps = source->params.sourceTimeScale * 1.0/ source->params.durationPerSample * 1.0; 
     vs->currentFrame += 1;  
@@ -382,16 +387,18 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     ebml.offset.hi = 0;
     ebml.offset.lo = 0;
 
-    EbmlLoc startSegment, trackStart, cuesLoc;
+    EbmlLoc startSegment, trackLoc, cuesLoc, segmentInfoLoc, seekInfoLoc;
     globals->progressOpen = false;
 	
 	writeHeader(&ebml);    
     dbg_printf("[WebM]) Write segment information\n");
     Ebml_StartSubElement(&ebml, &startSegment, Segment);
 	SInt64 firstL1Offset = *(SInt64*) &ebml.offset;  //The first level 1 element is the offset needed for cuepoints according to Matroska's specs
-    writeSegmentInformation(&ebml, globals->webmTimeCodeScale, duration);  
+    _writeMetaSeekInformation(&ebml, &trackLoc, &cuesLoc, &segmentInfoLoc, &seekInfoLoc, firstL1Offset, true);
 
-    _writeTracks(globals, &ebml, &trackStart);    
+    writeSegmentInformation(&ebml, &segmentInfoLoc, globals->webmTimeCodeScale, duration);  
+
+    _writeTracks(globals, &ebml, &trackLoc);    
 
     Boolean bExportVideo = globals->bMovieHasVideo && globals->bExportVideo;
     Boolean bExportAudio = globals->bMovieHasAudio && globals->bExportAudio;
@@ -422,23 +429,23 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
             if (gs->trackType == VideoMediaType)
             {
-                source =  &gs->stream.vid.source;
+                source =  &gs->vid.source;
 
                 if (!source->bQdFrame && globals->bExportVideo)
                 {
-                    err = _compressVideo(globals, &gs->stream.vid);
+                    err = _compressVideo(globals, &gs->vid);
                     //I need to know if there's a video keyframe in the Queue
                     if (!startNewCluster)
-                        startNewCluster = gs->stream.vid.frame_type == kICMFrameType_I;
+                        startNewCluster = gs->vid.frame_type == kICMFrameType_I;
                 }
             }
 
             if (gs->trackType == SoundMediaType)
             {
-                source = &gs->stream.aud.source;
+                source = &gs->aud.source;
 
                 if (!source->bQdFrame && globals->bExportAudio)
-                    err = _compressAudio(&gs->stream.aud);
+                    err = _compressAudio(&gs->aud);
             }
 
             if (err)
@@ -484,7 +491,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         
         if (minTimeStream->trackType == VideoMediaType)
         {
-            VideoStreamPtr vs = &minTimeStream->stream.vid;
+            VideoStreamPtr vs = &minTimeStream->vid;
             _writeVideo(globals, vs, &ebml);
             blocksInCluster ++;            
             if( vs->frame_type == kICMFrameType_I)
@@ -496,7 +503,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         }  //end if VideoMediaType
         else if (minTimeStream->trackType == SoundMediaType)
         {
-            AudioStreamPtr as = &minTimeStream->stream.aud;
+            AudioStreamPtr as = &minTimeStream->aud;
             _writeAudio(globals, as, &ebml);
             blocksInCluster ++;
         } //end SoundMediaType
@@ -510,6 +517,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     dbg_printf("[webm] done writing streams\n");
     _writeCues(globals, &ebml, &cuesLoc);
     Ebml_EndSubElement(&ebml, &startSegment);
+    _writeMetaSeekInformation(&ebml, &trackLoc, &cuesLoc, &segmentInfoLoc, &seekInfoLoc, firstL1Offset, false);
 
     HUnlock((Handle) globals->streams);
 
