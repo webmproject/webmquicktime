@@ -96,7 +96,7 @@ void Ebml_SerializeUnsigned(EbmlGlobal *glob, unsigned long class_id, unsigned l
     unsigned int _s = size;
     Ebml_Serialize(glob, &ui, size);
 }
-
+//TODO: perhaps this is a poor name for this id serializer helper function
 void Ebml_SerializeBinary(EbmlGlobal *glob, unsigned long class_id, unsigned long bin)
 {
     int size;
@@ -105,7 +105,9 @@ void Ebml_SerializeBinary(EbmlGlobal *glob, unsigned long class_id, unsigned lon
         if (bin & 0x000000ff << ((size-1) * 8))
             break;
     }
-    Ebml_SerializeData(glob, class_id, (void*) &bin, size);
+    Ebml_WriteID(glob, class_id);
+    Ebml_WriteLen(glob, size);
+    Ebml_WriteID(glob, bin);
 }
 
 void Ebml_SerializeFloat(EbmlGlobal *glob, unsigned long class_id, double d)
