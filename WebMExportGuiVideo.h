@@ -19,6 +19,7 @@
 
 ComponentResult getDefaultVP8Atom(WebMExportGlobalsPtr globals);
 ComponentResult OpenVP8Dlg(WebMExportGlobalsPtr globals, WindowRef window);
+ComponentResult getVideoComponentInstace(WebMExportGlobalsPtr glob, ComponentInstance *videoCI);
 
 
 #endif

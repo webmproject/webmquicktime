@@ -151,22 +151,18 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
     return err;
 }
 
-
-static ComponentResult setCompressionSettingFromAC(QTAtomContainer ac, ICMCompressionSessionOptionsRef options, QTAtom parent)
+//Using the componentInstance, load settings and then pass them to the compression session
+//this in turn sends all these parameters to the VP8 Component
+static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMCompressionSessionOptionsRef options)
 {
-    ComponentInstance stdVideo = NULL;
-    ComponentResult err = OpenADefaultComponent(StandardCompressionType, StandardCompressionSubType, &stdVideo);
-
-    if (err) goto bail;
-
-    err = SCSetSettingsFromAtomContainer(stdVideo, ac);
-
-    if (err) goto bail;
-
+    ComponentInstance videoCI = NULL;
+    
+    ComponentResult err = getVideoComponentInstace(glob, &videoCI);
+    if(err) goto bail;
+    
     //Transfer spatial settings
     SCSpatialSettings ss;
-    SCGetInfo(stdVideo, scSpatialSettingsType, &ss);
-
+    err = SCGetInfo(videoCI, scSpatialSettingsType, &ss);
     if (err) goto bail;
 
     dbg_printf("[WebM]Passing spatial settings -- passing %lx\n", ss.spatialQuality);
@@ -174,35 +170,37 @@ static ComponentResult setCompressionSettingFromAC(QTAtomContainer ac, ICMCompre
             kQTPropertyClass_ICMCompressionSessionOptions,
             kICMCompressionSessionOptionsPropertyID_Quality,
             sizeof(CodecQ), &ss.spatialQuality);
+    if (err) goto bail;
+
     //Transfer Temporal Settings
     SCTemporalSettings ts;
-    err = SCSetInfo(stdVideo, scTemporalSettingsType, &ts);
-
+    err = SCGetInfo(videoCI, scTemporalSettingsType, &ts);
     if (err) goto bail;
 
     SInt32 keyFrameRate = ts.keyFrameRate;
-
+    dbg_printf("[webm] setting session maxkeyframerate %ld\n", keyFrameRate);
     if (keyFrameRate != 0)
     {
         err = ICMCompressionSessionOptionsSetMaxKeyFrameInterval(options,
                 keyFrameRate);
-        dbg_printf("[webm] setting session maxkeyframerate %ld\n", keyFrameRate);
-
         if (err) goto bail;
     }
 
-
+    
     //transfer Datarate Settings
     SCDataRateSettings ds;
-    err = SCSetInfo(stdVideo, scDataRateSettingsType, &ds);
-
+    err = SCGetInfo(videoCI, scDataRateSettingsType, &ds);
     if (err) goto bail;
+    
+    QTUnlockContainer(glob->videoSettingsAtom);
 
 bail:
 
-    if (stdVideo != NULL)
-        CloseComponent(stdVideo);
-
+    if (videoCI != NULL)
+        CloseComponent(videoCI);
+    if (err)
+        dbg_printf("[webm] Error in setCompressionSettingFromAC %d\n", err);
+    
     return err;
 }
 
@@ -225,26 +223,12 @@ ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, VideoStream
 
     ICMCompressionSessionOptionsSetDurationsNeeded(options, true);
 
-    //TODO -- add options to the decompression session
-    if (globals->videoSettingsAtom == NULL)
-        getDefaultVP8Atom(globals);
 
-    setCompressionSettingFromAC(globals->videoSettingsAtom, options, 0);
-
-    QTUnlockContainer(globals->videoSettingsAtom);
-
-    //ICMCompressionSessionOptionsSetMaxKeyFrameInterval(options, 360.0);
-    /*  SInt32 bitrate = 3333; //TODO hard coded for now
-        err = ICMCompressionSessionOptionsSetProperty(options,
-            kQTPropertyClass_ICMCompressionSessionOptions,
-            kICMCompressionSessionOptionsPropertyID_AverageDataRate,
-            sizeof(bitrate), &bitrate);
-        */
+    setCompressionSettings(globals, options);
 
     efor.encodedFrameOutputCallback = _frame_compressed_callback;
     efor.encodedFrameOutputRefCon = (void *) vs;
     efor.frameDataAllocator = NULL;
-
 
     dbg_printf("[webM] openCompressionSession timeScale = %ld (%d x %d)\n",
                vs->source.timeScale, width, height);

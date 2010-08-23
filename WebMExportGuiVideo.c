@@ -160,3 +160,19 @@ bail:
     return err;
 }
 
+ComponentResult getVideoComponentInstace(WebMExportGlobalsPtr glob, ComponentInstance *videoCI)
+{
+    ComponentResult err =noErr;
+    OpenADefaultComponent(StandardCompressionType, StandardCompressionSubType, videoCI);
+    if (err) goto bail;
+    
+    if (glob->videoSettingsAtom == NULL)
+    {
+        getDefaultVP8Atom(glob);
+    }
+
+    err = SCSetSettingsFromAtomContainer(*videoCI, glob->videoSettingsAtom);
+    if (err) goto bail;
+bail:
+    return err;
+}
