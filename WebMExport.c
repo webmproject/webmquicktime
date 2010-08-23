@@ -22,19 +22,19 @@
 
 #include "WebMExportGui.h"
 /* component selector methods, TODO find out why only these 3 need to be declared */
-pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr   globals,
+pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr   store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
         ComponentValueType     *outPropType,
         ByteCount              *outPropValueSize,
         UInt32                 *outPropertyFlags);
-pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  globals,
+pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
         ByteCount              inPropValueSize,
         ComponentValuePtr      outPropValueAddress,
         ByteCount              *outPropValueSizeUsed);
-pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  globals,
+pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
         ByteCount              inPropValueSize,
@@ -42,21 +42,21 @@ pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  glob
 
 
 
-pascal ComponentResult WebMExportDoUserDialog(WebMExportGlobalsPtr globals, Movie theMovie, Track onlyThisTrack,
+pascal ComponentResult WebMExportDoUserDialog(WebMExportGlobalsPtr store, Movie theMovie, Track onlyThisTrack,
         TimeValue startTime, TimeValue duration, Boolean *canceledPtr);
 
 
-pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr globals, QTAtomContainer *settings);
-pascal ComponentResult WebMExportSetSettingsFromAtomContainer(WebMExportGlobalsPtr globals, QTAtomContainer settings);
-pascal ComponentResult WebMExportGetFileNameExtension(WebMExportGlobalsPtr globals, OSType *extension);
-pascal ComponentResult WebMExportGetShortFileTypeString(WebMExportGlobalsPtr globals, Str255 typeString);
-pascal ComponentResult WebMExportGetSourceMediaType(WebMExportGlobalsPtr globals, OSType *mediaType);
+pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr store, QTAtomContainer *settings);
+pascal ComponentResult WebMExportSetSettingsFromAtomContainer(WebMExportGlobalsPtr store, QTAtomContainer settings);
+pascal ComponentResult WebMExportGetFileNameExtension(WebMExportGlobalsPtr store, OSType *extension);
+pascal ComponentResult WebMExportGetShortFileTypeString(WebMExportGlobalsPtr store, Str255 typeString);
+pascal ComponentResult WebMExportGetSourceMediaType(WebMExportGlobalsPtr store, OSType *mediaType);
 
 
 
-static void CloseAllStreams(WebMExportGlobalsPtr globals);
+static void CloseAllStreams(WebMExportGlobalsPtr store);
 
-static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr globals);
+static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr store);
 
 static ComponentResult _getFrameRate(Movie theMovie, double *fps);
 
@@ -85,43 +85,43 @@ static ComponentResult getMovieDimensions(Movie theMovie, Fixed *width, Fixed *h
 #endif
 
 
-pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr globals, ComponentInstance self)
+pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr store, ComponentInstance self)
 {
     ComponentDescription cd;
     ComponentResult err;
 
-    dbg_printf("[WebM -- %08lx] Open()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] Open()\n", (UInt32) store);
 
-    globals = (WebMExportGlobalsPtr) NewPtrClear(sizeof(WebMExportGlobals));
+    store = (WebMExportGlobalsPtr) NewPtrClear(sizeof(WebMExportGlobals));
     err = MemError();
 
     if (!err)
     {
-        globals->self = self;
-        globals->framerate = 0;
+        store->self = self;
+        store->framerate = 0;
 
-        globals->bExportVideo = 1;
-        globals->bExportAudio = 1;
+        store->bExportVideo = 1;
+        store->bExportAudio = 1;
 
-        globals->audioSettingsAtom = NULL;
-        globals->videoSettingsAtom = NULL;
-        globals->streams = NULL;
-        globals->streamCount = 0;
-        globals->cueHandle = NULL;
-        globals->cueCount = 0;
+        store->audioSettingsAtom = NULL;
+        store->videoSettingsAtom = NULL;
+        store->streams = NULL;
+        store->streamCount = 0;
+        store->cueHandle = NULL;
+        store->cueCount = 0;
 
-        memset(&globals->audioBSD, 0, sizeof(AudioStreamBasicDescription));
+        memset(&store->audioBSD, 0, sizeof(AudioStreamBasicDescription));
 
-        globals->audioBSD.mFormatID = kAudioFormatXiphVorbis;
-        globals->audioBSD.mChannelsPerFrame = 1;
-        globals->audioBSD.mSampleRate = 44100.000;
+        store->audioBSD.mFormatID = kAudioFormatXiphVorbis;
+        store->audioBSD.mChannelsPerFrame = 1;
+        store->audioBSD.mSampleRate = 44100.000;
 
-        globals->bMovieHasAudio = true;
-        globals->bMovieHasVideo = true;
+        store->bMovieHasAudio = true;
+        store->bMovieHasVideo = true;
 
-        globals->webmTimeCodeScale = 1000000; ///TODO figure out about how to use this
+        store->webmTimeCodeScale = 1000000; ///TODO figure out about how to use this
 
-        SetComponentInstanceStorage(self, (Handle) globals);
+        SetComponentInstanceStorage(self, (Handle) store);
 
         cd.componentType = MovieExportType;
         cd.componentSubType = kQTFileTypeMovie;
@@ -129,45 +129,45 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr globals, ComponentIns
         cd.componentFlags = canMovieExportFromProcedures | movieExportMustGetSourceMediaType;
         cd.componentFlagsMask = cd.componentFlags;
 
-        err = OpenAComponent(FindNextComponent(NULL, &cd), &globals->quickTimeMovieExporter);
+        err = OpenAComponent(FindNextComponent(NULL, &cd), &store->quickTimeMovieExporter);
     }
 
-    dbg_printf("[WebM %08lx] Exit Open()\n", (UInt32) globals);
+    dbg_printf("[WebM %08lx] Exit Open()\n", (UInt32) store);
     return err;
 }
 
 
-pascal ComponentResult WebMExportClose(WebMExportGlobalsPtr globals, ComponentInstance self)
+pascal ComponentResult WebMExportClose(WebMExportGlobalsPtr store, ComponentInstance self)
 {
-    dbg_printf("[WebM -- %08lx] :: Close()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] :: Close()\n", (UInt32) store);
 
-    if (globals)
+    if (store)
     {
-        if (globals->quickTimeMovieExporter)
-            CloseComponent(globals->quickTimeMovieExporter);
+        if (store->quickTimeMovieExporter)
+            CloseComponent(store->quickTimeMovieExporter);
 
-        CloseAllStreams(globals);
+        CloseAllStreams(store);
 
-        if (globals->videoSettingsAtom)
-            QTDisposeAtomContainer(globals->videoSettingsAtom);
+        if (store->videoSettingsAtom)
+            QTDisposeAtomContainer(store->videoSettingsAtom);
 
-        if (globals->audioSettingsAtom)
-            QTDisposeAtomContainer(globals->audioSettingsAtom);
+        if (store->audioSettingsAtom)
+            QTDisposeAtomContainer(store->audioSettingsAtom);
 
 
-        DisposePtr((Ptr) globals);
+        DisposePtr((Ptr) store);
     }
 
-    dbg_printf("[WebM -- %08lx] :: Close()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] :: Close()\n", (UInt32) store);
     return noErr;
 }
 
-pascal ComponentResult WebMExportVersion(WebMExportGlobalsPtr globals)
+pascal ComponentResult WebMExportVersion(WebMExportGlobalsPtr store)
 {
     return kMkv_spit__Version;
 }
-//TODO seems like I should be able to remove these empty functions ---
-pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr   globals,
+
+pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr   store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
         ComponentValueType     *outPropType,
@@ -177,7 +177,7 @@ pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr  
     return noErr;
 }
 
-pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  globals,
+pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
         ByteCount              inPropValueSize,
@@ -187,30 +187,30 @@ pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  glob
     return noErr;
 }
 
-pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  globals,
+pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
         ByteCount              inPropValueSize,
         ConstComponentValuePtr inPropValueAddress)
 {
     ComponentResult err = noErr;
-    dbg_printf("[WebM %08lx] :: SetComponentProperty('%4.4s', '%4.4s', %ld)\n", (UInt32) globals, (char *) &inPropClass, (char *) &inPropID, inPropValueSize);
+    dbg_printf("[WebM %08lx] :: SetComponentProperty('%4.4s', '%4.4s', %ld)\n", (UInt32) store, (char *) &inPropClass, (char *) &inPropID, inPropValueSize);
     //just pass on the property
-    err = QTSetComponentProperty(globals->quickTimeMovieExporter, inPropClass,
+    err = QTSetComponentProperty(store->quickTimeMovieExporter, inPropClass,
                                  inPropID, inPropValueSize, inPropValueAddress);
 
 
-    dbg_printf("[WebM] <   [%08lx] :: SetComponentProperty() = %ld\n", (UInt32) globals, err);
+    dbg_printf("[WebM] <   [%08lx] :: SetComponentProperty() = %ld\n", (UInt32) store, err);
     return err;
 }
 
-pascal ComponentResult WebMExportValidate(WebMExportGlobalsPtr globals, Movie theMovie, Track onlyThisTrack, Boolean *valid)
+pascal ComponentResult WebMExportValidate(WebMExportGlobalsPtr store, Movie theMovie, Track onlyThisTrack, Boolean *valid)
 {
     OSErr err;
 
-    dbg_printf("[WebM -- %08lx] :: Validate()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] :: Validate()\n", (UInt32) store);
 
-    err = MovieExportValidate(globals->quickTimeMovieExporter, theMovie, onlyThisTrack, valid);
+    err = MovieExportValidate(store->quickTimeMovieExporter, theMovie, onlyThisTrack, valid);
 
     if (!err)
     {
@@ -239,35 +239,35 @@ pascal ComponentResult WebMExportValidate(WebMExportGlobalsPtr globals, Movie th
         }
     }
 
-    dbg_printf("[WebM] <   [%08lx] :: Validate() = %d, %d\n", (UInt32) globals, err, *valid);
+    dbg_printf("[WebM] <   [%08lx] :: Validate() = %d, %d\n", (UInt32) store, err, *valid);
     return err;
 }
 
 
 
-pascal ComponentResult WebMExportToFile(WebMExportGlobalsPtr globals, const FSSpec *theFilePtr,
+pascal ComponentResult WebMExportToFile(WebMExportGlobalsPtr store, const FSSpec *theFilePtr,
                                         Movie theMovie, Track onlyThisTrack, TimeValue startTime,
                                         TimeValue duration)
 {
     AliasHandle alias;
     ComponentResult err;
 
-    dbg_printf("[WebM -- %08lx] ToFile(%d, %ld, %ld)\n", (UInt32) globals, onlyThisTrack != NULL, startTime, duration);
+    dbg_printf("[WebM -- %08lx] ToFile(%d, %ld, %ld)\n", (UInt32) store, onlyThisTrack != NULL, startTime, duration);
 
     err = QTNewAlias(theFilePtr, &alias, true);
 
     if (!err)
     {
-        err = MovieExportToDataRef(globals->self, (Handle) alias, rAliasType, theMovie, onlyThisTrack, startTime, duration);
+        err = MovieExportToDataRef(store->self, (Handle) alias, rAliasType, theMovie, onlyThisTrack, startTime, duration);
 
         DisposeHandle((Handle) alias);
     }
 
-    dbg_printf("[WebM -- %08lx] ToFile()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] ToFile()\n", (UInt32) store);
     return err;
 }
 
-pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr globals, Handle dataRef, OSType dataRefType,
+pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr store, Handle dataRef, OSType dataRefType,
         Movie theMovie, Track onlyThisTrack, TimeValue startTime, TimeValue duration)
 {
     TimeScale scale;
@@ -281,41 +281,41 @@ pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr globals, Handle 
     ComponentResult err;
     Boolean have_sources = false;
 
-    dbg_printf("[WebM -- %08lx] :: ToDataRef(%d, %ld, %ld)\n", (UInt32) globals, onlyThisTrack != NULL, startTime, duration);
+    dbg_printf("[WebM -- %08lx] :: ToDataRef(%d, %ld, %ld)\n", (UInt32) store, onlyThisTrack != NULL, startTime, duration);
     dbg_printf("[WebM] ToDataRef -- bMovieHasAudio %d, bMovieHasVideo %d, bExportAudio %d, bExportVideo %d\n",
-               globals->bMovieHasAudio, globals->bMovieHasVideo, globals->bExportAudio, globals->bExportVideo);
+               store->bMovieHasAudio, store->bMovieHasVideo, store->bExportAudio, store->bExportVideo);
 
-    if (globals->bExportVideo && globals->bMovieHasVideo)
+    if (store->bExportVideo && store->bMovieHasVideo)
     {
-        err = MovieExportNewGetDataAndPropertiesProcs(globals->quickTimeMovieExporter, VideoMediaType, &scale, theMovie,
+        err = MovieExportNewGetDataAndPropertiesProcs(store->quickTimeMovieExporter, VideoMediaType, &scale, theMovie,
                 onlyThisTrack, startTime, duration, &getVideoPropertyProc,
                 &getVideoDataProc, &videoRefCon);
-        dbg_printf("[WebM]   # [%08lx] :: ToDataRef() = %ld\n", (UInt32) globals, err);
+        dbg_printf("[WebM]   # [%08lx] :: ToDataRef() = %ld\n", (UInt32) store, err);
 
         if (!err)
         {
-            err = MovieExportAddDataSource(globals->self, VideoMediaType, scale, &trackID, getVideoPropertyProc, getVideoDataProc, videoRefCon);
+            err = MovieExportAddDataSource(store->self, VideoMediaType, scale, &trackID, getVideoPropertyProc, getVideoDataProc, videoRefCon);
 
             if (!err)
                 have_sources = true;
         }
 
-        if (globals->framerate == 0)
-            _getFrameRate(theMovie, &globals->framerate);
+        if (store->framerate == 0)
+            _getFrameRate(theMovie, &store->framerate);
     }
 
-    if (globals->bExportAudio && globals->bMovieHasAudio)
+    if (store->bExportAudio && store->bMovieHasAudio)
     {
-        err = MovieExportNewGetDataAndPropertiesProcs(globals->quickTimeMovieExporter, SoundMediaType, &scale, theMovie,
+        err = MovieExportNewGetDataAndPropertiesProcs(store->quickTimeMovieExporter, SoundMediaType, &scale, theMovie,
                 onlyThisTrack, startTime, duration, &getSoundPropertyProc,
                 &getSoundDataProc, &audioRefCon);
 
-        dbg_printf("[WebM]   = [%08lx] :: ToDataRef() = %ld\n", (UInt32) globals, err);
+        dbg_printf("[WebM]   = [%08lx] :: ToDataRef() = %ld\n", (UInt32) store, err);
 
         if (!err)
         {
             // ** Add the audio data source **
-            err = MovieExportAddDataSource(globals->self, SoundMediaType, scale, &trackID, getSoundPropertyProc, getSoundDataProc, audioRefCon);
+            err = MovieExportAddDataSource(store->self, SoundMediaType, scale, &trackID, getSoundPropertyProc, getSoundDataProc, audioRefCon);
 
             if (!err)
                 have_sources = true;
@@ -324,7 +324,7 @@ pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr globals, Handle 
 
     if (have_sources)
     {
-        err = MovieExportFromProceduresToDataRef(globals->self, dataRef, dataRefType);
+        err = MovieExportFromProceduresToDataRef(store->self, dataRef, dataRefType);
     }
     else
     {
@@ -332,23 +332,23 @@ pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr globals, Handle 
     }
 
     if (getSoundPropertyProc || getSoundDataProc)
-        MovieExportDisposeGetDataAndPropertiesProcs(globals->quickTimeMovieExporter, getSoundPropertyProc, getSoundDataProc, audioRefCon);
+        MovieExportDisposeGetDataAndPropertiesProcs(store->quickTimeMovieExporter, getSoundPropertyProc, getSoundDataProc, audioRefCon);
 
     if (getVideoPropertyProc || getVideoDataProc)
-        MovieExportDisposeGetDataAndPropertiesProcs(globals->quickTimeMovieExporter, getVideoPropertyProc, getVideoDataProc, videoRefCon);
+        MovieExportDisposeGetDataAndPropertiesProcs(store->quickTimeMovieExporter, getVideoPropertyProc, getVideoDataProc, videoRefCon);
 
-    dbg_printf("[WebM] <   [%08lx] :: ToDataRef() = %d, %ld\n", (UInt32) globals, err, trackID);
+    dbg_printf("[WebM] <   [%08lx] :: ToDataRef() = %d, %ld\n", (UInt32) store, err, trackID);
     return err;
 }
 
-pascal ComponentResult WebMExportFromProceduresToDataRef(WebMExportGlobalsPtr globals, Handle dataRef, OSType dataRefType)
+pascal ComponentResult WebMExportFromProceduresToDataRef(WebMExportGlobalsPtr store, Handle dataRef, OSType dataRefType)
 {
     DataHandler    dataH = NULL;
     ComponentResult err;
 
-    dbg_printf("[WebM--%08lx] :: FromProceduresToDataRef()\n", (UInt32) globals);
+    dbg_printf("[WebM--%08lx] :: FromProceduresToDataRef()\n", (UInt32) store);
 
-    if (globals->streamCount == 0)
+    if (store->streamCount == 0)
         return noErr;  //no data to write
 
     if (!dataRef || !dataRefType)
@@ -374,66 +374,66 @@ pascal ComponentResult WebMExportFromProceduresToDataRef(WebMExportGlobalsPtr gl
     if (err)
         goto bail;
 
-    err = ConfigureQuickTimeMovieExporter(globals);
+    err = ConfigureQuickTimeMovieExporter(store);
 
     if (err)
         goto bail;
 
-    err = muxStreams(globals, dataH);
+    err = muxStreams(store, dataH);
 
 bail:
 
     if (dataH)
         CloseComponent(dataH);
 
-    dbg_printf("[WebM] <   [%08lx] :: FromProceduresToDataRef() = %ld\n", (UInt32) globals, err);
+    dbg_printf("[WebM] <   [%08lx] :: FromProceduresToDataRef() = %ld\n", (UInt32) store, err);
     return err;
 }
 
 
 
-pascal ComponentResult WebMExportNewGetDataAndPropertiesProcs(WebMExportGlobalsPtr globals, OSType trackType, TimeScale *scale, Movie theMovie,
+pascal ComponentResult WebMExportNewGetDataAndPropertiesProcs(WebMExportGlobalsPtr store, OSType trackType, TimeScale *scale, Movie theMovie,
         Track theTrack, TimeValue startTime, TimeValue duration,
         MovieExportGetPropertyUPP *propertyProc, MovieExportGetDataUPP *getDataProc,
         void **refCon)
 {
     ComponentResult err;
-    dbg_printf("[WebM -- %08lx] NewGetDataAndPropertiesProcs(%4.4s, %ld, %ld)\n", (UInt32) globals, (char *) &trackType, startTime, duration);
+    dbg_printf("[WebM -- %08lx] NewGetDataAndPropertiesProcs(%4.4s, %ld, %ld)\n", (UInt32) store, (char *) &trackType, startTime, duration);
 
-    err = MovieExportNewGetDataAndPropertiesProcs(globals->quickTimeMovieExporter, trackType, scale, theMovie, theTrack, startTime, duration,
+    err = MovieExportNewGetDataAndPropertiesProcs(store->quickTimeMovieExporter, trackType, scale, theMovie, theTrack, startTime, duration,
             propertyProc, getDataProc, refCon);
     return err;
 }
 
-pascal ComponentResult WebMExportDisposeGetDataAndPropertiesProcs(WebMExportGlobalsPtr globals,
+pascal ComponentResult WebMExportDisposeGetDataAndPropertiesProcs(WebMExportGlobalsPtr store,
         MovieExportGetPropertyUPP propertyProc, MovieExportGetDataUPP getDataProc,
         void *refCon)
 {
     ComponentResult err;
-    dbg_printf("[WebM--%08lx] :: DisposeGetDataAndPropertiesProcs(%08lx)\n", (UInt32) globals, (UInt32) refCon);
-    err = MovieExportDisposeGetDataAndPropertiesProcs(globals->quickTimeMovieExporter, propertyProc, getDataProc, refCon);
+    dbg_printf("[WebM--%08lx] :: DisposeGetDataAndPropertiesProcs(%08lx)\n", (UInt32) store, (UInt32) refCon);
+    err = MovieExportDisposeGetDataAndPropertiesProcs(store->quickTimeMovieExporter, propertyProc, getDataProc, refCon);
     return err;
 }
 
-static void _addNewStream(WebMExportGlobalsPtr globals)
+static void _addNewStream(WebMExportGlobalsPtr store)
 {
-    globals->streamCount ++;
+    store->streamCount ++;
 
-    if (globals->streams)
-        SetHandleSize((Handle) globals->streams, sizeof(GenericStream) * globals->streamCount);
+    if (store->streams)
+        SetHandleSize((Handle) store->streams, sizeof(GenericStream) * store->streamCount);
     else
-        globals->streams = (GenericStream **) NewHandleClear(sizeof(GenericStream));
+        store->streams = (GenericStream **) NewHandleClear(sizeof(GenericStream));
 
-    dbg_printf("[webm] adding stream %d size is %ld\n", globals->streamCount, sizeof(GenericStream) * globals->streamCount);
+    dbg_printf("[webm] adding stream %d size is %ld\n", store->streamCount, sizeof(GenericStream) * store->streamCount);
 }
 
-pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr globals, OSType trackType, TimeScale scale,
+pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr store, OSType trackType, TimeScale scale,
         long *trackIDPtr, MovieExportGetPropertyUPP propertyProc,
         MovieExportGetDataUPP getDataProc, void *refCon)
 {
     ComponentResult err = noErr;
 
-    dbg_printf("[WebM - %08lx] AddDataSource('%4.4s')\n", (UInt32) globals, (char *) &trackType);
+    dbg_printf("[WebM - %08lx] AddDataSource('%4.4s')\n", (UInt32) store, (char *) &trackType);
 
     *trackIDPtr = 0;
 
@@ -442,10 +442,10 @@ pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr globals, OST
 
     if (trackType == VideoMediaType || trackType == SoundMediaType)
     {
-        _addNewStream(globals);
-        *trackIDPtr = globals->streamCount;
+        _addNewStream(store);
+        *trackIDPtr = store->streamCount;
 
-        GenericStream *gs = &(*globals->streams)[globals->streamCount-1];
+        GenericStream *gs = &(*store->streams)[store->streamCount-1];
         gs->trackType = trackType;
         StreamSource *source = NULL;
 
@@ -473,18 +473,18 @@ pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr globals, OST
     return err;
 }
 
-pascal ComponentResult WebMExportSetProgressProc(WebMExportGlobalsPtr globals, MovieProgressUPP proc, long refCon)
+pascal ComponentResult WebMExportSetProgressProc(WebMExportGlobalsPtr store, MovieProgressUPP proc, long refCon)
 {
-    dbg_printf("[WebM - %08lx] SetProgressProc()\n", (UInt32) globals);
+    dbg_printf("[WebM - %08lx] SetProgressProc()\n", (UInt32) store);
 
-    globals->progressProc = proc;
-    globals->progressRefCon = refCon;
+    store->progressProc = proc;
+    store->progressRefCon = refCon;
     return noErr;
 }
 
 
 
-pascal ComponentResult WebMExportDoUserDialog(WebMExportGlobalsPtr globals, Movie theMovie, Track onlyThisTrack,
+pascal ComponentResult WebMExportDoUserDialog(WebMExportGlobalsPtr store, Movie theMovie, Track onlyThisTrack,
         TimeValue startTime, TimeValue duration, Boolean *canceledPtr)
 {
     WindowRef   window = NULL;
@@ -492,41 +492,41 @@ pascal ComponentResult WebMExportDoUserDialog(WebMExportGlobalsPtr globals, Movi
 
     CGrafPtr    savedPort;
     OSErr       err = resFNotFound;
-    Boolean previousAudioExport = globals->bExportAudio, previousVideoExport = globals->bExportVideo;
+    Boolean previousAudioExport = store->bExportAudio, previousVideoExport = store->bExportVideo;
 
     EventTypeSpec eventList[] = {{kEventClassCommand, kEventCommandProcess}};
     EventHandlerUPP settingsWindowEventHandlerUPP = NewEventHandlerUPP(SettingsWindowEventHandler);
 
-    dbg_printf("[WebM %08lx] DoUserDialog()\n", (UInt32) globals);
+    dbg_printf("[WebM %08lx] DoUserDialog()\n", (UInt32) store);
     getWindow(&window);
 
     portChanged = QDSwapPort(GetWindowPort(window), &savedPort);
 
     *canceledPtr = false;
 
-    err = checkMovieHasVideoAudio(globals, theMovie, onlyThisTrack);
+    err = checkMovieHasVideoAudio(store, theMovie, onlyThisTrack);
 
 
     dbg_printf("[WebM] DoUserDialog() End theMovie Block -- allow Aud %d, allow Vid %d, aud disable %d, vid disable %d\n",
-    globals->bMovieHasAudio, globals->bMovieHasVideo, globals->bExportAudio, globals->bExportVideo);
-    enableDisableControls(globals, window);
+    store->bMovieHasAudio, store->bMovieHasVideo, store->bExportAudio, store->bExportVideo);
+    enableDisableControls(store, window);
 
-    globals->setdlg_movie = theMovie;
-    globals->setdlg_track = onlyThisTrack;
+    store->setdlg_movie = theMovie;
+    store->setdlg_track = onlyThisTrack;
 
-    InstallWindowEventHandler(window, settingsWindowEventHandlerUPP, GetEventTypeCount(eventList), eventList, globals, NULL);
+    InstallWindowEventHandler(window, settingsWindowEventHandlerUPP, GetEventTypeCount(eventList), eventList, store, NULL);
 
     ShowWindow(window);
 
     RunAppModalLoopForWindow(window);
 
-    *canceledPtr = globals->canceled;
+    *canceledPtr = store->canceled;
 
-    if (globals->canceled)
+    if (store->canceled)
     {
         //restore previous values on cancel
-        globals->bExportAudio = previousAudioExport;
-        globals->bExportVideo = previousVideoExport;
+        store->bExportAudio = previousAudioExport;
+        store->bExportVideo = previousVideoExport;
     }
 
 bail:
@@ -545,13 +545,13 @@ bail:
         DisposeEventHandlerUPP(settingsWindowEventHandlerUPP);
 
 
-    dbg_printf("[WebM] <   [%08lx] :: DoUserDialog() = 0x%04x\n", (UInt32) globals, err);
+    dbg_printf("[WebM] <   [%08lx] :: DoUserDialog() = 0x%04x\n", (UInt32) store, err);
     return err;
 }
 
 
 
-pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr globals, QTAtomContainer *settings)
+pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr store, QTAtomContainer *settings)
 {
     //QTAtom atom;
     QTAtomContainer ac = NULL;
@@ -559,7 +559,7 @@ pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr
     Boolean b_true = true;
     Boolean b_false = false;
 
-    dbg_printf("[WebM -- %08lx] GetSettingsAsAtomContainer()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] GetSettingsAsAtomContainer()\n", (UInt32) store);
 
     if (!settings)
         return paramErr;
@@ -570,7 +570,7 @@ pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr
         goto bail;
 
 
-    if (globals->bExportVideo)
+    if (store->bExportVideo)
     {
         err = QTInsertChild(ac, kParentAtomIsContainer, kQTSettingsMovieExportEnableVideo,
         1, 0, sizeof(b_true), &b_true, NULL);
@@ -584,7 +584,7 @@ pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr
     if (err)
         goto bail;
 
-    if (globals->bExportAudio)
+    if (store->bExportAudio)
     {
         err = QTInsertChild(ac, kParentAtomIsContainer, kQTSettingsMovieExportEnableSound,
         1, 0, sizeof(b_true), &b_true, NULL);
@@ -598,21 +598,21 @@ pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr
     if (err)
         goto bail;
 
-    if (globals->bExportVideo)
+    if (store->bExportVideo)
     {
 
         QTAtomContainer vs = NULL;
         err = noErr;
 
-        if (globals->videoSettingsAtom == NULL)
-            getDefaultVP8Atom(globals);
+        if (store->videoSettingsAtom == NULL)
+            getDefaultVP8Atom(store);
 
-        vs = globals->videoSettingsAtom;
+        vs = store->videoSettingsAtom;
 
         if (!err)
         {
-            //err = _video_settings_to_ac(globals, &vs);
-            dbg_printf("[WebM] vAC [%08lx] :: GetSettingsAsAtomContainer() = %ld %ld\n", (UInt32) globals, err, GetHandleSize(vs));
+            //err = _video_settings_to_ac(store, &vs);
+            dbg_printf("[WebM] vAC [%08lx] :: GetSettingsAsAtomContainer() = %ld %ld\n", (UInt32) store, err, GetHandleSize(vs));
 
             if (!err)
                 err = QTInsertChildren(ac, kParentAtomIsContainer, vs);
@@ -623,21 +623,21 @@ pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr
             goto bail;
     }
 
-    if (globals->bExportAudio)
+    if (store->bExportAudio)
     {
         QTAtomContainer as = NULL;
         err = noErr;
 
-        if (globals->audioSettingsAtom == NULL)
-            err = getDefaultVorbisAtom(globals);
+        if (store->audioSettingsAtom == NULL)
+            err = getDefaultVorbisAtom(store);
 
         if (err) return err; //this may happen if no installed vorbis
 
-        as = globals->audioSettingsAtom;
+        as = store->audioSettingsAtom;
 
         if (!err)
         {
-            dbg_printf("[WebM] aAC [%08lx] :: GetSettingsAsAtomContainer() = %ld %ld\n", (UInt32) globals, err, GetHandleSize(as));
+            dbg_printf("[WebM] aAC [%08lx] :: GetSettingsAsAtomContainer() = %ld %ld\n", (UInt32) store, err, GetHandleSize(as));
 
             err = QTInsertChildren(ac, kParentAtomIsContainer, as);
         }
@@ -659,23 +659,23 @@ bail:
     if (!err)
         dbg_dumpAtom(ac);
 
-    dbg_printf("[WebM] <   [%08lx] :: GetSettingsAsAtomContainer() = %d [%ld]\n", (UInt32) globals, err, settings != NULL ? GetHandleSize(*settings) : -1);
+    dbg_printf("[WebM] <   [%08lx] :: GetSettingsAsAtomContainer() = %d [%ld]\n", (UInt32) store, err, settings != NULL ? GetHandleSize(*settings) : -1);
     return err;
 }
 
-pascal ComponentResult WebMExportSetSettingsFromAtomContainer(WebMExportGlobalsPtr globals, QTAtomContainer settings)
+pascal ComponentResult WebMExportSetSettingsFromAtomContainer(WebMExportGlobalsPtr store, QTAtomContainer settings)
 {
     QTAtom atom;
     ComponentResult err = noErr;
     Boolean tmp;
 
-    dbg_printf("[WebM]  >> [%08lx] :: SetSettingsFromAtomContainer([%ld])\n", (UInt32) globals, settings != NULL ? GetHandleSize(settings) : -1);
+    dbg_printf("[WebM]  >> [%08lx] :: SetSettingsFromAtomContainer([%ld])\n", (UInt32) store, settings != NULL ? GetHandleSize(settings) : -1);
     dbg_dumpAtom(settings);
 
     if (!settings)
         return paramErr;
 
-    //globals->bExportVideo = 1;
+    //store->bExportVideo = 1;
     atom = QTFindChildByID(settings, kParentAtomIsContainer,
     kQTSettingsMovieExportEnableVideo, 1, NULL);
 
@@ -686,7 +686,7 @@ pascal ComponentResult WebMExportSetSettingsFromAtomContainer(WebMExportGlobalsP
         if (err)
             goto bail;
 
-        globals->bExportVideo = tmp;
+        store->bExportVideo = tmp;
     }
 
     atom = QTFindChildByID(settings, kParentAtomIsContainer,
@@ -699,21 +699,21 @@ pascal ComponentResult WebMExportSetSettingsFromAtomContainer(WebMExportGlobalsP
         if (err)
             goto bail;
 
-        globals->bExportAudio = tmp;
-        dbg_printf("[webM] setsettingsFromAtomContainer globals->bExportAudio = %d\n", globals->bExportAudio);
+        store->bExportAudio = tmp;
+        dbg_printf("[webM] setsettingsFromAtomContainer store->bExportAudio = %d\n", store->bExportAudio);
     }
 
     atom = QTFindChildByID(settings, kParentAtomIsContainer, kQTSettingsVideo, 1, NULL);
 
     if (atom)
     {
-        if (globals->videoSettingsAtom)
+        if (store->videoSettingsAtom)
         {
-            QTDisposeAtomContainer(globals->videoSettingsAtom);
-            globals->videoSettingsAtom = NULL;
+            QTDisposeAtomContainer(store->videoSettingsAtom);
+            store->videoSettingsAtom = NULL;
         }
 
-        err = QTCopyAtom(settings, atom, &globals->videoSettingsAtom);
+        err = QTCopyAtom(settings, atom, &store->videoSettingsAtom);
 
         if (err)
             goto bail;
@@ -724,35 +724,35 @@ pascal ComponentResult WebMExportSetSettingsFromAtomContainer(WebMExportGlobalsP
 
     if (atom)
     {
-        if (globals->audioSettingsAtom)
+        if (store->audioSettingsAtom)
         {
             dbg_printf("[webM] SetSettingsFromAtomContainer set_a_settings NULL\n");
-            QTDisposeAtomContainer(globals->audioSettingsAtom);
-            globals->audioSettingsAtom = NULL;
+            QTDisposeAtomContainer(store->audioSettingsAtom);
+            store->audioSettingsAtom = NULL;
         }
 
-        err = QTCopyAtom(settings, atom, &globals->audioSettingsAtom);
+        err = QTCopyAtom(settings, atom, &store->audioSettingsAtom);
 
         if (err)
             goto bail;
     }
 
 bail:
-    dbg_printf("[WebM] <   [%08lx] :: SetSettingsFromAtomContainer() = %d\n", (UInt32) globals, err);
+    dbg_printf("[WebM] <   [%08lx] :: SetSettingsFromAtomContainer() = %d\n", (UInt32) store, err);
     return err;
 }
 
 
-pascal ComponentResult WebMExportGetFileNameExtension(WebMExportGlobalsPtr globals, OSType *extension)
+pascal ComponentResult WebMExportGetFileNameExtension(WebMExportGlobalsPtr store, OSType *extension)
 {
-    dbg_printf("[WebM -- %08lx] :: GetFileNameExtension()\n", (UInt32) globals);
+    dbg_printf("[WebM -- %08lx] :: GetFileNameExtension()\n", (UInt32) store);
     *extension = 'webm';
     return noErr;
 }
 
-pascal ComponentResult WebMExportGetShortFileTypeString(WebMExportGlobalsPtr globals, Str255 typeString)
+pascal ComponentResult WebMExportGetShortFileTypeString(WebMExportGlobalsPtr store, Str255 typeString)
 {
-    dbg_printf("[WebM %08lx] GetShortFileTypeString()\n", (UInt32) globals);
+    dbg_printf("[WebM %08lx] GetShortFileTypeString()\n", (UInt32) store);
     typeString[0] = '\x04';
     typeString[1] = 'W';
     typeString[2] = 'e';
@@ -763,9 +763,9 @@ pascal ComponentResult WebMExportGetShortFileTypeString(WebMExportGlobalsPtr glo
     return noErr;
 }
 
-pascal ComponentResult WebMExportGetSourceMediaType(WebMExportGlobalsPtr globals, OSType *mediaType)
+pascal ComponentResult WebMExportGetSourceMediaType(WebMExportGlobalsPtr store, OSType *mediaType)
 {
-    dbg_printf("[WebM %08lx] GetSourceMediaType()\n", (UInt32) globals);
+    dbg_printf("[WebM %08lx] GetSourceMediaType()\n", (UInt32) store);
 
     if (!mediaType)
         return paramErr;
@@ -778,15 +778,15 @@ pascal ComponentResult WebMExportGetSourceMediaType(WebMExportGlobalsPtr globals
 
 /* ========================================================================= */
 
-static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr globals)
+static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr store)
 {
     QTAtomContainer    settings = NULL;
     OSErr              err;
 
-    dbg_printf("[WebM %08lx] :: ConfigureQuickTimeMovieExporter()\n", (UInt32) globals);
+    dbg_printf("[WebM %08lx] :: ConfigureQuickTimeMovieExporter()\n", (UInt32) store);
 
-    err = MovieExportGetSettingsAsAtomContainer(globals->self, &settings);
-    dbg_printf("[WebM]  gO [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) globals, err);
+    err = MovieExportGetSettingsAsAtomContainer(store->self, &settings);
+    dbg_printf("[WebM]  gO [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) store, err);
 
     if (!err)
     {
@@ -799,13 +799,13 @@ static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr globals)
             QTRemoveAtom(settings, atom);
         }
 
-        err = MovieExportSetSettingsFromAtomContainer(globals->quickTimeMovieExporter, settings);
-        dbg_printf("[WebM]  sE [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) globals, err);
+        err = MovieExportSetSettingsFromAtomContainer(store->quickTimeMovieExporter, settings);
+        dbg_printf("[WebM]  sE [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) store, err);
 
         if (!err)
         {
             CodecQ renderQuality = kRenderQuality_Medium;
-            err = QTSetComponentProperty(globals->quickTimeMovieExporter, kQTPropertyClass_SCAudio,
+            err = QTSetComponentProperty(store->quickTimeMovieExporter, kQTPropertyClass_SCAudio,
             kQTSCAudioPropertyID_RenderQuality,
             sizeof(UInt32), &renderQuality);
             err = noErr;
@@ -815,20 +815,20 @@ static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr globals)
     if (settings)
         DisposeHandle(settings);
 
-    dbg_printf("[WebM] <   [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) globals, err);
+    dbg_printf("[WebM] <   [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) store, err);
     return err;
 }
 
 
-static void CloseAllStreams(WebMExportGlobalsPtr globals)
+static void CloseAllStreams(WebMExportGlobalsPtr store)
 {
     int i;
 
-    if (globals->streams != NULL)
+    if (store->streams != NULL)
     {
-        for (i = 0; i < globals->streamCount; i++)
+        for (i = 0; i < store->streamCount; i++)
         {
-            GenericStream *gs = &(*globals->streams)[i];
+            GenericStream *gs = &(*store->streams)[i];
             WebMBuffer *buf;
 
             if (gs->trackType == VideoMediaType)
@@ -855,11 +855,11 @@ static void CloseAllStreams(WebMExportGlobalsPtr globals)
             freeBuffer(buf);
         }
 
-        DisposeHandle((Handle) globals->streams);
+        DisposeHandle((Handle) store->streams);
     }
 
-    globals->streamCount  = 0;
-    globals->streams = NULL;
+    store->streamCount  = 0;
+    store->streams = NULL;
 }
 
 #define kCharacteristicHasVideoFrameRate FOUR_CHAR_CODE('vfrr')

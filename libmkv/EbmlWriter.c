@@ -65,7 +65,7 @@ void Ebml_WriteID(EbmlGlobal *glob, unsigned long class_id)
     else
         Ebml_Serialize(glob, (void *)&class_id, 1);
 }
-void Ebml_SerializeUnsigned64(EbmlGlobal *glob, unsigned long class_id, unsigned long long ui)
+void Ebml_SerializeUnsigned64(EbmlGlobal *glob, unsigned long class_id, UInt64 ui)
 {
     unsigned char sizeSerialized = 8 | 0x80;
     Ebml_WriteID(glob, class_id);
