@@ -33,6 +33,7 @@ D Copy VP8 SDK into your webm tree
 E. Build the project
   - open WebM.xcodeproj
   - hit the build button
+NOTE: with xcode 3.2.3, You may need to add ~/webm/webmquicktime to you Headers Search Path in the project build information 
 
 F. Copy the component
   - cp -r build/Development\ Intel/WebM.component ~/Library/QuickTime/.
