@@ -187,7 +187,7 @@ static void _writeSeekElement(EbmlGlobal* ebml, unsigned long binaryId, EbmlLoc*
 {
     UInt64 offset = *(SInt64*)&Loc->offset;
     offset -= firstL1;
-    dbg_printf("[webm] Writing Element %ld at offset %lld\n", binaryId, offset);
+    dbg_printf("[webm] Writing Element %lx at offset %lld\n", binaryId, offset);
 
     EbmlLoc start;
     Ebml_StartSubElement(ebml, &start, Seek);
@@ -201,15 +201,22 @@ static void _writeMetaSeekInformation(EbmlGlobal *ebml, EbmlLoc*  trackLoc, Ebml
 {
     EbmlLoc globLoc;
     UInt64 firstL1 = sFirstL1;
+    //the first write is basicly space filler because where these elements are is unknown
     if (firstWrite)
     {
         Ebml_StartSubElement(ebml, seekInfoLoc, SeekHead);
     }
     else 
     {
-        Ebml_GetEbmlLoc(ebml, &globLoc);
+        Ebml_GetEbmlLoc(ebml, &globLoc);    
+        //Adding 8 which is the bytes that tell the size of the subElement
+        wide eight;
+        eight.lo = 8;
+        WideAdd(&seekInfoLoc->offset, &eight);
         Ebml_SetEbmlLoc(ebml, seekInfoLoc);
     }
+    SInt64 seekLoc = *(SInt64*)&seekInfoLoc->offset; 
+    dbg_printf("[webm] Writing Seek Info to %lld\n", seekLoc - 4);
     
     _writeSeekElement(ebml, Tracks, trackLoc, firstL1);
     _writeSeekElement(ebml, Cues, cueLoc, firstL1);
@@ -238,7 +245,7 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, EbmlLoc *
 
         EbmlLoc trackLoc;
         Ebml_StartSubElement(ebml, &trackLoc, CueTrackPositions);
-        //TODO this is wrong, get the conversion right
+        //TODO verify trackLoc
         Ebml_SerializeUnsigned(ebml, CueTrack, cue->track);
         Ebml_SerializeUnsigned64(ebml, CueClusterPosition, cue->loc);
         Ebml_SerializeUnsigned(ebml, CueBlockNumber, 1);
@@ -492,13 +499,13 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         if (minTimeStream->trackType == VideoMediaType)
         {
             VideoStreamPtr vs = &minTimeStream->vid;
-            _writeVideo(globals, vs, &ebml);
-            blocksInCluster ++;            
             if( vs->frame_type == kICMFrameType_I)
             {
                 UInt64 tmpU = blockOffset - firstL1Offset;  
-                _addCue(globals, tmpU , globals->clusterTime, vs->source.trackID, blocksInCluster);
+                _addCue(globals, tmpU , vs->source.blockTimeMs, vs->source.trackID, blocksInCluster);
             }
+            _writeVideo(globals, vs, &ebml);
+            blocksInCluster ++;            
 
         }  //end if VideoMediaType
         else if (minTimeStream->trackType == SoundMediaType)
@@ -515,8 +522,11 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     }
 
     dbg_printf("[webm] done writing streams\n");
+    //cues written at the end
     _writeCues(globals, &ebml, &cuesLoc);
     Ebml_EndSubElement(&ebml, &startSegment);
+
+        //here I am rewriting the metaSeekInformation
     _writeMetaSeekInformation(&ebml, &trackLoc, &cuesLoc, &segmentInfoLoc, &seekInfoLoc, firstL1Offset, false);
 
     HUnlock((Handle) globals->streams);
