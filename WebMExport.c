@@ -928,7 +928,7 @@ static ComponentResult _getFrameRate(Movie theMovie, double *fps)
     long sampleCount = GetMediaSampleCount(media);
     TimeValue64 duration = GetMediaDisplayDuration(media);
     TimeValue64 timeScale = GetMediaTimeScale(media);
-    *fps = (double)sampleCount * (double) timeScale / (double) duration;
+    *fps = sampleCount * 1.0 *  timeScale /  duration;
     return noErr;
 }
 

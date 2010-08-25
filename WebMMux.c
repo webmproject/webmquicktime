@@ -89,7 +89,7 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
             if (gs->trackType == VideoMediaType)
             {
                 VideoStreamPtr vs = &gs->vid;
-                double fps = FixedToFloat(globals->framerate);
+                double fps = globals->framerate;
                 if (fps == 0)
                 {
                     //framerate estime should be replaced with more accurate
@@ -210,8 +210,8 @@ static void _writeMetaSeekInformation(EbmlGlobal *ebml, EbmlLoc*  trackLoc, Ebml
     {
         Ebml_GetEbmlLoc(ebml, &globLoc);    
         //Adding 8 which is the bytes that tell the size of the subElement
-        wide eight;
-        eight.lo = 8;
+        SInt64 eightSI = 8;
+        wide eight = *(wide*)&eightSI;
         WideAdd(&seekInfoLoc->offset, &eight);
         Ebml_SetEbmlLoc(ebml, seekInfoLoc);
     }
@@ -324,7 +324,7 @@ static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, VideoStreamPtr 
     vs->source.bQdFrame = false;
     
     //this now represents the next frame we want to encode
-    double fps = FixedToFloat(globals->framerate);
+    double fps = globals->framerate;
     if (fps == 0)
         fps = source->params.sourceTimeScale * 1.0/ source->params.durationPerSample * 1.0; 
     vs->currentFrame += 1;  
