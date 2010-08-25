@@ -8,6 +8,7 @@
 
 #if defined(__APPLE_CC__)
 #include <QuickTime/QuickTime.h>
+#include <Carbon/Carbon.h>
 #else
 #include <QuickTimeComponents.h>
 #endif
@@ -39,18 +40,6 @@ pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  stor
         ComponentPropertyID    inPropID,
         ByteCount              inPropValueSize,
         ConstComponentValuePtr inPropValueAddress);
-
-
-
-pascal ComponentResult WebMExportDoUserDialog(WebMExportGlobalsPtr store, Movie theMovie, Track onlyThisTrack,
-        TimeValue startTime, TimeValue duration, Boolean *canceledPtr);
-
-
-pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr store, QTAtomContainer *settings);
-pascal ComponentResult WebMExportSetSettingsFromAtomContainer(WebMExportGlobalsPtr store, QTAtomContainer settings);
-pascal ComponentResult WebMExportGetFileNameExtension(WebMExportGlobalsPtr store, OSType *extension);
-pascal ComponentResult WebMExportGetShortFileTypeString(WebMExportGlobalsPtr store, Str255 typeString);
-pascal ComponentResult WebMExportGetSourceMediaType(WebMExportGlobalsPtr store, OSType *mediaType);
 
 
 
@@ -164,9 +153,18 @@ pascal ComponentResult WebMExportClose(WebMExportGlobalsPtr store, ComponentInst
 
 pascal ComponentResult WebMExportVersion(WebMExportGlobalsPtr store)
 {
-    return kMkv_spit__Version;
+    return kWebM_spit__Version;
 }
 
+// seems that currently kComponentDataTypeCFDataRef is private so I am using 'cfdt'
+static const ComponentPropertyInfo kExportProperties[] = 
+{
+    { kComponentPropertyClassPropertyInfo,   kComponentPropertyInfoList, 'cfdt', sizeof(CFDataRef), kComponentPropertyFlagCanGetNow | kComponentPropertyFlagValueIsCFTypeRef | kComponentPropertyFlagValueMustBeReleased }
+};
+
+// GetComponentPropertyInfo
+// Component Property Info request - Optional but good practice for QuickTime 7 forward
+// Returns information about the properties of a component
 pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr   store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
@@ -174,9 +172,35 @@ pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr  
         ByteCount              *outPropValueSize,
         UInt32                 *outPropertyFlags)
 {
-    return noErr;
+#pragma unused (store)
+    
+   ComponentResult err = kQTPropertyNotSupportedErr;
+    
+    switch (inPropClass) {
+        case kComponentPropertyClassPropertyInfo:
+            switch (inPropID) {
+                case kComponentPropertyInfoList:
+                    if (outPropType) *outPropType = kExportProperties[0].propType;
+                    if (outPropValueSize) *outPropValueSize = kExportProperties[0].propSize;
+                    if (outPropertyFlags) *outPropertyFlags = kExportProperties[0].propFlags;
+                    err = noErr;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+    if (err != noErr)
+        dbg_printf("[webm] error in WebMExportGetComponentPropertyInfo\n");
+    return err;
+    
 }
 
+// GetComponentProperty
+// Get Component Property request - Optional but good practice for QuickTime 7 forward
+// Returns the value of a specific component property
 pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
@@ -184,9 +208,39 @@ pascal ComponentResult WebMExportGetComponentProperty(WebMExportGlobalsPtr  stor
         ComponentValuePtr      outPropValueAddress,
         ByteCount              *outPropValueSizeUsed)
 {
-    return noErr;
+	ByteCount size = 0;
+	UInt32 flags = 0;
+    CFDataRef *outPropCFDataRef;
+    
+    ComponentResult err = noErr;
+    
+    // sanity check
+    if (NULL == outPropValueAddress) return paramErr;
+    
+    err = QTGetComponentPropertyInfo(store->self, inPropClass, inPropID, NULL, &size, &flags);
+    if (err) goto bail;
+    
+    if (size > inPropValueSize) return kQTPropertyBadValueSizeErr;
+    
+    if (flags & kComponentPropertyFlagCanGetNow) {
+        switch (inPropID) {
+            case kComponentPropertyInfoList:
+                outPropCFDataRef = (CFDataRef *)outPropValueAddress;
+                *outPropCFDataRef = CFDataCreate(kCFAllocatorDefault, (UInt8 *)((ComponentPropertyInfo *)kExportProperties), sizeof(kExportProperties));
+                if (outPropValueSizeUsed) *outPropValueSizeUsed = size;
+                break;
+            default:
+                break;
+        }
+    }
+    
+bail:
+    return err;
 }
 
+// SetComponentProperty
+// Set Component Property request - Optional but good practice for QuickTime 7 forward
+// Sets the value of a specific component property
 pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  store,
         ComponentPropertyClass inPropClass,
         ComponentPropertyID    inPropID,
@@ -204,6 +258,13 @@ pascal ComponentResult WebMExportSetComponentProperty(WebMExportGlobalsPtr  stor
     return err;
 }
 
+//  ExportValidate 
+//		Determines whether a movie export component can export all the data for a specified movie or track.
+// This function allows an application to determine if a particular movie or track could be exported by the specified
+// movie data export component. The movie or track is passed in the theMovie and onlyThisTrack parameters as they are
+// passed to MovieExportToFile. Although a movie export component can export one or more media types, it may not be able
+// to export all the kinds of data stored in those media. Movie data export components that implement this function must
+// also set the canMovieExportValidateMovie flag.
 pascal ComponentResult WebMExportValidate(WebMExportGlobalsPtr store, Movie theMovie, Track onlyThisTrack, Boolean *valid)
 {
     OSErr err;
@@ -244,7 +305,13 @@ pascal ComponentResult WebMExportValidate(WebMExportGlobalsPtr store, Movie theM
 }
 
 
-
+// MovieExportToFile
+// 		Exports data to a file. The requesting program or Movie Toolbox must create the destination file
+// before calling this function. Your component may not destroy any data in the destination file. If you
+// cannot add data to the specified file, return an appropriate error. If your component can write data to
+// a file, be sure to set the canMovieExportFiles flag in the componentFlags field of your component's
+// ComponentDescription structure. Your component must be prepared to perform this function at any time.
+// You should not expect that any of your component's configuration functions will be called first. 
 pascal ComponentResult WebMExportToFile(WebMExportGlobalsPtr store, const FSSpec *theFilePtr,
                                         Movie theMovie, Track onlyThisTrack, TimeValue startTime,
                                         TimeValue duration)
@@ -255,18 +322,18 @@ pascal ComponentResult WebMExportToFile(WebMExportGlobalsPtr store, const FSSpec
     dbg_printf("[WebM -- %08lx] ToFile(%d, %ld, %ld)\n", (UInt32) store, onlyThisTrack != NULL, startTime, duration);
 
     err = QTNewAlias(theFilePtr, &alias, true);
+    if (!err) goto bail;
 
-    if (!err)
-    {
-        err = MovieExportToDataRef(store->self, (Handle) alias, rAliasType, theMovie, onlyThisTrack, startTime, duration);
-
-        DisposeHandle((Handle) alias);
-    }
-
+    err = MovieExportToDataRef(store->self, (Handle) alias, rAliasType, theMovie, onlyThisTrack, startTime, duration);
+    DisposeHandle((Handle) alias);
+    
+bail:
     dbg_printf("[WebM -- %08lx] ToFile()\n", (UInt32) store);
     return err;
 }
 
+// MovieExportToDataRef
+//      Allows an application to request that data be exported to a data reference.
 pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr store, Handle dataRef, OSType dataRefType,
         Movie theMovie, Track onlyThisTrack, TimeValue startTime, TimeValue duration)
 {
@@ -281,7 +348,7 @@ pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr store, Handle da
     ComponentResult err;
     Boolean have_sources = false;
 
-    dbg_printf("[WebM -- %08lx] :: ToDataRef(%d, %ld, %ld)\n", (UInt32) store, onlyThisTrack != NULL, startTime, duration);
+    dbg_printf("[WebM -- %08lx] ToDataRef(%d, %ld, %ld)\n", (UInt32) store, onlyThisTrack != NULL, startTime, duration);
     dbg_printf("[WebM] ToDataRef -- bMovieHasAudio %d, bMovieHasVideo %d, bExportAudio %d, bExportVideo %d\n",
                store->bMovieHasAudio, store->bMovieHasVideo, store->bExportAudio, store->bExportVideo);
 
@@ -292,13 +359,11 @@ pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr store, Handle da
                 &getVideoDataProc, &videoRefCon);
         dbg_printf("[WebM]   # [%08lx] :: ToDataRef() = %ld\n", (UInt32) store, err);
 
-        if (!err)
-        {
-            err = MovieExportAddDataSource(store->self, VideoMediaType, scale, &trackID, getVideoPropertyProc, getVideoDataProc, videoRefCon);
+        if (err) goto bail;
 
-            if (!err)
-                have_sources = true;
-        }
+        err = MovieExportAddDataSource(store->self, VideoMediaType, scale, &trackID, getVideoPropertyProc, getVideoDataProc, videoRefCon);
+        if (err) goto bail;      
+        have_sources = true;
 
         if (store->framerate == 0)
             _getFrameRate(theMovie, &store->framerate);
@@ -312,41 +377,42 @@ pascal ComponentResult WebMExportToDataRef(WebMExportGlobalsPtr store, Handle da
 
         dbg_printf("[WebM]   = [%08lx] :: ToDataRef() = %ld\n", (UInt32) store, err);
 
-        if (!err)
-        {
-            // ** Add the audio data source **
-            err = MovieExportAddDataSource(store->self, SoundMediaType, scale, &trackID, getSoundPropertyProc, getSoundDataProc, audioRefCon);
+        if (err) goto bail;
+        // ** Add the audio data source **
+        err = MovieExportAddDataSource(store->self, SoundMediaType, scale, &trackID, getSoundPropertyProc, getSoundDataProc, audioRefCon);
 
-            if (!err)
-                have_sources = true;
-        }
+        if (err) goto bail;
+
+        have_sources = true;
     }
 
     if (have_sources)
-    {
         err = MovieExportFromProceduresToDataRef(store->self, dataRef, dataRefType);
-    }
     else
-    {
         err = invalidMovie;
-    }
+
+    if (err) goto bail;
 
     if (getSoundPropertyProc || getSoundDataProc)
         MovieExportDisposeGetDataAndPropertiesProcs(store->quickTimeMovieExporter, getSoundPropertyProc, getSoundDataProc, audioRefCon);
 
     if (getVideoPropertyProc || getVideoDataProc)
         MovieExportDisposeGetDataAndPropertiesProcs(store->quickTimeMovieExporter, getVideoPropertyProc, getVideoDataProc, videoRefCon);
-
+bail:
     dbg_printf("[WebM] <   [%08lx] :: ToDataRef() = %d, %ld\n", (UInt32) store, err, trackID);
     return err;
 }
 
+// MovieExportFromProceduresToDataRef
+//		Exports data provided by MovieExportAddDataSource to a location specified by dataRef and dataRefType.
+// Movie data export components that support export operations from procedures must set the canMovieExportFromProcedures
+// flag in their component flags. 
 pascal ComponentResult WebMExportFromProceduresToDataRef(WebMExportGlobalsPtr store, Handle dataRef, OSType dataRefType)
 {
     DataHandler    dataH = NULL;
     ComponentResult err;
 
-    dbg_printf("[WebM--%08lx] :: FromProceduresToDataRef()\n", (UInt32) store);
+    dbg_printf("[WebM--%08lx] FromProceduresToDataRef()\n", (UInt32) store);
 
     if (store->streamCount == 0)
         return noErr;  //no data to write
@@ -356,28 +422,19 @@ pascal ComponentResult WebMExportFromProceduresToDataRef(WebMExportGlobalsPtr st
 
     // Get and open a Data Handler Component that can write to the dataRef
     err = OpenAComponent(GetDataHandler(dataRef, dataRefType, kDataHCanWrite), &dataH);
-
-    if (err)
-        goto bail;
+    if (err) goto bail;
 
     DataHSetDataRef(dataH, dataRef);
 
     err = DataHCreateFile(dataH, FOUR_CHAR_CODE('TVOD'), true);
-
-    if (err)
-        goto bail;
+    if (err) goto bail;
 
     DataHSetMacOSFileType(dataH, FOUR_CHAR_CODE('webm'));
-
     err = DataHOpenForWrite(dataH);
-
-    if (err)
-        goto bail;
+    if (err) goto bail;
 
     err = ConfigureQuickTimeMovieExporter(store);
-
-    if (err)
-        goto bail;
+    if (err) goto bail;
 
     err = muxStreams(store, dataH);
 
@@ -386,7 +443,7 @@ bail:
     if (dataH)
         CloseComponent(dataH);
 
-    dbg_printf("[WebM] <   [%08lx] :: FromProceduresToDataRef() = %ld\n", (UInt32) store, err);
+    dbg_printf("[WebM--%08lx] FromProceduresToDataRef() = %ld\n", (UInt32) store, err);
     return err;
 }
 
@@ -410,8 +467,8 @@ pascal ComponentResult WebMExportDisposeGetDataAndPropertiesProcs(WebMExportGlob
         void *refCon)
 {
     ComponentResult err;
-    dbg_printf("[WebM--%08lx] :: DisposeGetDataAndPropertiesProcs(%08lx)\n", (UInt32) store, (UInt32) refCon);
     err = MovieExportDisposeGetDataAndPropertiesProcs(store->quickTimeMovieExporter, propertyProc, getDataProc, refCon);
+    dbg_printf("[WebM--%08lx]  DisposeGetDataAndPropertiesProcs(%08lx) , err %d\n", (UInt32) store, (UInt32) refCon, err);
     return err;
 }
 

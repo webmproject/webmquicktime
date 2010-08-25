@@ -11,9 +11,9 @@
 #define __WebMExport_versions_h__
 
 #ifdef DEBUG
-#define kMkv_spit__Version      (0x00FF0001)
+#define kWebM_spit__Version      (0x00FF0001)
 #else
-#define kMkv_spit__Version      (0x00000001)
+#define kWebM_spit__Version      (0x00000001)
 #endif /* DEBUG */
 
 
@@ -22,6 +22,5 @@
 #define kGoogManufacturer         'goog'
 
 #define kAudioFormatXiphVorbis             'XiVs'
-#define kPerian                            'Peri'
 
 #endif /* __WebMExport_versions_h__ */

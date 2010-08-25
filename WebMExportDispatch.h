@@ -6,11 +6,6 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-/*
- 
-This code originates from EI_MovieExportDispatch.h
-
-*/
 
 
 
@@ -72,6 +67,6 @@ ComponentError(SetGetMoviePropertyProc)
 ComponentRangeEnd(2)
 
 ComponentRangeBegin(3)
-ComponentCall(NewGetDataAndPropertiesProcs)
+ComponentCall(NewGetDataAndPropertiesProcs)  //these functions need to be implemented
 ComponentCall(DisposeGetDataAndPropertiesProcs)
 ComponentRangeEnd(3)
