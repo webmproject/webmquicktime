@@ -238,7 +238,7 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, EbmlLoc *
     for (i = 0; i < globals->cueCount; i ++)
     {
         EbmlLoc cueHead;
-        WebMCuePoint *cue = &(*globals->cueHandle)[i];
+        WebMCuePoint *cue = (WebMCuePoint*)(*globals->cueHandle + i * sizeof(WebMCuePoint));
         dbg_printf("[WebM] Writing Cue track %d time %ld loc %lld\n",
                    cue->track, cue->timeVal, cue->loc);
         Ebml_StartSubElement(ebml, &cueHead, CuePoint);
@@ -249,13 +249,14 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, EbmlLoc *
         //TODO verify trackLoc
         Ebml_SerializeUnsigned(ebml, CueTrack, cue->track);
         Ebml_SerializeUnsigned64(ebml, CueClusterPosition, cue->loc);
-        Ebml_SerializeUnsigned(ebml, CueBlockNumber, 1);
+        Ebml_SerializeUnsigned(ebml, CueBlockNumber, cue->blockNumber);
         Ebml_EndSubElement(ebml, &trackLoc);
 
         Ebml_EndSubElement(ebml, &cueHead);
     }
 
     Ebml_EndSubElement(ebml, cuesLoc);
+    HUnlock((Handle)globals->cueHandle);
 }
 
 void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time, 
@@ -264,21 +265,25 @@ void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time,
     dbg_printf("[webm] _addCue %d time %ld loc %llu track %d blockNum %d\n",
                globals->cueCount, time, dataLoc, track, blockNum);
     globals->cueCount ++;
+    long handleSize = sizeof(WebMCuePoint) * globals->cueCount;
 
     if (globals->cueHandle)
     {
-        HUnlock((Handle) globals->cueHandle);  //important to unlock before moving
-        SetHandleSize((Handle) globals->cueHandle, sizeof(CuePoint) * globals->cueCount);
-        HLock((Handle)globals->cueHandle);
+        HUnlock(globals->cueHandle);  //important to unlock before moving
+        SetHandleSize(globals->cueHandle, handleSize);
+        HLock(globals->cueHandle);
     }
     else
-        globals->cueHandle = (WebMCuePoint **) NewHandleClear(sizeof(WebMCuePoint));
+        globals->cueHandle = NewHandleClear(handleSize);
 
-    WebMCuePoint *newCue = &(*globals->cueHandle)[globals->cueCount-1];
+    WebMCuePoint *newCue = (WebMCuePoint*) (*globals->cueHandle + handleSize - sizeof(WebMCuePoint));
     newCue->loc = dataLoc;
     newCue->timeVal = time;
     newCue->track = track;
     newCue->blockNumber = blockNum;
+    dbg_printf("[webm] _addCue exit %d time %ld loc %llu track %d blockNum %d\n",
+               globals->cueCount, newCue->timeVal, newCue->loc, newCue->track, newCue->blockNumber);
+    dbg_printf("[WebM] globals->cueHandle Size %d\n", GetHandleSize(globals->cueHandle));
 }
 static ComponentResult _compressVideo(WebMExportGlobalsPtr globals, VideoStreamPtr vs)
 {
