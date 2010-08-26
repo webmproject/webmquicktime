@@ -231,6 +231,7 @@ static void _writeMetaSeekInformation(EbmlGlobal *ebml, EbmlLoc*  trackLoc, Ebml
 static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, EbmlLoc *cuesLoc)
 {
     dbg_printf("[webm]_writeCues %d \n", globals->cueCount);
+    HLock((Handle)globals->cueHandle);
     Ebml_StartSubElement(ebml, cuesLoc, Cues);
     int i = 0;
 
@@ -260,11 +261,16 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, EbmlLoc *
 void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time, 
              unsigned int track, unsigned int blockNum)
 {
-    dbg_printf("[webm] _addCue time %ld loc %llu\n", time, dataLoc);
+    dbg_printf("[webm] _addCue %d time %ld loc %llu track %d blockNum %d\n",
+               globals->cueCount, time, dataLoc, track, blockNum);
     globals->cueCount ++;
 
     if (globals->cueHandle)
+    {
+        HUnlock((Handle) globals->cueHandle);  //important to unlock before moving
         SetHandleSize((Handle) globals->cueHandle, sizeof(CuePoint) * globals->cueCount);
+        HLock((Handle)globals->cueHandle);
+    }
     else
         globals->cueHandle = (WebMCuePoint **) NewHandleClear(sizeof(WebMCuePoint));
 
