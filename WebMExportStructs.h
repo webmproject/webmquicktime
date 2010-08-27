@@ -79,7 +79,7 @@ typedef struct
     GenericStream    **streams;  //should be either audio or video
 
     unsigned long   cueCount;
-    WebMCuePoint    **cueHandle;
+    Handle          cueHandle;
 
     MovieProgressUPP   progressProc;
     long               progressRefCon;

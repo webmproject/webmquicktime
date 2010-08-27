@@ -522,11 +522,10 @@ static ComponentResult setBitrate(VP8EncoderGlobals glob,
             kICMCompressionSessionOptionsPropertyID_AverageDataRate,
             sizeof(avgDataRate), &avgDataRate, NULL);
 
-    if (avgDataRate != 0 && (validTimeFlags & kICMValidTime_DisplayDurationIsValid)
-        && (frameDisplayDuration != 0)
-        && (timescale != 0))
+    if (avgDataRate != 0 )
     {
-        bitrate = avgDataRate * frameDisplayDuration / timescale / 1000;
+        //convert from bytes/sec to kilobits/second
+        bitrate = avgDataRate /8000;
         dbg_printf("[vp8e - %08lx] setting bitrate to %d (from averageDataRate)\n", (UInt32)glob, bitrate);
     }
     else

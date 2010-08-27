@@ -165,32 +165,45 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
     err = SCGetInfo(videoCI, scSpatialSettingsType, &ss);
     if (err) goto bail;
 
-    dbg_printf("[WebM]Passing spatial settings -- passing %lx\n", ss.spatialQuality);
-    err = ICMCompressionSessionOptionsSetProperty(options,
-            kQTPropertyClass_ICMCompressionSessionOptions,
-            kICMCompressionSessionOptionsPropertyID_Quality,
-            sizeof(CodecQ), &ss.spatialQuality);
-    if (err) goto bail;
+    dbg_printf("[WebM]Spatial settings - depth %d Quality %lx\n", ss.depth, ss.spatialQuality);
 
     //Transfer Temporal Settings
     SCTemporalSettings ts;
     err = SCGetInfo(videoCI, scTemporalSettingsType, &ts);
     if (err) goto bail;
+    dbg_printf("[WebM] Temporal Settings max keyframerate %ld quality %ld frameRate %f\n",
+               ts.keyFrameRate, ts.temporalQuality,FixedToFloat(ts.frameRate));
 
     SInt32 keyFrameRate = ts.keyFrameRate;
-    dbg_printf("[webm] setting session maxkeyframerate %ld\n", keyFrameRate);
     if (keyFrameRate != 0)
     {
         err = ICMCompressionSessionOptionsSetMaxKeyFrameInterval(options,
                 keyFrameRate);
         if (err) goto bail;
     }
-
+    err = ICMCompressionSessionOptionsSetProperty(options,
+                                                  kQTPropertyClass_ICMCompressionSessionOptions,
+                                                  kICMCompressionSessionOptionsPropertyID_Quality,
+                                                  sizeof(CodecQ), &ts.temporalQuality);
+    if (err) goto bail;
+    
     
     //transfer Datarate Settings
-    SCDataRateSettings ds;
+    SCDataRateSettings ds;  
     err = SCGetInfo(videoCI, scDataRateSettingsType, &ds);
+    dbg_printf("[webm] DataRateSettings %ld frameDuration %ld, spatial Quality %d, temporal Quality %d\n", 
+               ds.dataRate, ds.frameDuration, ds.minSpatialQuality, ds.minTemporalQuality);
     if (err) goto bail;
+    if (ds.dataRate != 0)
+    {
+        err = ICMCompressionSessionOptionsSetProperty(options,
+                                                kQTPropertyClass_ICMCompressionSessionOptions,
+                                                kICMCompressionSessionOptionsPropertyID_AverageDataRate,
+                                                sizeof(CodecQ), &ds.dataRate);
+        if (err) goto bail;
+    }
+    
+    
     
     QTUnlockContainer(glob->videoSettingsAtom);
 
@@ -310,6 +323,7 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, VideoStreamPtr v
     }
 
     //the callback function also compresses, the compressed data is then kept in vs->outBuf.data
+    dbg_printf("[webm] Call ICMDecompressionSessionDecodeFrame\n");
     err = ICMDecompressionSessionDecodeFrame(vs->decompressionSession,
             (UInt8 *) vs->source.params.dataPtr,
             vs->source.params.dataSize,
