@@ -186,7 +186,7 @@ static ComponentResult _updateProgressBar(WebMExportGlobalsPtr globals, double p
 static void _writeSeekElement(EbmlGlobal* ebml, unsigned long binaryId, EbmlLoc* Loc, UInt64 firstL1)
 {
     UInt64 offset = *(SInt64*)&Loc->offset;
-    offset -= firstL1;
+    offset = offset - firstL1 - 4; //constant 4(the length of the binary id)
     dbg_printf("[webm] Writing Element %lx at offset %lld\n", binaryId, offset);
 
     EbmlLoc start;
@@ -216,7 +216,7 @@ static void _writeMetaSeekInformation(EbmlGlobal *ebml, EbmlLoc*  trackLoc, Ebml
         Ebml_SetEbmlLoc(ebml, seekInfoLoc);
     }
     SInt64 seekLoc = *(SInt64*)&seekInfoLoc->offset; 
-    dbg_printf("[webm] Writing Seek Info to %lld\n", seekLoc - 4);
+    dbg_printf("[webm] Writing Seek Info to %lld\n", seekLoc);
     
     _writeSeekElement(ebml, Tracks, trackLoc, firstL1);
     _writeSeekElement(ebml, Cues, cueLoc, firstL1);
@@ -231,7 +231,7 @@ static void _writeMetaSeekInformation(EbmlGlobal *ebml, EbmlLoc*  trackLoc, Ebml
 static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, EbmlLoc *cuesLoc)
 {
     dbg_printf("[webm]_writeCues %d \n", globals->cueCount);
-    HLock((Handle)globals->cueHandle);
+    HLock(globals->cueHandle);
     Ebml_StartSubElement(ebml, cuesLoc, Cues);
     int i = 0;
 
@@ -430,14 +430,13 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     globals->clusterTime = 0;  //assuming 0 start time
     Boolean startNewCluster = true;  //cluster should start very first
     unsigned int blocksInCluster=0;  //this increments any time a block added
+    SInt64 clusterOffset = *(SInt64 *)& ebml.offset;
     while (!allStreamsDone /*&& lastTime < duration*/)
     {
         minTimeMs = ULONG_MAX;
         minTimeStream = NULL;
         allStreamsDone = true;
-        SInt64 blockOffset = *(SInt64 *)& ebml.offset;
         
-        dbg_printf("[WebM]          ebml.offset  %lld\n", blockOffset);
 
         //find the stream with the earliest time
         for (iStream = 0; iStream < globals->streamCount; iStream++)
@@ -502,6 +501,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         {
             globals->clusterTime = minTimeMs;
             blocksInCluster =0;
+            clusterOffset = *(SInt64 *)& ebml.offset;
+            dbg_printf("[WebM] Start new cluster offset %lld time %ld\n", clusterOffset, minTimeMs);
             _startNewCluster(globals, &ebml);
             startNewCluster = false;
         }
@@ -512,7 +513,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
             VideoStreamPtr vs = &minTimeStream->vid;
             if( vs->frame_type == kICMFrameType_I)
             {
-                UInt64 tmpU = blockOffset - firstL1Offset;  
+                UInt64 tmpU = clusterOffset - firstL1Offset;  
                 _addCue(globals, tmpU , vs->source.blockTimeMs, vs->source.trackID, blocksInCluster);
             }
             _writeVideo(globals, vs, &ebml);
