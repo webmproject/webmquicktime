@@ -11,9 +11,9 @@
 #define __WebMExport_versions_h__
 
 #ifdef DEBUG
-#define kWebM_spit__Version      (0x00FF0001)
+#define kWebM_spit__Version      (0x00FF0002)
 #else
-#define kWebM_spit__Version      (0x00000001)
+#define kWebM_spit__Version      (0x00000002)
 #endif /* DEBUG */
 
 
