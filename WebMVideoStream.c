@@ -160,6 +160,15 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
     ComponentResult err = getVideoComponentInstace(glob, &videoCI);
     if(err) goto bail;
     
+//  --- Hardcoded settings ---
+    //Allow P Frames
+    err = ICMCompressionSessionOptionsSetAllowTemporalCompression(options, true);
+    if (err) goto bail;
+    
+    // Disable B frames.
+    err = ICMCompressionSessionOptionsSetAllowFrameReordering(options, false);
+    
+    
 //  ---  Transfer spatial settings   ----
     SCSpatialSettings ss;
     err = SCGetInfo(videoCI, scSpatialSettingsType, &ss);
