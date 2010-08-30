@@ -126,13 +126,13 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
     {
         ImageDescription *id = *imgDesc;
 
-        dbg_printf("[webM]  f> [%08lx] :: _frame_compressed() = %ld, '%4.4s'"
+        dbg_printf("[webM --%08lx] :: _frame_compressed() = %ld, '%4.4s'"
                    " %08lx %08lx [%d x %d] [%f x %f] %ld %d %d %d\n",
                    (UInt32) - 1, err, (char *) &id->cType,
                    id->temporalQuality, id->spatialQuality, id->width,
                    id->height, id->hRes / 65536.0, id->vRes / 65536.0,
                    id->dataSize, id->frameCount, id->depth, id->clutID);
-        dbg_printf("[webM]  fi [%08lx] :: _frame_compressed() = %lld %ld %ld\n",
+        dbg_printf("[webM -- %08lx] :: _frame_compressed() = %lld %ld %ld\n",
                    (UInt32) - 1, ICMEncodedFrameGetDecodeDuration(ef),
                    enc_size, ICMEncodedFrameGetBufferSize(ef));
     }
@@ -160,14 +160,14 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
     ComponentResult err = getVideoComponentInstace(glob, &videoCI);
     if(err) goto bail;
     
-    //Transfer spatial settings
+//  ---  Transfer spatial settings   ----
     SCSpatialSettings ss;
     err = SCGetInfo(videoCI, scSpatialSettingsType, &ss);
     if (err) goto bail;
 
     dbg_printf("[WebM]Spatial settings - depth %d Quality %lx\n", ss.depth, ss.spatialQuality);
 
-    //Transfer Temporal Settings
+//  ------ Transfer Temporal Settings   --------
     SCTemporalSettings ts;
     err = SCGetInfo(videoCI, scTemporalSettingsType, &ts);
     if (err) goto bail;
@@ -187,8 +187,14 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
                                                   sizeof(CodecQ), &ts.temporalQuality);
     if (err) goto bail;
     
+    err = ICMCompressionSessionOptionsSetProperty(options,
+                                                  kQTPropertyClass_ICMCompressionSessionOptions,
+                                                  kICMCompressionSessionOptionsPropertyID_ExpectedFrameRate,
+                                                  sizeof(Fixed), &ts.frameRate);
+    if (err) goto bail;
     
-    //transfer Datarate Settings
+    
+//  ------  Transfer Datarate Settings   ----
     SCDataRateSettings ds;  
     err = SCGetInfo(videoCI, scDataRateSettingsType, &ds);
     dbg_printf("[webm] DataRateSettings %ld frameDuration %ld, spatial Quality %d, temporal Quality %d\n", 
@@ -199,7 +205,7 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
         err = ICMCompressionSessionOptionsSetProperty(options,
                                                 kQTPropertyClass_ICMCompressionSessionOptions,
                                                 kICMCompressionSessionOptionsPropertyID_AverageDataRate,
-                                                sizeof(CodecQ), &ds.dataRate);
+                                                sizeof(SInt32), &ds.dataRate); 
         if (err) goto bail;
     }
     
