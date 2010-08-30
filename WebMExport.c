@@ -843,7 +843,6 @@ static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr store)
     dbg_printf("[WebM %08lx] :: ConfigureQuickTimeMovieExporter()\n", (UInt32) store);
 
     err = MovieExportGetSettingsAsAtomContainer(store->self, &settings);
-    dbg_printf("[WebM]  gO [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) store, err);
 
     if (!err)
     {
@@ -857,7 +856,6 @@ static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr store)
         }
 
         err = MovieExportSetSettingsFromAtomContainer(store->quickTimeMovieExporter, settings);
-        dbg_printf("[WebM]  sE [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) store, err);
 
         if (!err)
         {
@@ -872,7 +870,7 @@ static OSErr ConfigureQuickTimeMovieExporter(WebMExportGlobalsPtr store)
     if (settings)
         DisposeHandle(settings);
 
-    dbg_printf("[WebM] <   [%08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) store, err);
+    dbg_printf("[WebM %08lx] :: ConfigureQuickTimeMovieExporter() = %ld\n", (UInt32) store, err);
     return err;
 }
 

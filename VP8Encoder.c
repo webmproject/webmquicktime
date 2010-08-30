@@ -495,12 +495,45 @@ static ComponentResult setMaxKeyDist(VP8EncoderGlobals glob)
     if (err) return err;
 
     if (maxInterval == 0)
-        glob->cfg->kf_max_dist = 300;  //default : don't pass in 0 as vp8 thinks that is key every frame
+        glob->cfg->kf_max_dist = 300;  //default : don't pass in 0 as vp8 sdk reserves that for key every frame
     else
         glob->cfg->kf_max_dist = maxInterval;
 
     dbg_printf("[vp8e - %08lx] setMaxKeyDist %ld\n", (UInt32)glob, glob->cfg->kf_max_dist);
     return noErr;
+}
+
+static ComponentResult setFrameRate(VP8EncoderGlobals glob)
+{
+    dbg_printf("[vp8e - %08lx] setFrameRate \n", (UInt32) glob);
+    ComponentResult err = noErr;
+    Fixed frameRate;
+    err= ICMCompressionSessionOptionsGetProperty(glob->sessionOptions,
+                                                 kQTPropertyClass_ICMCompressionSessionOptions,
+                                                 kICMCompressionSessionOptionsPropertyID_ExpectedFrameRate,
+                                                 sizeof(Fixed), &frameRate, NULL);
+    if (err) goto bail;
+    double fps = FixedToFloat(frameRate);
+    dbg_printf("[vp8e - %08lx] Got FrameRate %f \n", (UInt32) glob,fps);
+    if (fps == 0)
+        return err; //use the defaults
+    if (fps > 29.965 && fps < 29.975) // I am putting everything in this threshold as 29.97
+    {
+        glob->cfg->g_timebase.num = 1001;
+        glob->cfg->g_timebase.den = 30000;
+    }
+    else 
+    {
+        //I'm using a default of a millisecond timebase, this may not be 100% accurate
+        // however, container uses this timebase so this estimate is best.
+        glob->cfg->g_timebase.num = 1000;
+        glob->cfg->g_timebase.den = fps * 1000;
+    }
+    dbg_printf("[vp8e - %08lx] Setting g_timebase to %d/%d \n", (UInt32) glob, 
+               glob->cfg->g_timebase.num, glob->cfg->g_timebase.den);
+
+bail:
+    return err;
 }
 
 static ComponentResult setBitrate(VP8EncoderGlobals glob,
@@ -525,7 +558,7 @@ static ComponentResult setBitrate(VP8EncoderGlobals glob,
     if (avgDataRate != 0 )
     {
         //convert from bytes/sec to kilobits/second
-        bitrate = avgDataRate /8000;
+        bitrate = avgDataRate * 8 /1000;
         dbg_printf("[vp8e - %08lx] setting bitrate to %d (from averageDataRate)\n", (UInt32)glob, bitrate);
     }
     else
@@ -636,6 +669,7 @@ encodeThisSourceFrame(
         glob->codec = calloc(1, sizeof(vpx_codec_ctx_t));
         setBitrate(glob, sourceFrame); //because we don't know framerate untile we have a source image.. this is done here
         setMaxKeyDist(glob);
+        setFrameRate(glob);
 
         if (vpx_codec_enc_init(glob->codec, &vpx_codec_vp8_cx_algo, glob->cfg, 0))
             dbg_printf("[vp8e - %08lx] Failed to initialize encoder\n", (UInt32)glob);
