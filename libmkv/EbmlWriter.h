@@ -24,7 +24,7 @@ void Ebml_WriteLen(EbmlGlobal *glob, long long val);
 void Ebml_WriteString(EbmlGlobal *glob, const char *str);
 void Ebml_WriteUTF8(EbmlGlobal *glob, const wchar_t *wstr);
 void Ebml_WriteID(EbmlGlobal *glob, unsigned long class_id);
-void Ebml_SerializeUnsigned64(EbmlGlobal *glob, unsigned long class_id, unsigned long long ui);
+void Ebml_SerializeUnsigned64(EbmlGlobal *glob, unsigned long class_id, UInt64 ui);
 void Ebml_SerializeUnsigned(EbmlGlobal *glob, unsigned long class_id, unsigned long ui);
 void Ebml_SerializeBinary(EbmlGlobal *glob, unsigned long class_id, unsigned long ui);
 void Ebml_SerializeFloat(EbmlGlobal *glob, unsigned long class_id, double d);
