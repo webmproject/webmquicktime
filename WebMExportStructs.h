@@ -93,6 +93,7 @@ typedef struct
     /* settings */
     Boolean             bExportVideo;
     Boolean             bExportAudio;
+    Boolean             bTwoPass;
 
     AudioStreamBasicDescription audioBSD;
 

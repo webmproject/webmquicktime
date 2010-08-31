@@ -147,7 +147,7 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
 static ComponentResult _updateProgressBar(WebMExportGlobalsPtr globals, double percent)
 {
     ComponentResult err = noErr;
-
+    //todo -- progress bar might need to be shut off in some cases
     if (globals->progressOpen == false)
     {
         err = InvokeMovieProgressUPP(NULL, movieProgressOpen,
@@ -390,9 +390,6 @@ static ComponentResult _writeAudio(WebMExportGlobalsPtr globals, AudioStreamPtr 
     return err;
 }
 
-static int getPasses (WebMExportGlobalsPtr globals)
-{
-}
 
 ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 {
@@ -409,7 +406,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     ebml.offset.hi = 0;
     ebml.offset.lo = 0;
     
-    int total_passes = _getPasses(globals);
+    int total_passes = 1;
 
     EbmlLoc startSegment, trackLoc, cuesLoc, segmentInfoLoc, seekInfoLoc;
     globals->progressOpen = false;

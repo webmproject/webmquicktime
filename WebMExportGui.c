@@ -90,6 +90,9 @@ ComponentResult enableDisableControls(WebMExportGlobalsPtr globals, WindowRef wi
     SetControl32BitValue(checkBoxControl, globals->bExportAudio && globals->bMovieHasAudio);
     _EnableControl(&checkBoxControl, globals->bMovieHasAudio);
     _EnableControl(&settingsControl, globals->bExportAudio && globals->bMovieHasAudio);
+    
+    GetControlByID(window, &twoPassID, &checkBoxControl);
+    _EnableControl(&checkBoxControl, globals->bExportVideo && globals->bMovieHasVideo);
 
 }
 
@@ -175,6 +178,11 @@ pascal OSStatus SettingsWindowEventHandler(EventHandlerCallRef inHandler, EventR
 
     case 'WMvc':               //Enable Video CheckBoxk
         globals->bExportVideo = !globals->bExportVideo;
+        enableDisableControls(globals, window);
+        rval = noErr;
+        break;
+    case 'WMtp':              //Two pass checkbox
+        globals->bTwoPass = !globals->bTwoPass;
         enableDisableControls(globals, window);
         rval = noErr;
         break;
