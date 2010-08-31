@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10C166E312144F8C00FC5AEB /* WebMImport.c in Sources */ = {isa = PBXBuildFile; fileRef = 10C166E212144F8C00FC5AEB /* WebMImport.c */; };
 		8D01CCCA0486CAD60068D4B7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		BB98158B11FF19420031AA75 /* VP8CodecUniversal.r in Rez */ = {isa = PBXBuildFile; fileRef = BB98158A11FF19420031AA75 /* VP8CodecUniversal.r */; };
@@ -38,6 +39,9 @@
 /* Begin PBXFileReference section */
 		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		10BE7572122474730071DC08 /* WebMImportDispatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebMImportDispatch.h; sourceTree = "<group>"; };
+		10BE7575122474890071DC08 /* WebMImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebMImport.h; sourceTree = "<group>"; };
+		10C166E212144F8C00FC5AEB /* WebMImport.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = WebMImport.c; sourceTree = "<group>"; };
 		8D01CCD10486CAD60068D4B7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D01CCD20486CAD60068D4B7 /* WebM.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WebM.component; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB98158A11FF19420031AA75 /* VP8CodecUniversal.r */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.rez; path = VP8CodecUniversal.r; sourceTree = "<group>"; };
@@ -143,12 +147,23 @@
 			isa = PBXGroup;
 			children = (
 				BB98159211FF1B810031AA75 /* Common */,
+				10C166DC1214453A00FC5AEB /* WebMDemux */,
 				BB98159111FF1B6C0031AA75 /* WebMMux */,
 				BB98159011FF1B600031AA75 /* VP8Decoder */,
 				BB98158F11FF1ACC0031AA75 /* VP8Encoder */,
 				BB98158E11FF1AC30031AA75 /* Ebml */,
 			);
 			name = Source;
+			sourceTree = "<group>";
+		};
+		10C166DC1214453A00FC5AEB /* WebMDemux */ = {
+			isa = PBXGroup;
+			children = (
+				10C166E212144F8C00FC5AEB /* WebMImport.c */,
+				10BE7575122474890071DC08 /* WebMImport.h */,
+				10BE7572122474730071DC08 /* WebMImportDispatch.h */,
+			);
+			name = WebMDemux;
 			sourceTree = "<group>";
 		};
 		19C28FB4FE9D528D11CA2CBB /* Products */ = {
@@ -334,6 +349,7 @@
 				BB9815D011FF1CFA0031AA75 /* testlibmkv.c in Sources */,
 				BB9815D111FF1CFA0031AA75 /* WebMElement.c in Sources */,
 				BB98161B11FF1FC60031AA75 /* EbmlDataHWriter.c in Sources */,
+				10C166E312144F8C00FC5AEB /* WebMImport.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
