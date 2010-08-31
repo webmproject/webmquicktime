@@ -283,12 +283,13 @@ resource 'dlle' (262) {
 //
 // WebM Import component
 //
+// canMovieImportValidateFile
+// canMovieImportAvoidBlocking
+// canMovieImportWithIdle
+// canMovieImportPartial | canMovieImportInPlace | hasMovieImportMIMEList | \
+// canMovieImportValidateDataReferences | \
 
-#define kImporterFlags canMovieImportFiles | canMovieImportValidateFile | \
-canMovieImportPartial | canMovieImportInPlace | hasMovieImportMIMEList | \
-canMovieImportDataReferences | canMovieImportWithIdle |             \
-canMovieImportAvoidBlocking | canMovieImportValidateDataReferences | \
-cmpThreadSafe
+#define kImporterFlags canMovieImportFiles | canMovieImportDataReferences | cmpThreadSafe
 
 resource 'STR ' (263) {
   "WebM" "0.0.1" " see http://webmproject.org"
