@@ -1,17 +1,19 @@
-/*
- *  WebMImport.c
- *  WebM
- *
- *  Created by Jeffrey Koppi on 8/5/10.
- *  Copyright 2010 Google Inc. All rights reserved.
- *
- */
+// Copyright (c) 2010 The WebM project authors. All Rights Reserved.
+//
+// Use of this source code is governed by a BSD-style license
+// that can be found in the LICENSE file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS.  All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
 
 
 #include "WebMImport.h"
 
 #include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
+
+//#include "mkvreader_wrap.h"
+//#include "mkvparser_wrap.h"
 
 #include "log.h"
 
@@ -31,11 +33,19 @@ typedef struct {
 #define COMPONENT_DISPATCH_FILE "WebMImportDispatch.h"
 #define COMPONENT_UPP_SELECT_ROOT() MovieImport
 
+
+#include <CoreServices/Components.k.h>
+#include <QuickTime/QuickTimeComponents.k.h>
+#include <QuickTime/ImageCompression.k.h>   // for ComponentProperty selectors
+#include <QuickTime/ComponentDispatchHelper.c>
+
+
+#pragma mark-
+//--------------------------------------------------------------------------------
 // Component Open Request - Required
 pascal ComponentResult WebMImportOpen(WebMImportGlobals store, ComponentInstance self)
 {
   OSErr err;
-
   dbg_printf("[WebM Import]  >> [%08lx] :: Open()\n", (UInt32) store); //globals);
 
   store = (WebMImportGlobals) NewPtrClear(sizeof(WebMImportGlobalsRec));
@@ -49,6 +59,7 @@ pascal ComponentResult WebMImportOpen(WebMImportGlobals store, ComponentInstance
 }
 
 
+//--------------------------------------------------------------------------------
 // Component Close Request - Required
 pascal ComponentResult WebMImportClose(WebMImportGlobals store, ComponentInstance self)
 {
@@ -61,6 +72,8 @@ pascal ComponentResult WebMImportClose(WebMImportGlobals store, ComponentInstanc
   return noErr;
 }
 
+
+//--------------------------------------------------------------------------------
 // Component Version Request - Required
 pascal ComponentResult WebMImportVersion(WebMImportGlobals store)
 {
@@ -69,6 +82,9 @@ pascal ComponentResult WebMImportVersion(WebMImportGlobals store)
   return kWebMImportVersion;
 }
 
+
+#pragma mark-
+//--------------------------------------------------------------------------------
 // MovieImportFile
 //
 pascal ComponentResult WebMImportFile(WebMImportGlobals store, const FSSpec *theFile, 
@@ -97,8 +113,9 @@ pascal ComponentResult WebMImportFile(WebMImportGlobals store, const FSSpec *the
 }
 
 
+//--------------------------------------------------------------------------------
 // MovieImportDataRef
-pascal ComponentResult WebmImportDataRef(WebMImportGlobals store, Handle dataRef, OSType dataRefType,
+pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef, OSType dataRefType,
                                          Movie theMovie, Track targetTrack, Track *usedTrack,
                                          TimeValue atTime, TimeValue *durationAdded, 
                                          long inFlags, long *outFlags)
@@ -114,41 +131,30 @@ pascal ComponentResult WebmImportDataRef(WebMImportGlobals store, Handle dataRef
 	if (inFlags & movieImportMustUseTrack)
 		return paramErr;
 
-  // Retrieve the best data handler component to use with the given data reference, for read purpoases.
-	// Then open the returned component using standard Component Manager calls.
-	err = OpenAComponent(GetDataHandler(dataRef, dataRefType, kDataHCanRead), &dataHandler);
-	if (err) goto bail;
- 
-  // Provide a data reference to the data handler.
-	// Once you have assigned a data reference to the data handler, you may start reading and/or writing
-	// movie data from that data reference.
-	err = DataHSetDataRef(dataHandler, dataRef);
-	if (err) goto bail;
+#if 0
+  MkvReaderQT* reader = NULL;
+  reader = CallMkvReaderQTInit();
+  if (reader == NULL) goto bail;
+  stat = CallMkvReaderQTOpen(reader, dataRef, dataRefType);
+  if (stat) goto bail;
   
-  // Open a read path to the current data reference. 
-  // You need to do this before your component can read data using a data handler component.
-	err = DataHOpenForRead(dataHandler);
-	if (err) goto bail;
   
-  // Get the size, in bytes, of the current data reference.
-  // This is functionally equivalent to the File Manager's GetEOF function.
-  long fileSize = 0;
-	err = DataHGetFileSize(dataHandler, &fileSize);
-	if (err) goto bail;
-
-  // Get the File Header - synchronous read
-	// This function provides both a synchronous and an asynchronous read interface...
-  //ImageHeader header;//***** 
+  
+  // Get the File Header - synchronous read.
+  // MkvReaderQT makes the DataHandler calls like DataHScheduleData()
   EBMLHeader header; // from hwasoo's lib?
-  // (DataHandler component instance, memory to receive data, offset into data ref to read from, number of bytes to read, refcon, schedul rec NULL for sync, completion func NULL for sync)
-  err = DataHScheduleData(dataHandler, (Ptr)&header, fileOffset, sizeof(header), 0, NULL, NULL);  
-  if (err) goto bail;
+  header = CallEBMLHeaderInit();
+  CallEBMLHeaderParse(header, reader, long long* pos);
+  fileOffset += pos;  //sizeof(header);
   
-  fileOffset += sizeof(header);
+  // debug
+  dbg_printf("EBML Header\n");
+  dbg_printf("EBMLHeader version\t\t:  %lld\n", GetEBMLHeaderVersion(header));
+  dbg_printf("EBMLHeader MaxIDLength\t: %lld\n", GetEBMLHeaderMaxIdLength(header));            
+#endif
   
   
-  
-  // while
+  // while {
   //    DataHScheduleData()
   //    NewMovieTrack()
   //    NewTrackMedia()
