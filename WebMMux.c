@@ -150,7 +150,7 @@ static ComponentResult _updateProgressBar(WebMExportGlobalsPtr globals, double p
 
     if (globals->progressOpen == false)
     {
-        InvokeMovieProgressUPP(NULL, movieProgressOpen,
+        err = InvokeMovieProgressUPP(NULL, movieProgressOpen,
                                progressOpExportMovie, 0,
                                globals->progressRefCon,
                                globals->progressProc);
@@ -173,7 +173,7 @@ static ComponentResult _updateProgressBar(WebMExportGlobalsPtr globals, double p
 
     if (percentDone == 100.0 && globals->progressOpen)
     {
-        InvokeMovieProgressUPP(NULL, movieProgressClose,
+        err = InvokeMovieProgressUPP(NULL, movieProgressClose,
                                progressOpExportMovie, 0x010000,
                                globals->progressRefCon,
                                globals->progressProc);
@@ -390,6 +390,10 @@ static ComponentResult _writeAudio(WebMExportGlobalsPtr globals, AudioStreamPtr 
     return err;
 }
 
+static int getPasses (WebMExportGlobalsPtr globals)
+{
+}
+
 ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 {
     ComponentResult err = noErr;
@@ -404,6 +408,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     ebml.data_h = data_h;
     ebml.offset.hi = 0;
     ebml.offset.lo = 0;
+    
+    int total_passes = _getPasses(globals);
 
     EbmlLoc startSegment, trackLoc, cuesLoc, segmentInfoLoc, seekInfoLoc;
     globals->progressOpen = false;
@@ -423,6 +429,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
     HLock((Handle)globals->streams);
     err = _updateProgressBar(globals, 0.0);
+    if (err) goto bail;
 
     unsigned long minTimeMs = ULONG_MAX;
     GenericStream *minTimeStream;
@@ -530,7 +537,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         Ebml_EndSubElement(&ebml, &globals->clusterStart);   //this writes cluster size multiple times, but works
 
         if (duration != 0.0)  //if duration is 0, can't show anything
-            _updateProgressBar(globals, minTimeMs / 1000.0 / duration );
+            err = _updateProgressBar(globals, minTimeMs / 1000.0 / duration );
+        if (err ) goto bail;
     }
 
     dbg_printf("[webm] done writing streams\n");
@@ -543,7 +551,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
     HUnlock((Handle) globals->streams);
 
-    _updateProgressBar(globals, 100.0);
+    err = _updateProgressBar(globals, 100.0);
 bail:
     dbg_printf("[WebM] <   [%08lx] :: muxStreams() = %ld\n", (UInt32) globals, err);
     return err;
