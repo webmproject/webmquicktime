@@ -204,6 +204,35 @@ resource 'dlle' (258) {
 	"VP8_Encoder_ComponentDispatch"
 };
 
+#define kVP8_EncoderDITLResID 129
+
+#define TEXT_HEIGHT 16
+#define INTER_CONTROL_SPACING 12
+#define POPUP_CONTROL_HEIGHT 22
+
+resource 'DITL' (kVP8_EncoderDITLResID, "Compressor Options") {
+    {
+        //I think its {top, left, bottom, right}
+        //control 1
+        {0, 0, TEXT_HEIGHT, 100},
+        RadioButton { enabled, "One Pass " },
+        //control 2
+        /*{TEXT_HEIGHT + INTER_CONTROL_SPACING, 0,
+            TEXT_HEIGHT + INTER_CONTROL_SPACING + POPUP_CONTROL_HEIGHT, 165},
+        Control { enabled, kMyCodecPopupCNTLResID },*/
+        //control 3
+        {0, 100, TEXT_HEIGHT, 200},
+        RadioButton { enabled, "Two Pass " },
+        {TEXT_HEIGHT + INTER_CONTROL_SPACING, 0,
+            TEXT_HEIGHT + INTER_CONTROL_SPACING + POPUP_CONTROL_HEIGHT, 130},
+        Button{ enabled, "Advanced" },
+        
+    };
+};
+
+
+
+
 
 #define kExporterFlags canMovieExportFiles | canMovieExportValidateMovie | \
 canMovieExportFromProcedures | movieExportMustGetSourceMediaType | \
@@ -273,5 +302,6 @@ resource 'STR ' (262) {
 resource 'dlle' (262) {
 	"WebMExportComponentDispatch"
 };
+
 
 

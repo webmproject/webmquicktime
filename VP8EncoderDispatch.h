@@ -7,6 +7,13 @@
 // be found in the AUTHORS file in the root of the source tree.
 
 
+/*kImageCodecGetDITLForSizeSelect    = 0x002E
+kImageCodecDITLInstallSelect       = 0x002F
+kImageCodecDITLEventSelect         = 0x0030
+kImageCodecDITLItemSelect          = 0x0031
+kImageCodecDITLRemoveSelect        = 0x0032
+kImageCodecDITLValidateInputSelect = 0x0033*/
+
 
 ComponentSelectorOffset(8)
 
@@ -72,12 +79,12 @@ ComponentError(42)
 ComponentError(GetDecompressLatency)
 ComponentError(MergeFloatingImageOntoWindow)
 ComponentError(RemoveFloatingImage)                 // 45
-ComponentError(GetDITLForSize)
-ComponentError(DITLInstall)
-ComponentError(DITLEvent)
-ComponentError(DITLItem)
-ComponentError(DITLRemove)                              // 50
-ComponentError(DITLValidateInput)
+ComponentCall(GetDITLForSize)
+ComponentCall(DITLInstall)
+ComponentCall(DITLEvent)
+ComponentCall(DITLItem)
+ComponentCall(DITLRemove)                              // 50
+ComponentCall(DITLValidateInput)
 ComponentError(52)
 ComponentError(53)
 ComponentError(GetPreferredChunkSizeAndAlignment)

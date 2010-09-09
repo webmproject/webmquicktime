@@ -34,8 +34,7 @@ ComponentResult getWindow(WindowRef *window)
         goto bail;
     }
 
-    err = CreateNibReferenceWithCFBundle(bundle, CFSTR("WebMExport"), &nibRef);  //TODO change this to webm
-
+    err = CreateNibReferenceWithCFBundle(bundle, CFSTR("WebMExport"), &nibRef);
     if (err)
     {
         dbg_printf("[WebM]  >> Error :: CreateNibReferenceWithCFBundle\n");

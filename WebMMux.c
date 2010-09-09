@@ -406,7 +406,6 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     ebml.offset.hi = 0;
     ebml.offset.lo = 0;
     
-    int total_passes = 1;
 
     EbmlLoc startSegment, trackLoc, cuesLoc, segmentInfoLoc, seekInfoLoc;
     globals->progressOpen = false;
@@ -423,6 +422,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
     Boolean bExportVideo = globals->bMovieHasVideo && globals->bExportVideo;
     Boolean bExportAudio = globals->bMovieHasAudio && globals->bExportAudio;
+    Boolean bTwoPass = globals->bTwoPass && bExportVideo;
 
     HLock((Handle)globals->streams);
     err = _updateProgressBar(globals, 0.0);
@@ -534,7 +534,12 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         Ebml_EndSubElement(&ebml, &globals->clusterStart);   //this writes cluster size multiple times, but works
 
         if (duration != 0.0)  //if duration is 0, can't show anything
-            err = _updateProgressBar(globals, minTimeMs / 1000.0 / duration );
+        {
+            double percentComplete = minTimeMs / 1000.0 / duration;
+            if (bTwoPass)
+                percentComplete = 50.0 + percentComplete/2.0;
+            err = _updateProgressBar(globals, percentComplete );
+        }
         if (err ) goto bail;
     }
 

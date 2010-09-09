@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		8D01CCCA0486CAD60068D4B7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
+		BB124AE012392B0300A26F24 /* VP8EncoderGui.c in Sources */ = {isa = PBXBuildFile; fileRef = BB124ADF12392B0300A26F24 /* VP8EncoderGui.c */; };
 		BB98158B11FF19420031AA75 /* VP8CodecUniversal.r in Rez */ = {isa = PBXBuildFile; fileRef = BB98158A11FF19420031AA75 /* VP8CodecUniversal.r */; };
 		BB98158D11FF19600031AA75 /* libvpx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BB98158C11FF19600031AA75 /* libvpx.a */; };
 		BB9815A711FF1BCF0031AA75 /* WebMAudioStream.c in Sources */ = {isa = PBXBuildFile; fileRef = BB98159311FF1BCF0031AA75 /* WebMAudioStream.c */; };
@@ -40,6 +41,9 @@
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		8D01CCD10486CAD60068D4B7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D01CCD20486CAD60068D4B7 /* WebM.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WebM.component; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB124ADE12392B0300A26F24 /* VP8EncoderGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VP8EncoderGui.h; sourceTree = "<group>"; };
+		BB124ADF12392B0300A26F24 /* VP8EncoderGui.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = VP8EncoderGui.c; sourceTree = "<group>"; };
+		BB155ABC1236A314003707C7 /* VP8Encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VP8Encoder.h; sourceTree = "<group>"; };
 		BB98158A11FF19420031AA75 /* VP8CodecUniversal.r */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.rez; path = VP8CodecUniversal.r; sourceTree = "<group>"; };
 		BB98158C11FF19600031AA75 /* libvpx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvpx.a; path = lib/libvpx.a; sourceTree = "<group>"; };
 		BB98159311FF1BCF0031AA75 /* WebMAudioStream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = WebMAudioStream.c; sourceTree = "<group>"; };
@@ -177,6 +181,9 @@
 			children = (
 				BB9815B311FF1C290031AA75 /* VP8Encoder.c */,
 				BB9815B411FF1C290031AA75 /* VP8EncoderDispatch.h */,
+				BB155ABC1236A314003707C7 /* VP8Encoder.h */,
+				BB124ADE12392B0300A26F24 /* VP8EncoderGui.h */,
+				BB124ADF12392B0300A26F24 /* VP8EncoderGui.c */,
 			);
 			name = VP8Encoder;
 			sourceTree = "<group>";
@@ -334,6 +341,7 @@
 				BB9815D011FF1CFA0031AA75 /* testlibmkv.c in Sources */,
 				BB9815D111FF1CFA0031AA75 /* WebMElement.c in Sources */,
 				BB98161B11FF1FC60031AA75 /* EbmlDataHWriter.c in Sources */,
+				BB124AE012392B0300A26F24 /* VP8EncoderGui.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

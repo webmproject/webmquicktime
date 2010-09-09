@@ -17,38 +17,18 @@
 #include <ImageCodec.h>
 #endif
 
+#include "log.h"
+#include "Raw_debug.h"
+
 #include "VP8CodecVersion.h"
 #define HAVE_CONFIG_H "vpx_codecs_config.h"
 #include "vpx/vpx_encoder.h"
 #include "vpx/vpx_codec_impl_top.h"
 #include "vpx/vpx_codec_impl_bottom.h"
 #include "vpx/vp8cx.h"
-#include "log.h"
-#include "Raw_debug.h"
+#include "VP8Encoder.h"
+#include "VP8EncoderGui.h"
 
-
-typedef struct
-{
-    ComponentInstance               self;
-    ComponentInstance               target;
-
-    ICMCompressorSessionRef         session; // NOTE: we do not need to retain or release this
-    ICMCompressionSessionOptionsRef sessionOptions;
-
-    long                            width;
-    long                            height;
-    size_t                          maxEncodedDataSize;
-    int                             nextDecodeNumber;
-
-    //VP8 Specific Variables
-    vpx_codec_err_t      res;
-    vpx_codec_ctx_t      *codec;
-    vpx_codec_enc_cfg_t  *cfg;
-    vpx_image_t          *raw;
-    int                  frameCount;
-
-
-} VP8EncoderGlobalsRecord, *VP8EncoderGlobals;
 
 // Setup required for ComponentDispatchHelper.c
 #define IMAGECODEC_BASENAME()       VP8_Encoder_
@@ -112,6 +92,7 @@ VP8_Encoder_Open(
     glob->raw = NULL;
     glob->codec = NULL;
     glob->cfg = calloc(1, sizeof(vpx_codec_enc_cfg_t));
+    glob->numPasses = 1; //hopefully I can make this value save....
 
     if (! glob->cfg)
     {
@@ -831,3 +812,114 @@ bail:
 }
 
 
+//These DITL functions are based off of tech notes here http://developer.apple.com/mac/library/technotes/tn2002/tn2081.html
+
+
+// Item numbers
+//
+#define kItemOnePass   1
+#define kItemTwoPass   2
+#define kItemAdvanced  3
+
+pascal ComponentResult VP8_Encoder_GetDITLForSize(VP8EncoderGlobals store,
+                                              Handle *ditl,
+                                              Point *requestedSize)
+{
+    Handle h = NULL;
+    ComponentResult err = noErr;
+    
+    switch (requestedSize->h) {
+        case kSGSmallestDITLSize:
+            GetComponentResource((Component)(store->self), FOUR_CHAR_CODE('DITL'),
+                                 kVP8_EncoderDITLResID, &h);
+            if (NULL != h) *ditl = h;
+            else err = resNotFound;
+            break;
+        default:
+            err = badComponentSelector;
+            break;
+    }
+    
+    return err;
+}
+
+pascal ComponentResult VP8_Encoder_DITLInstall(VP8EncoderGlobals storage,
+                                           DialogRef d, 
+                                           short itemOffset)
+{
+    ControlRef cRef;
+    
+    
+    unsigned long onePassRadio = (*storage).numPasses == 1;
+    unsigned long twoPassRadio = (*storage).numPasses == 2;
+    
+    GetDialogItemAsControl(d, kItemOnePass + itemOffset, &cRef);
+    SetControl32BitValue(cRef, onePassRadio);
+    
+    GetDialogItemAsControl(d, kItemTwoPass + itemOffset, &cRef);
+    SetControl32BitValue(cRef, twoPassRadio);
+    
+    return noErr;
+}
+
+pascal ComponentResult VP8_Encoder_DITLEvent(VP8EncoderGlobals storage, 
+                                         DialogRef d, 
+                                         short itemOffset,
+                                         const EventRecord *theEvent,
+                                         short *itemHit,
+                                         Boolean *handled)
+{
+    *handled = false;
+    return noErr;
+}
+
+pascal ComponentResult VP8_Encoder_DITLItem(VP8EncoderGlobals storage,
+                                        DialogRef d, 
+                                        short itemOffset, 
+                                        short itemNum)
+{
+    ControlRef onePassControlRef;
+    ControlRef twoPassControlRef;
+    GetDialogItemAsControl(d, itemOffset + kItemOnePass, &onePassControlRef);
+    GetDialogItemAsControl(d, itemOffset + kItemTwoPass, &twoPassControlRef);
+    
+    
+    switch (itemNum - itemOffset) {
+        case kItemOnePass:
+            SetControl32BitValue(onePassControlRef, 1);
+            SetControl32BitValue(twoPassControlRef, 0);
+            break;
+        case kItemTwoPass:
+            SetControl32BitValue(onePassControlRef, 0);
+            SetControl32BitValue(twoPassControlRef, 1);
+            break;
+        case kItemAdvanced:
+            runAdvancedWindow(storage);
+            break;
+    }
+    
+    return noErr;
+}
+
+pascal ComponentResult VP8_Encoder_DITLRemove(VP8EncoderGlobals storage,
+                                          DialogRef d,
+                                          short itemOffset)
+{
+    ControlRef cRef;
+    unsigned long onePass;
+    
+    GetDialogItemAsControl(d, kItemOnePass + itemOffset, &cRef);
+    onePass = GetControl32BitValue(cRef);
+    
+    (*storage).numPasses = onePass?1:2;
+    
+    return noErr;
+}
+
+pascal ComponentResult VP8_Encoder_DITLValidateInput(VP8EncoderGlobals storage,
+                                                 Boolean *ok)
+{
+    if (ok)
+        *ok = true;
+    return noErr;
+}
