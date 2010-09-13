@@ -9,6 +9,8 @@
       <string name="bounds">437 55 453 156 </string>
     </object>
     <object class="IBCarbonComboBox" id="238">
+      <ostype name="controlSignature">VP8A</ostype>
+      <int name="controlID">5</int>
       <ostype name="command">VPeu</ostype>
       <boolean name="autoSizeList">FALSE</boolean>
       <boolean name="autoDisclosure">FALSE</boolean>
@@ -27,6 +29,8 @@
       <string name="bounds">144 45 160 182 </string>
     </object>
     <object class="IBCarbonEditText" id="246">
+      <ostype name="controlSignature">VP8A</ostype>
+      <int name="controlID">18</int>
       <ostype name="command">VPdt</ostype>
       <boolean name="useInlineInput">TRUE</boolean>
       <boolean name="isUnicode">TRUE</boolean>
@@ -44,6 +48,8 @@
       <string name="viewFrame">359 453 300 162 </string>
       <array count="7" name="subviews">
         <object class="IBCarbonCheckBox" id="265">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">25</int>
           <ostype name="command">VPar</ostype>
           <string name="title">Enable</string>
           <string name="viewFrame">14 30 95 18 </string>
@@ -65,6 +71,8 @@
           <string name="bounds">583 375 599 453 </string>
         </object>
         <object class="IBCarbonEditText" id="269">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">26</int>
           <ostype name="command">VPam</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -74,6 +82,8 @@
           <string name="bounds">520 511 536 632 </string>
         </object>
         <object class="IBCarbonEditText" id="270">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">27</int>
           <ostype name="command">VPas</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -83,6 +93,8 @@
           <string name="bounds">550 511 566 632 </string>
         </object>
         <object class="IBCarbonComboBox" id="271">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">28</int>
           <ostype name="command">VPat</ostype>
           <boolean name="autoSizeList">FALSE</boolean>
           <boolean name="autoDisclosure">FALSE</boolean>
@@ -98,6 +110,8 @@
       <string name="bounds">453 359 615 659 </string>
     </object>
     <object class="IBCarbonEditText" id="243">
+      <ostype name="controlSignature">VP8A</ostype>
+      <int name="controlID">10</int>
       <ostype name="command">VPup</ostype>
       <boolean name="useInlineInput">TRUE</boolean>
       <boolean name="isUnicode">TRUE</boolean>
@@ -112,6 +126,8 @@
       <string name="bounds">224 45 240 152 </string>
     </object>
     <object class="IBCarbonEditText" id="252">
+      <ostype name="controlSignature">VP8A</ostype>
+      <int name="controlID">24</int>
       <ostype name="command">VPMi</ostype>
       <boolean name="useInlineInput">TRUE</boolean>
       <boolean name="isUnicode">TRUE</boolean>
@@ -227,6 +243,8 @@
     </object>
     <reference idRef="167"/>
     <object class="IBCarbonEditText" id="216">
+      <ostype name="controlSignature">VP8A</ostype>
+      <int name="controlID">3</int>
       <ostype name="command">VPer</ostype>
       <boolean name="useInlineInput">TRUE</boolean>
       <boolean name="isUnicode">TRUE</boolean>
@@ -237,6 +255,8 @@
     </object>
     <reference idRef="268"/>
     <object class="IBCarbonEditText" id="245">
+      <ostype name="controlSignature">VP8A</ostype>
+      <int name="controlID">17</int>
       <ostype name="command">VPut</ostype>
       <boolean name="useInlineInput">TRUE</boolean>
       <boolean name="isUnicode">TRUE</boolean>
@@ -283,6 +303,8 @@
           <string name="bounds">64 45 80 136 </string>
         </object>
         <object class="IBCarbonEditText" id="213">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">1</int>
           <ostype name="command">VPdl</ostype>
           <string name="helpTagText">help tooltip</string>
           <boolean name="useInlineInput">TRUE</boolean>
@@ -293,6 +315,8 @@
           <string name="bounds">21 193 37 314 </string>
         </object>
         <object class="IBCarbonEditText" id="214">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">2</int>
           <ostype name="command">VPtc</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -309,6 +333,8 @@
         <reference idRef="216"/>
         <reference idRef="217"/>
         <object class="IBCarbonEditText" id="218">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">4</int>
           <ostype name="command">VPdt</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -330,6 +356,8 @@
         </object>
         <reference idRef="238"/>
         <object class="IBCarbonEditText" id="239">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">6</int>
           <ostype name="command">VPlf</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -339,6 +367,8 @@
           <string name="bounds">221 193 237 314 </string>
         </object>
         <object class="IBCarbonEditText" id="240">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">7</int>
           <ostype name="command">VPtp</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -361,6 +391,8 @@
               <string name="bounds">318 55 334 167 </string>
             </object>
             <object class="IBCarbonEditText" id="241">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">8</int>
               <ostype name="command">VPmq</ostype>
               <boolean name="useInlineInput">TRUE</boolean>
               <boolean name="isUnicode">TRUE</boolean>
@@ -371,6 +403,8 @@
             </object>
             <reference idRef="223"/>
             <object class="IBCarbonEditText" id="242">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">9</int>
               <ostype name="command">VPMq</ostype>
               <boolean name="useInlineInput">TRUE</boolean>
               <boolean name="isUnicode">TRUE</boolean>
@@ -398,6 +432,8 @@
             <reference idRef="243"/>
             <reference idRef="225"/>
             <object class="IBCarbonEditText" id="244">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">11</int>
               <ostype name="command">VPop</ostype>
               <boolean name="useInlineInput">TRUE</boolean>
               <boolean name="isUnicode">TRUE</boolean>
@@ -410,6 +446,8 @@
           <string name="bounds">379 39 469 330 </string>
         </object>
         <object class="IBCarbonEditText" id="260">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">12</int>
           <ostype name="command">VPcu</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -419,6 +457,8 @@
           <string name="bounds">484 193 500 314 </string>
         </object>
         <object class="IBCarbonEditText" id="261">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">13</int>
           <ostype name="command">VPns</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -428,6 +468,8 @@
           <string name="bounds">524 194 540 315 </string>
         </object>
         <object class="IBCarbonEditText" id="262">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">14</int>
           <ostype name="command">VPs </ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -437,6 +479,8 @@
           <string name="bounds">564 193 580 314 </string>
         </object>
         <object class="IBCarbonEditText" id="263">
+          <ostype name="controlSignature">VP8A</ostype>
+          <int name="controlID">15</int>
           <ostype name="command">VPmd</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
@@ -454,6 +498,8 @@
           <string name="viewFrame">359 20 300 114 </string>
           <array count="5" name="subviews">
             <object class="IBCarbonCheckBox" id="227">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">16</int>
               <ostype name="command">VPsr</ostype>
               <string name="title">Allowed</string>
               <string name="viewFrame">14 26 90 18 </string>
@@ -490,6 +536,8 @@
               <string name="bounds">250 375 266 490 </string>
             </object>
             <object class="IBCarbonEditText" id="247">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">19</int>
               <ostype name="command">VPds</ostype>
               <boolean name="useInlineInput">TRUE</boolean>
               <boolean name="isUnicode">TRUE</boolean>
@@ -499,6 +547,8 @@
               <string name="bounds">184 510 200 631 </string>
             </object>
             <object class="IBCarbonEditText" id="248">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">20</int>
               <ostype name="command">VPdi</ostype>
               <boolean name="useInlineInput">TRUE</boolean>
               <boolean name="isUnicode">TRUE</boolean>
@@ -508,6 +558,8 @@
               <string name="bounds">216 510 232 631 </string>
             </object>
             <object class="IBCarbonEditText" id="249">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">21</int>
               <ostype name="command">VPdo</ostype>
               <boolean name="useInlineInput">TRUE</boolean>
               <boolean name="isUnicode">TRUE</boolean>
@@ -539,6 +591,8 @@
             </object>
             <reference idRef="237"/>
             <object class="IBCarbonComboBox" id="250">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">22</int>
               <ostype name="command">VPkm</ostype>
               <boolean name="autoSizeList">FALSE</boolean>
               <boolean name="autoDisclosure">FALSE</boolean>
@@ -552,6 +606,8 @@
               <string name="bounds">337 507 358 634 </string>
             </object>
             <object class="IBCarbonEditText" id="251">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">23</int>
               <ostype name="command">VPmi</ostype>
               <boolean name="useInlineInput">TRUE</boolean>
               <boolean name="isUnicode">TRUE</boolean>
