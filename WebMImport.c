@@ -14,9 +14,13 @@
 
 //#include "mkvreader_wrap.h"
 //#include "mkvparser_wrap.h"
+#include "mkvparser.hpp"
+#include "mkvreaderqt.hpp"
 
+extern "C" {
 #include "log.h"
-
+}
+  
 typedef struct {
   ComponentInstance self;
   long  dataHOffset;
@@ -33,14 +37,19 @@ typedef struct {
 #define COMPONENT_DISPATCH_FILE "WebMImportDispatch.h"
 #define COMPONENT_UPP_SELECT_ROOT() MovieImport
 
-
+extern "C" {
 #include <CoreServices/Components.k.h>
 #include <QuickTime/QuickTimeComponents.k.h>
 #include <QuickTime/ImageCompression.k.h>   // for ComponentProperty selectors
 #include <QuickTime/ComponentDispatchHelper.c>
-
+}
 
 #pragma mark-
+extern "C" {
+  pascal ComponentResult WebMImportOpen(WebMImportGlobals store, ComponentInstance self);
+  //...
+}
+
 //--------------------------------------------------------------------------------
 // Component Open Request - Required
 pascal ComponentResult WebMImportOpen(WebMImportGlobals store, ComponentInstance self)
@@ -131,13 +140,21 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
 	if (inFlags & movieImportMustUseTrack)
 		return paramErr;
 
+  // try to use c++ lib
+  long long pos = 0;
+  MkvReaderQT reader;
+  reader.Open(dataRef, dataRefType);
+  using namespace mkvparser;
+  EBMLHeader ebmlHeader;
+  ebmlHeader.Parse(&reader, pos);
+  
 #if 0
+  // try to use c wrapper for libmkvreader and libmkvparser
   MkvReaderQT* reader = NULL;
   reader = CallMkvReaderQTInit();
   if (reader == NULL) goto bail;
   stat = CallMkvReaderQTOpen(reader, dataRef, dataRefType);
   if (stat) goto bail;
-  
   
   
   // Get the File Header - synchronous read.

@@ -280,53 +280,5 @@ resource 'dlle' (262) {
 };
 
 
-//
-// WebM Import component
-//
-// canMovieImportValidateFile
-// canMovieImportAvoidBlocking
-// canMovieImportWithIdle
-// canMovieImportPartial | canMovieImportInPlace | hasMovieImportMIMEList | \
-// canMovieImportValidateDataReferences | \
-
-#define kImporterFlags canMovieImportFiles | canMovieImportDataReferences | cmpThreadSafe
-
-resource 'STR ' (263) {
-  "WebM" "0.0.1" " see http://webmproject.org"
-};
-
-
-resource 'thng' (263) {
-  'eat ',							// Type			
-	'WebM',							// SubType
-	kGoogManufacturer,					// Manufacturer  
-	0,								// - use componentHasMultiplePlatforms
-	0,
-	0,
-	0,
-	'STR ',							// Name Type
-	260,							// Name ID
-	'STR ',							// Info Type
-	263,							// Info ID
-	0,								// Icon Type
-	0,								// Icon ID
-	kImporterFlags,
-	componentHasMultiplePlatforms +			// Registration Flags 
-	componentDoAutoVersion,
-	0,										// Resource ID of Icon Family
-  {
-    kImporterFlags | cmpThreadSafe, 
-    'dlle',
-    263,
-    platformIA32NativeEntryPoint,
-  },
-  0,0;
-};
-
-// Code Entry Point for Mach-O and Windows
-resource 'dlle' (263) {
-	"WebMImportComponentDispatch"
-};
-
 
 

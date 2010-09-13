@@ -13,7 +13,7 @@
 #include "WebMExportVersions.h"
 
 // The high word is the codecInterfaceVersion
-#define kWebMImportVersion  (0x0010003)
+#define kWebMImportVersion  (0x00010003)
 
 
 #endif
