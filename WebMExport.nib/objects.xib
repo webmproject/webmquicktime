@@ -3,238 +3,38 @@
   <object name="rootObject" class="NSCustomObject" id="1">
   </object>
   <array count="73" name="allObjects">
-    <object class="IBCarbonStaticText" id="259">
-      <string name="title">Motion Detection Threshold</string>
-      <int name="justification">-2</int>
-      <string name="viewFrame">45 589 129 31 </string>
-      <string name="bounds">589 45 620 174 </string>
+    <object class="IBCarbonStaticText" id="225">
+      <string name="title">Overshoot %</string>
+      <string name="viewFrame">16 58 101 16 </string>
+      <string name="bounds">437 55 453 156 </string>
     </object>
-    <object class="IBCarbonStaticText" id="268">
-      <string name="title">Type</string>
-      <string name="viewFrame">16 130 78 16 </string>
-      <string name="bounds">583 375 599 453 </string>
-    </object>
-    <object class="IBCarbonStaticText" id="224">
-      <string name="title">Undershoot %</string>
-      <string name="viewFrame">16 21 107 16 </string>
-      <string name="bounds">400 55 416 162 </string>
-    </object>
-    <object class="IBCarbonStaticText" id="267">
-      <string name="title">Strength</string>
-      <string name="viewFrame">16 97 78 16 </string>
-      <string name="bounds">550 375 566 453 </string>
-    </object>
-    <object class="IBCarbonEditText" id="245">
-      <boolean name="useInlineInput">TRUE</boolean>
-      <boolean name="isUnicode">TRUE</boolean>
-      <boolean name="isSingleLine">TRUE</boolean>
-      <string name="foreColor">0 0 0 </string>
-      <string name="viewFrame">149 58 121 16 </string>
-      <string name="bounds">78 508 94 629 </string>
-    </object>
-    <object class="IBCarbonButton" id="181">
-      <int name="controlID">2</int>
-      <ostype name="command">not!</ostype>
-      <object name="layoutInfo" class="IBCarbonHILayoutInfo">
-        <int name="bindingBottomKind">2</int>
-        <int name="bindingRightKind">2</int>
-      </object>
-      <int name="buttonType">2</int>
-      <string name="title">Cancel</string>
-      <string name="viewFrame">29 167 69 20 </string>
-      <string name="bounds">167 29 187 98 </string>
-    </object>
-    <object class="IBCarbonGroupBox" id="226">
-      <int name="fontStyle">0</int>
-      <string name="title">Spatial Resampling</string>
-      <boolean name="autoToggle">FALSE</boolean>
-      <boolean name="primary">FALSE</boolean>
-      <int name="selectedItem">0</int>
-      <string name="viewFrame">359 20 300 114 </string>
-      <array count="5" name="subviews">
-        <object class="IBCarbonCheckBox" id="227">
-          <string name="title">Allowed</string>
-          <string name="viewFrame">14 26 90 18 </string>
-          <string name="bounds">46 373 64 463 </string>
-        </object>
-        <object class="IBCarbonStaticText" id="228">
-          <string name="title">Up Threshold</string>
-          <string name="viewFrame">16 58 100 16 </string>
-          <string name="bounds">78 375 94 475 </string>
-        </object>
-        <object class="IBCarbonStaticText" id="229">
-          <string name="title">Down Threshold</string>
-          <string name="viewFrame">16 88 107 16 </string>
-          <string name="bounds">108 375 124 482 </string>
-        </object>
-        <reference idRef="245"/>
-        <object class="IBCarbonEditText" id="246">
-          <boolean name="useInlineInput">TRUE</boolean>
-          <boolean name="isUnicode">TRUE</boolean>
-          <boolean name="isSingleLine">TRUE</boolean>
-          <string name="foreColor">0 0 0 </string>
-          <string name="viewFrame">149 88 121 16 </string>
-          <string name="bounds">108 508 124 629 </string>
-        </object>
+    <object class="IBCarbonComboBox" id="238">
+      <ostype name="command">VPeu</ostype>
+      <boolean name="autoSizeList">FALSE</boolean>
+      <boolean name="autoDisclosure">FALSE</boolean>
+      <boolean name="autoCompletion">FALSE</boolean>
+      <array count="3" name="list">
+        <string></string>
+        <string>Constant Bitrate</string>
+        <string>Variable Bitrate</string>
       </array>
-      <string name="bounds">20 359 134 659 </string>
+      <string name="viewFrame">190 180 127 21 </string>
+      <string name="bounds">180 190 201 317 </string>
     </object>
-    <object class="IBCarbonStaticText" id="215">
-      <string name="title">Error Resilient</string>
-      <string name="viewFrame">45 104 101 16 </string>
-      <string name="bounds">104 45 120 146 </string>
+    <object class="IBCarbonStaticText" id="217">
+      <string name="title">Dropframe Threshold</string>
+      <string name="viewFrame">45 144 137 16 </string>
+      <string name="bounds">144 45 160 182 </string>
     </object>
-    <object class="IBCarbonGroupBox" id="255">
-      <int name="fontStyle">0</int>
-      <string name="title">Rate Control</string>
-      <boolean name="autoToggle">FALSE</boolean>
-      <boolean name="primary">FALSE</boolean>
-      <int name="selectedItem">0</int>
-      <string name="viewFrame">39 379 291 90 </string>
-      <array count="4" name="subviews">
-        <reference idRef="224"/>
-        <object class="IBCarbonEditText" id="243">
-          <boolean name="useInlineInput">TRUE</boolean>
-          <boolean name="isUnicode">TRUE</boolean>
-          <boolean name="isSingleLine">TRUE</boolean>
-          <string name="foreColor">0 0 0 </string>
-          <string name="viewFrame">151 24 121 16 </string>
-          <string name="bounds">403 190 419 311 </string>
-        </object>
-        <object class="IBCarbonStaticText" id="225">
-          <string name="title">Overshoot %</string>
-          <string name="viewFrame">16 58 101 16 </string>
-          <string name="bounds">437 55 453 156 </string>
-        </object>
-        <object class="IBCarbonEditText" id="244">
-          <boolean name="useInlineInput">TRUE</boolean>
-          <boolean name="isUnicode">TRUE</boolean>
-          <boolean name="isSingleLine">TRUE</boolean>
-          <string name="foreColor">0 0 0 </string>
-          <string name="viewFrame">151 56 121 16 </string>
-          <string name="bounds">435 190 451 311 </string>
-        </object>
-      </array>
-      <string name="bounds">379 39 469 330 </string>
-    </object>
-    <object class="IBCarbonStaticText" id="235">
-      <string name="title">Mode</string>
-      <string name="viewFrame">16 35 78 16 </string>
-      <string name="bounds">342 375 358 453 </string>
-    </object>
-    <object class="IBCarbonEditText" id="239">
+    <object class="IBCarbonEditText" id="246">
+      <ostype name="command">VPdt</ostype>
       <boolean name="useInlineInput">TRUE</boolean>
       <boolean name="isUnicode">TRUE</boolean>
       <boolean name="isSingleLine">TRUE</boolean>
       <string name="foreColor">0 0 0 </string>
-      <string name="viewFrame">193 221 121 16 </string>
-      <string name="bounds">221 193 237 314 </string>
+      <string name="viewFrame">149 88 121 16 </string>
+      <string name="bounds">108 508 124 629 </string>
     </object>
-    <reference idRef="244"/>
-    <object class="IBCarbonEditText" id="240">
-      <boolean name="useInlineInput">TRUE</boolean>
-      <boolean name="isUnicode">TRUE</boolean>
-      <boolean name="isSingleLine">TRUE</boolean>
-      <string name="foreColor">0 0 0 </string>
-      <string name="viewFrame">193 261 121 16 </string>
-      <string name="bounds">261 193 277 314 </string>
-    </object>
-    <object class="IBCarbonStaticText" id="266">
-      <string name="title">Max Frames</string>
-      <string name="viewFrame">16 67 78 16 </string>
-      <string name="bounds">520 375 536 453 </string>
-    </object>
-    <object class="IBCarbonEditText" id="260">
-      <boolean name="useInlineInput">TRUE</boolean>
-      <boolean name="isUnicode">TRUE</boolean>
-      <boolean name="isSingleLine">TRUE</boolean>
-      <string name="foreColor">0 0 0 </string>
-      <string name="viewFrame">193 484 121 16 </string>
-      <string name="bounds">484 193 500 314 </string>
-    </object>
-    <object class="IBCarbonStaticText" id="211">
-      <string name="title">Deadline</string>
-      <string name="viewFrame">45 24 78 16 </string>
-      <string name="bounds">24 45 40 123 </string>
-    </object>
-    <reference idRef="228"/>
-    <object class="IBCarbonEditText" id="213">
-      <string name="helpTagText">help tooltip</string>
-      <boolean name="useInlineInput">TRUE</boolean>
-      <boolean name="isUnicode">TRUE</boolean>
-      <boolean name="isSingleLine">TRUE</boolean>
-      <string name="foreColor">0 0 0 </string>
-      <string name="viewFrame">193 21 121 16 </string>
-      <string name="bounds">21 193 37 314 </string>
-    </object>
-    <object class="IBCarbonEditText" id="216">
-      <boolean name="useInlineInput">TRUE</boolean>
-      <boolean name="isUnicode">TRUE</boolean>
-      <boolean name="isSingleLine">TRUE</boolean>
-      <string name="foreColor">0 0 0 </string>
-      <string name="viewFrame">193 101 121 16 </string>
-      <string name="bounds">101 193 117 314 </string>
-    </object>
-    <object class="IBCarbonGroupBox" id="230">
-      <int name="fontStyle">0</int>
-      <string name="title">Decode Buffer</string>
-      <boolean name="autoToggle">FALSE</boolean>
-      <boolean name="primary">FALSE</boolean>
-      <int name="selectedItem">0</int>
-      <string name="viewFrame">359 154 300 137 </string>
-      <array count="6" name="subviews">
-        <object class="IBCarbonStaticText" id="231">
-          <string name="title">Size (ms)</string>
-          <string name="viewFrame">16 30 78 16 </string>
-          <string name="bounds">184 375 200 453 </string>
-        </object>
-        <object class="IBCarbonStaticText" id="232">
-          <string name="title">Initial Size (ms)</string>
-          <string name="viewFrame">16 62 115 16 </string>
-          <string name="bounds">216 375 232 490 </string>
-        </object>
-        <object class="IBCarbonStaticText" id="233">
-          <string name="title">Optimal Size (ms)</string>
-          <string name="viewFrame">16 96 115 16 </string>
-          <string name="bounds">250 375 266 490 </string>
-        </object>
-        <object class="IBCarbonEditText" id="247">
-          <boolean name="useInlineInput">TRUE</boolean>
-          <boolean name="isUnicode">TRUE</boolean>
-          <boolean name="isSingleLine">TRUE</boolean>
-          <string name="foreColor">0 0 0 </string>
-          <string name="viewFrame">151 30 121 16 </string>
-          <string name="bounds">184 510 200 631 </string>
-        </object>
-        <object class="IBCarbonEditText" id="248">
-          <boolean name="useInlineInput">TRUE</boolean>
-          <boolean name="isUnicode">TRUE</boolean>
-          <boolean name="isSingleLine">TRUE</boolean>
-          <string name="foreColor">0 0 0 </string>
-          <string name="viewFrame">151 62 121 16 </string>
-          <string name="bounds">216 510 232 631 </string>
-        </object>
-        <object class="IBCarbonEditText" id="249">
-          <boolean name="useInlineInput">TRUE</boolean>
-          <boolean name="isUnicode">TRUE</boolean>
-          <boolean name="isSingleLine">TRUE</boolean>
-          <string name="foreColor">0 0 0 </string>
-          <string name="viewFrame">151 96 121 16 </string>
-          <string name="bounds">250 510 266 631 </string>
-        </object>
-      </array>
-      <string name="bounds">154 359 291 659 </string>
-    </object>
-    <object class="IBCarbonEditText" id="263">
-      <boolean name="useInlineInput">TRUE</boolean>
-      <boolean name="isUnicode">TRUE</boolean>
-      <boolean name="isSingleLine">TRUE</boolean>
-      <string name="foreColor">0 0 0 </string>
-      <string name="viewFrame">193 596 121 16 </string>
-      <string name="bounds">596 193 612 314 </string>
-    </object>
-    <reference idRef="225"/>
-    <reference idRef="249"/>
     <object class="IBCarbonGroupBox" id="264">
       <int name="fontStyle">0</int>
       <string name="title">Alt Ref Frames</string>
@@ -244,14 +44,28 @@
       <string name="viewFrame">359 453 300 162 </string>
       <array count="7" name="subviews">
         <object class="IBCarbonCheckBox" id="265">
+          <ostype name="command">VPar</ostype>
           <string name="title">Enable</string>
           <string name="viewFrame">14 30 95 18 </string>
           <string name="bounds">483 373 501 468 </string>
         </object>
-        <reference idRef="266"/>
-        <reference idRef="267"/>
-        <reference idRef="268"/>
+        <object class="IBCarbonStaticText" id="266">
+          <string name="title">Max Frames</string>
+          <string name="viewFrame">16 67 78 16 </string>
+          <string name="bounds">520 375 536 453 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="267">
+          <string name="title">Strength</string>
+          <string name="viewFrame">16 97 78 16 </string>
+          <string name="bounds">550 375 566 453 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="268">
+          <string name="title">Type</string>
+          <string name="viewFrame">16 130 78 16 </string>
+          <string name="bounds">583 375 599 453 </string>
+        </object>
         <object class="IBCarbonEditText" id="269">
+          <ostype name="command">VPam</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
           <boolean name="isSingleLine">TRUE</boolean>
@@ -260,6 +74,7 @@
           <string name="bounds">520 511 536 632 </string>
         </object>
         <object class="IBCarbonEditText" id="270">
+          <ostype name="command">VPas</ostype>
           <boolean name="useInlineInput">TRUE</boolean>
           <boolean name="isUnicode">TRUE</boolean>
           <boolean name="isSingleLine">TRUE</boolean>
@@ -268,6 +83,7 @@
           <string name="bounds">550 511 566 632 </string>
         </object>
         <object class="IBCarbonComboBox" id="271">
+          <ostype name="command">VPat</ostype>
           <boolean name="autoSizeList">FALSE</boolean>
           <boolean name="autoDisclosure">FALSE</boolean>
           <boolean name="autoCompletion">FALSE</boolean>
@@ -275,329 +91,46 @@
             <string></string>
             <string>TODO</string>
           </array>
-          <null name="title"/>
           <string name="viewFrame">149 128 127 21 </string>
           <string name="bounds">581 508 602 635 </string>
         </object>
       </array>
       <string name="bounds">453 359 615 659 </string>
     </object>
-    <object class="IBCarbonWindow" id="198">
-      <boolean name="hasCloseBox">TRUE</boolean>
-      <boolean name="hasHorizontalZoom">TRUE</boolean>
-      <boolean name="hasVerticalZoom">TRUE</boolean>
-      <boolean name="receiveUpdates">FALSE</boolean>
-      <boolean name="isResizable">FALSE</boolean>
-      <boolean name="compositing">TRUE</boolean>
-      <int name="carbonWindowClass">4</int>
-      <int name="windowPosition">7</int>
-      <string name="title">VP8 Advanced</string>
-      <object name="rootControl" class="IBCarbonRootControl" id="199">
-        <string name="viewFrame">0 0 716 725 </string>
-        <array count="30" name="subviews">
-          <object class="IBCarbonButton" id="209">
-            <ostype name="command">ok  </ostype>
-            <int name="iconPosition">0</int>
-            <string name="title">OK</string>
-            <string name="viewFrame">247 678 70 20 </string>
-            <string name="bounds">678 247 698 317 </string>
-          </object>
-          <object class="IBCarbonButton" id="210">
-            <ostype name="command">not!</ostype>
-            <int name="iconPosition">0</int>
-            <string name="title">Cancel</string>
-            <string name="viewFrame">341 678 70 20 </string>
-            <string name="bounds">678 341 698 411 </string>
-          </object>
-          <reference idRef="211"/>
-          <object class="IBCarbonStaticText" id="212">
-            <string name="title">Thread Count</string>
-            <string name="viewFrame">45 64 91 16 </string>
-            <string name="bounds">64 45 80 136 </string>
-          </object>
-          <reference idRef="213"/>
-          <object class="IBCarbonEditText" id="214">
-            <boolean name="useInlineInput">TRUE</boolean>
-            <boolean name="isUnicode">TRUE</boolean>
-            <boolean name="isSingleLine">TRUE</boolean>
-            <string name="foreColor">0 0 0 </string>
-            <string name="viewFrame">193 61 121 16 </string>
-            <string name="bounds">61 193 77 314 </string>
-          </object>
-          <reference idRef="215"/>
-          <reference idRef="216"/>
-          <object class="IBCarbonStaticText" id="217">
-            <string name="title">Dropframe Threshold</string>
-            <string name="viewFrame">45 144 137 16 </string>
-            <string name="bounds">144 45 160 182 </string>
-          </object>
-          <object class="IBCarbonEditText" id="218">
-            <boolean name="useInlineInput">TRUE</boolean>
-            <boolean name="isUnicode">TRUE</boolean>
-            <boolean name="isSingleLine">TRUE</boolean>
-            <string name="foreColor">0 0 0 </string>
-            <string name="viewFrame">193 141 123 16 </string>
-            <string name="bounds">141 193 157 316 </string>
-          </object>
-          <object class="IBCarbonStaticText" id="219">
-            <string name="title">End Usage</string>
-            <string name="viewFrame">45 184 78 16 </string>
-            <string name="bounds">184 45 200 123 </string>
-          </object>
-          <object class="IBCarbonStaticText" id="220">
-            <string name="title">Lag In Frames</string>
-            <string name="viewFrame">45 224 107 16 </string>
-            <string name="bounds">224 45 240 152 </string>
-          </object>
-          <object class="IBCarbonStaticText" id="221">
-            <string name="title">Token Partitions</string>
-            <string name="viewFrame">45 264 112 16 </string>
-            <string name="bounds">264 45 280 157 </string>
-          </object>
-          <reference idRef="226"/>
-          <reference idRef="230"/>
-          <object class="IBCarbonGroupBox" id="234">
-            <int name="fontStyle">0</int>
-            <string name="title">KeyFrames</string>
-            <boolean name="autoToggle">FALSE</boolean>
-            <boolean name="primary">FALSE</boolean>
-            <int name="selectedItem">0</int>
-            <string name="viewFrame">359 307 300 143 </string>
-            <array count="6" name="subviews">
-              <reference idRef="235"/>
-              <object class="IBCarbonStaticText" id="236">
-                <string name="title">Min Interval</string>
-                <string name="viewFrame">16 72 78 16 </string>
-                <string name="bounds">379 375 395 453 </string>
-              </object>
-              <object class="IBCarbonStaticText" id="237">
-                <string name="title">Max Interval</string>
-                <string name="viewFrame">16 111 84 16 </string>
-                <string name="bounds">418 375 434 459 </string>
-              </object>
-              <object class="IBCarbonComboBox" id="250">
-                <boolean name="autoSizeList">FALSE</boolean>
-                <boolean name="autoDisclosure">FALSE</boolean>
-                <boolean name="autoCompletion">FALSE</boolean>
-                <array count="3" name="list">
-                  <string></string>
-                  <string>Disabled</string>
-                  <string>Auto</string>
-                </array>
-                <null name="title"/>
-                <string name="viewFrame">148 30 127 21 </string>
-                <string name="bounds">337 507 358 634 </string>
-              </object>
-              <object class="IBCarbonEditText" id="251">
-                <boolean name="useInlineInput">TRUE</boolean>
-                <boolean name="isUnicode">TRUE</boolean>
-                <boolean name="isSingleLine">TRUE</boolean>
-                <string name="foreColor">0 0 0 </string>
-                <string name="viewFrame">151 69 121 16 </string>
-                <string name="bounds">376 510 392 631 </string>
-              </object>
-              <object class="IBCarbonEditText" id="252">
-                <boolean name="useInlineInput">TRUE</boolean>
-                <boolean name="isUnicode">TRUE</boolean>
-                <boolean name="isSingleLine">TRUE</boolean>
-                <string name="foreColor">0 0 0 </string>
-                <string name="viewFrame">151 108 121 16 </string>
-                <string name="bounds">415 510 431 631 </string>
-              </object>
-            </array>
-            <string name="bounds">307 359 450 659 </string>
-          </object>
-          <object class="IBCarbonComboBox" id="238">
-            <boolean name="autoSizeList">FALSE</boolean>
-            <boolean name="autoDisclosure">FALSE</boolean>
-            <boolean name="autoCompletion">FALSE</boolean>
-            <array count="3" name="list">
-              <string></string>
-              <string>Constant Bitrate</string>
-              <string>Variable Bitrate</string>
-            </array>
-            <null name="title"/>
-            <string name="viewFrame">190 180 127 21 </string>
-            <string name="bounds">180 190 201 317 </string>
-          </object>
-          <reference idRef="239"/>
-          <reference idRef="240"/>
-          <object class="IBCarbonGroupBox" id="254">
-            <int name="fontStyle">0</int>
-            <string name="title">Quantizer</string>
-            <boolean name="autoToggle">FALSE</boolean>
-            <boolean name="primary">FALSE</boolean>
-            <int name="selectedItem">0</int>
-            <string name="viewFrame">39 288 291 90 </string>
-            <array count="4" name="subviews">
-              <object class="IBCarbonStaticText" id="222">
-                <string name="title">Min Quantizer</string>
-                <string name="viewFrame">16 30 112 16 </string>
-                <string name="bounds">318 55 334 167 </string>
-              </object>
-              <object class="IBCarbonEditText" id="241">
-                <boolean name="useInlineInput">TRUE</boolean>
-                <boolean name="isUnicode">TRUE</boolean>
-                <boolean name="isSingleLine">TRUE</boolean>
-                <string name="foreColor">0 0 0 </string>
-                <string name="viewFrame">151 27 121 16 </string>
-                <string name="bounds">315 190 331 311 </string>
-              </object>
-              <object class="IBCarbonStaticText" id="223">
-                <string name="title">Max Quantizer</string>
-                <string name="viewFrame">16 58 101 16 </string>
-                <string name="bounds">346 55 362 156 </string>
-              </object>
-              <object class="IBCarbonEditText" id="242">
-                <boolean name="useInlineInput">TRUE</boolean>
-                <boolean name="isUnicode">TRUE</boolean>
-                <boolean name="isSingleLine">TRUE</boolean>
-                <string name="foreColor">0 0 0 </string>
-                <string name="viewFrame">151 61 121 16 </string>
-                <string name="bounds">349 190 365 311 </string>
-              </object>
-            </array>
-            <string name="bounds">288 39 378 330 </string>
-          </object>
-          <reference idRef="255"/>
-          <object class="IBCarbonStaticText" id="256">
-            <string name="title">CPU Use</string>
-            <string name="viewFrame">45 484 78 16 </string>
-            <string name="bounds">484 45 500 123 </string>
-          </object>
-          <object class="IBCarbonStaticText" id="257">
-            <string name="title">Noise Sensitivity</string>
-            <string name="viewFrame">45 524 118 16 </string>
-            <string name="bounds">524 45 540 163 </string>
-          </object>
-          <object class="IBCarbonStaticText" id="258">
-            <string name="title">Sharpness</string>
-            <string name="viewFrame">45 564 78 16 </string>
-            <string name="bounds">564 45 580 123 </string>
-          </object>
-          <reference idRef="259"/>
-          <reference idRef="260"/>
-          <object class="IBCarbonEditText" id="261">
-            <boolean name="useInlineInput">TRUE</boolean>
-            <boolean name="isUnicode">TRUE</boolean>
-            <boolean name="isSingleLine">TRUE</boolean>
-            <string name="foreColor">0 0 0 </string>
-            <string name="viewFrame">194 524 121 16 </string>
-            <string name="bounds">524 194 540 315 </string>
-          </object>
-          <object class="IBCarbonEditText" id="262">
-            <boolean name="useInlineInput">TRUE</boolean>
-            <boolean name="isUnicode">TRUE</boolean>
-            <boolean name="isSingleLine">TRUE</boolean>
-            <string name="foreColor">0 0 0 </string>
-            <string name="viewFrame">193 564 121 16 </string>
-            <string name="bounds">564 193 580 314 </string>
-          </object>
-          <reference idRef="263"/>
-          <reference idRef="264"/>
-        </array>
-        <string name="bounds">0 0 725 716 </string>
-      </object>
-      <string name="windowRect">240 196 965 912 </string>
-      <string name="ScreenRectAtEncodeTime">91 0 1028 1680 </string>
+    <object class="IBCarbonEditText" id="243">
+      <ostype name="command">VPup</ostype>
+      <boolean name="useInlineInput">TRUE</boolean>
+      <boolean name="isUnicode">TRUE</boolean>
+      <boolean name="isSingleLine">TRUE</boolean>
+      <string name="foreColor">0 0 0 </string>
+      <string name="viewFrame">151 24 121 16 </string>
+      <string name="bounds">403 190 419 311 </string>
     </object>
-    <reference idRef="251"/>
-    <object class="IBCarbonButton" id="182">
-      <ostype name="controlSignature">WebM</ostype>
-      <int name="controlID">3</int>
-      <ostype name="command">WMvs</ostype>
-      <object name="layoutInfo" class="IBCarbonHILayoutInfo">
-        <int name="bindingLeftKind">1</int>
-      </object>
-      <string name="title">Settings…</string>
-      <string name="viewFrame">132 22 92 20 </string>
-      <string name="bounds">22 132 42 224 </string>
+    <object class="IBCarbonStaticText" id="220">
+      <string name="title">Lag In Frames</string>
+      <string name="viewFrame">45 224 107 16 </string>
+      <string name="bounds">224 45 240 152 </string>
     </object>
-    <reference idRef="231"/>
-    <reference idRef="223"/>
-    <reference idRef="236"/>
-    <reference idRef="270"/>
-    <reference idRef="254"/>
-    <reference idRef="252"/>
-    <reference idRef="218"/>
-    <reference idRef="247"/>
-    <reference idRef="242"/>
-    <reference idRef="243"/>
-    <reference idRef="232"/>
-    <object class="IBCarbonCheckBox" id="184">
-      <ostype name="controlSignature">WebM</ostype>
-      <int name="controlID">5</int>
-      <ostype name="command">WMvc</ostype>
-      <int name="initialState">1</int>
-      <boolean name="autoToggle">FALSE</boolean>
-      <string name="title">Video</string>
-      <string name="viewFrame">20 22 59 18 </string>
-      <string name="bounds">22 20 40 79 </string>
+    <object class="IBCarbonEditText" id="252">
+      <ostype name="command">VPMi</ostype>
+      <boolean name="useInlineInput">TRUE</boolean>
+      <boolean name="isUnicode">TRUE</boolean>
+      <boolean name="isSingleLine">TRUE</boolean>
+      <string name="foreColor">0 0 0 </string>
+      <string name="viewFrame">151 108 121 16 </string>
+      <string name="bounds">415 510 431 631 </string>
     </object>
-    <reference idRef="257"/>
-    <reference idRef="214"/>
-    <object class="IBCarbonRootControl" id="167">
-      <string name="viewFrame">0 0 258 212 </string>
-      <array count="7" name="subviews">
-        <reference idRef="182"/>
-        <object class="IBCarbonButton" id="183">
-          <ostype name="controlSignature">WebM</ostype>
-          <int name="controlID">4</int>
-          <ostype name="command">WMas</ostype>
-          <object name="layoutInfo" class="IBCarbonHILayoutInfo">
-            <int name="bindingLeftKind">1</int>
-          </object>
-          <string name="title">Settings…</string>
-          <string name="viewFrame">132 86 92 20 </string>
-          <string name="bounds">86 132 106 224 </string>
-        </object>
-        <reference idRef="181"/>
-        <object class="IBCarbonButton" id="180">
-          <int name="controlID">1</int>
-          <ostype name="command">ok  </ostype>
-          <object name="layoutInfo" class="IBCarbonHILayoutInfo">
-            <int name="bindingBottomKind">2</int>
-            <int name="bindingRightKind">2</int>
-          </object>
-          <int name="buttonType">1</int>
-          <string name="title">OK</string>
-          <string name="viewFrame">163 167 69 20 </string>
-          <string name="bounds">167 163 187 232 </string>
-        </object>
-        <reference idRef="184"/>
-        <object class="IBCarbonCheckBox" id="185">
-          <ostype name="controlSignature">WebM</ostype>
-          <int name="controlID">6</int>
-          <ostype name="command">WMac</ostype>
-          <int name="initialState">1</int>
-          <boolean name="autoToggle">FALSE</boolean>
-          <string name="title">Audio</string>
-          <string name="viewFrame">18 87 59 18 </string>
-          <string name="bounds">87 18 105 77 </string>
-        </object>
-        <object class="IBCarbonCheckBox" id="191">
-          <ostype name="controlSignature">WebM</ostype>
-          <int name="controlID">7</int>
-          <boolean name="enabled">FALSE</boolean>
-          <ostype name="command">WMtp</ostype>
-          <string name="title">Two Pass</string>
-          <string name="viewFrame">56 60 140 18 </string>
-          <string name="bounds">60 56 78 196 </string>
-        </object>
-      </array>
-      <string name="bounds">0 0 212 258 </string>
+    <object class="IBCarbonStaticText" id="223">
+      <string name="title">Max Quantizer</string>
+      <string name="viewFrame">16 58 101 16 </string>
+      <string name="bounds">346 55 362 156 </string>
     </object>
-    <reference idRef="209"/>
-    <reference idRef="183"/>
-    <reference idRef="185"/>
-    <reference idRef="220"/>
-    <reference idRef="237"/>
-    <reference idRef="217"/>
-    <reference idRef="191"/>
-    <reference idRef="256"/>
-    <reference idRef="269"/>
-    <reference idRef="221"/>
-    <reference idRef="262"/>
+    <object class="IBCarbonStaticText" id="228">
+      <string name="title">Up Threshold</string>
+      <string name="viewFrame">16 58 100 16 </string>
+      <string name="bounds">78 375 94 475 </string>
+    </object>
+    <reference idRef="265"/>
     <object class="IBCarbonWindow" id="166">
       <boolean name="hasCloseBox">TRUE</boolean>
       <boolean name="hasHorizontalZoom">TRUE</boolean>
@@ -608,103 +141,595 @@
       <int name="carbonWindowClass">4</int>
       <int name="windowPosition">7</int>
       <string name="title">WebM Exporter Settings</string>
-      <reference name="rootControl" idRef="167"/>
+      <object name="rootControl" class="IBCarbonRootControl" id="167">
+        <string name="viewFrame">0 0 258 212 </string>
+        <array count="7" name="subviews">
+          <object class="IBCarbonButton" id="182">
+            <ostype name="controlSignature">WebM</ostype>
+            <int name="controlID">3</int>
+            <ostype name="command">WMvs</ostype>
+            <object name="layoutInfo" class="IBCarbonHILayoutInfo">
+              <int name="bindingLeftKind">1</int>
+            </object>
+            <string name="title">Settings…</string>
+            <string name="viewFrame">132 22 92 20 </string>
+            <string name="bounds">22 132 42 224 </string>
+          </object>
+          <object class="IBCarbonButton" id="183">
+            <ostype name="controlSignature">WebM</ostype>
+            <int name="controlID">4</int>
+            <ostype name="command">WMas</ostype>
+            <object name="layoutInfo" class="IBCarbonHILayoutInfo">
+              <int name="bindingLeftKind">1</int>
+            </object>
+            <string name="title">Settings…</string>
+            <string name="viewFrame">132 86 92 20 </string>
+            <string name="bounds">86 132 106 224 </string>
+          </object>
+          <object class="IBCarbonButton" id="181">
+            <int name="controlID">2</int>
+            <ostype name="command">not!</ostype>
+            <object name="layoutInfo" class="IBCarbonHILayoutInfo">
+              <int name="bindingBottomKind">2</int>
+              <int name="bindingRightKind">2</int>
+            </object>
+            <int name="buttonType">2</int>
+            <string name="title">Cancel</string>
+            <string name="viewFrame">29 167 69 20 </string>
+            <string name="bounds">167 29 187 98 </string>
+          </object>
+          <object class="IBCarbonButton" id="180">
+            <int name="controlID">1</int>
+            <ostype name="command">ok  </ostype>
+            <object name="layoutInfo" class="IBCarbonHILayoutInfo">
+              <int name="bindingBottomKind">2</int>
+              <int name="bindingRightKind">2</int>
+            </object>
+            <int name="buttonType">1</int>
+            <string name="title">OK</string>
+            <string name="viewFrame">163 167 69 20 </string>
+            <string name="bounds">167 163 187 232 </string>
+          </object>
+          <object class="IBCarbonCheckBox" id="184">
+            <ostype name="controlSignature">WebM</ostype>
+            <int name="controlID">5</int>
+            <ostype name="command">WMvc</ostype>
+            <int name="initialState">1</int>
+            <boolean name="autoToggle">FALSE</boolean>
+            <string name="title">Video</string>
+            <string name="viewFrame">20 22 59 18 </string>
+            <string name="bounds">22 20 40 79 </string>
+          </object>
+          <object class="IBCarbonCheckBox" id="185">
+            <ostype name="controlSignature">WebM</ostype>
+            <int name="controlID">6</int>
+            <ostype name="command">WMac</ostype>
+            <int name="initialState">1</int>
+            <boolean name="autoToggle">FALSE</boolean>
+            <string name="title">Audio</string>
+            <string name="viewFrame">18 87 59 18 </string>
+            <string name="bounds">87 18 105 77 </string>
+          </object>
+          <object class="IBCarbonCheckBox" id="191">
+            <ostype name="controlSignature">WebM</ostype>
+            <int name="controlID">7</int>
+            <boolean name="enabled">FALSE</boolean>
+            <ostype name="command">WMtp</ostype>
+            <string name="title">Two Pass</string>
+            <string name="viewFrame">56 60 140 18 </string>
+            <string name="bounds">60 56 78 196 </string>
+          </object>
+        </array>
+        <string name="bounds">0 0 212 258 </string>
+      </object>
       <string name="windowRect">166 334 378 592 </string>
       <string name="ScreenRectAtEncodeTime">0 0 768 1024 </string>
     </object>
-    <reference idRef="265"/>
-    <reference idRef="227"/>
+    <reference idRef="167"/>
+    <object class="IBCarbonEditText" id="216">
+      <ostype name="command">VPer</ostype>
+      <boolean name="useInlineInput">TRUE</boolean>
+      <boolean name="isUnicode">TRUE</boolean>
+      <boolean name="isSingleLine">TRUE</boolean>
+      <string name="foreColor">0 0 0 </string>
+      <string name="viewFrame">193 101 121 16 </string>
+      <string name="bounds">101 193 117 314 </string>
+    </object>
+    <reference idRef="268"/>
+    <object class="IBCarbonEditText" id="245">
+      <ostype name="command">VPut</ostype>
+      <boolean name="useInlineInput">TRUE</boolean>
+      <boolean name="isUnicode">TRUE</boolean>
+      <boolean name="isSingleLine">TRUE</boolean>
+      <string name="foreColor">0 0 0 </string>
+      <string name="viewFrame">149 58 121 16 </string>
+      <string name="bounds">78 508 94 629 </string>
+    </object>
+    <object class="IBCarbonStaticText" id="237">
+      <string name="title">Max Interval</string>
+      <string name="viewFrame">16 111 84 16 </string>
+      <string name="bounds">418 375 434 459 </string>
+    </object>
+    <object class="IBCarbonStaticText" id="229">
+      <string name="title">Down Threshold</string>
+      <string name="viewFrame">16 88 107 16 </string>
+      <string name="bounds">108 375 124 482 </string>
+    </object>
+    <object class="IBCarbonRootControl" id="199">
+      <string name="viewFrame">0 0 716 725 </string>
+      <array count="30" name="subviews">
+        <object class="IBCarbonButton" id="209">
+          <ostype name="command">ok  </ostype>
+          <int name="iconPosition">0</int>
+          <string name="title">OK</string>
+          <string name="viewFrame">247 678 70 20 </string>
+          <string name="bounds">678 247 698 317 </string>
+        </object>
+        <object class="IBCarbonButton" id="210">
+          <ostype name="command">not!</ostype>
+          <int name="iconPosition">0</int>
+          <string name="title">Cancel</string>
+          <string name="viewFrame">341 678 70 20 </string>
+          <string name="bounds">678 341 698 411 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="211">
+          <string name="title">Deadline</string>
+          <string name="viewFrame">45 24 78 16 </string>
+          <string name="bounds">24 45 40 123 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="212">
+          <string name="title">Thread Count</string>
+          <string name="viewFrame">45 64 91 16 </string>
+          <string name="bounds">64 45 80 136 </string>
+        </object>
+        <object class="IBCarbonEditText" id="213">
+          <ostype name="command">VPdl</ostype>
+          <string name="helpTagText">help tooltip</string>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">193 21 121 16 </string>
+          <string name="bounds">21 193 37 314 </string>
+        </object>
+        <object class="IBCarbonEditText" id="214">
+          <ostype name="command">VPtc</ostype>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">193 61 121 16 </string>
+          <string name="bounds">61 193 77 314 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="215">
+          <string name="title">Error Resilient</string>
+          <string name="viewFrame">45 104 101 16 </string>
+          <string name="bounds">104 45 120 146 </string>
+        </object>
+        <reference idRef="216"/>
+        <reference idRef="217"/>
+        <object class="IBCarbonEditText" id="218">
+          <ostype name="command">VPdt</ostype>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">193 141 123 16 </string>
+          <string name="bounds">141 193 157 316 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="219">
+          <string name="title">End Usage</string>
+          <string name="viewFrame">45 184 78 16 </string>
+          <string name="bounds">184 45 200 123 </string>
+        </object>
+        <reference idRef="220"/>
+        <object class="IBCarbonStaticText" id="221">
+          <string name="title">Token Partitions</string>
+          <string name="viewFrame">45 264 112 16 </string>
+          <string name="bounds">264 45 280 157 </string>
+        </object>
+        <reference idRef="238"/>
+        <object class="IBCarbonEditText" id="239">
+          <ostype name="command">VPlf</ostype>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">193 221 121 16 </string>
+          <string name="bounds">221 193 237 314 </string>
+        </object>
+        <object class="IBCarbonEditText" id="240">
+          <ostype name="command">VPtp</ostype>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">193 261 121 16 </string>
+          <string name="bounds">261 193 277 314 </string>
+        </object>
+        <object class="IBCarbonGroupBox" id="254">
+          <int name="fontStyle">0</int>
+          <string name="title">Quantizer</string>
+          <boolean name="autoToggle">FALSE</boolean>
+          <boolean name="primary">FALSE</boolean>
+          <int name="selectedItem">0</int>
+          <string name="viewFrame">39 288 291 90 </string>
+          <array count="4" name="subviews">
+            <object class="IBCarbonStaticText" id="222">
+              <string name="title">Min Quantizer</string>
+              <string name="viewFrame">16 30 112 16 </string>
+              <string name="bounds">318 55 334 167 </string>
+            </object>
+            <object class="IBCarbonEditText" id="241">
+              <ostype name="command">VPmq</ostype>
+              <boolean name="useInlineInput">TRUE</boolean>
+              <boolean name="isUnicode">TRUE</boolean>
+              <boolean name="isSingleLine">TRUE</boolean>
+              <string name="foreColor">0 0 0 </string>
+              <string name="viewFrame">151 27 121 16 </string>
+              <string name="bounds">315 190 331 311 </string>
+            </object>
+            <reference idRef="223"/>
+            <object class="IBCarbonEditText" id="242">
+              <ostype name="command">VPMq</ostype>
+              <boolean name="useInlineInput">TRUE</boolean>
+              <boolean name="isUnicode">TRUE</boolean>
+              <boolean name="isSingleLine">TRUE</boolean>
+              <string name="foreColor">0 0 0 </string>
+              <string name="viewFrame">151 61 121 16 </string>
+              <string name="bounds">349 190 365 311 </string>
+            </object>
+          </array>
+          <string name="bounds">288 39 378 330 </string>
+        </object>
+        <object class="IBCarbonGroupBox" id="255">
+          <int name="fontStyle">0</int>
+          <string name="title">Rate Control</string>
+          <boolean name="autoToggle">FALSE</boolean>
+          <boolean name="primary">FALSE</boolean>
+          <int name="selectedItem">0</int>
+          <string name="viewFrame">39 379 291 90 </string>
+          <array count="4" name="subviews">
+            <object class="IBCarbonStaticText" id="224">
+              <string name="title">Undershoot %</string>
+              <string name="viewFrame">16 21 107 16 </string>
+              <string name="bounds">400 55 416 162 </string>
+            </object>
+            <reference idRef="243"/>
+            <reference idRef="225"/>
+            <object class="IBCarbonEditText" id="244">
+              <ostype name="command">VPop</ostype>
+              <boolean name="useInlineInput">TRUE</boolean>
+              <boolean name="isUnicode">TRUE</boolean>
+              <boolean name="isSingleLine">TRUE</boolean>
+              <string name="foreColor">0 0 0 </string>
+              <string name="viewFrame">151 56 121 16 </string>
+              <string name="bounds">435 190 451 311 </string>
+            </object>
+          </array>
+          <string name="bounds">379 39 469 330 </string>
+        </object>
+        <object class="IBCarbonEditText" id="260">
+          <ostype name="command">VPcu</ostype>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">193 484 121 16 </string>
+          <string name="bounds">484 193 500 314 </string>
+        </object>
+        <object class="IBCarbonEditText" id="261">
+          <ostype name="command">VPns</ostype>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">194 524 121 16 </string>
+          <string name="bounds">524 194 540 315 </string>
+        </object>
+        <object class="IBCarbonEditText" id="262">
+          <ostype name="command">VPs </ostype>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">193 564 121 16 </string>
+          <string name="bounds">564 193 580 314 </string>
+        </object>
+        <object class="IBCarbonEditText" id="263">
+          <ostype name="command">VPmd</ostype>
+          <boolean name="useInlineInput">TRUE</boolean>
+          <boolean name="isUnicode">TRUE</boolean>
+          <boolean name="isSingleLine">TRUE</boolean>
+          <string name="foreColor">0 0 0 </string>
+          <string name="viewFrame">193 596 121 16 </string>
+          <string name="bounds">596 193 612 314 </string>
+        </object>
+        <object class="IBCarbonGroupBox" id="226">
+          <int name="fontStyle">0</int>
+          <string name="title">Spatial Resampling</string>
+          <boolean name="autoToggle">FALSE</boolean>
+          <boolean name="primary">FALSE</boolean>
+          <int name="selectedItem">0</int>
+          <string name="viewFrame">359 20 300 114 </string>
+          <array count="5" name="subviews">
+            <object class="IBCarbonCheckBox" id="227">
+              <ostype name="command">VPsr</ostype>
+              <string name="title">Allowed</string>
+              <string name="viewFrame">14 26 90 18 </string>
+              <string name="bounds">46 373 64 463 </string>
+            </object>
+            <reference idRef="228"/>
+            <reference idRef="229"/>
+            <reference idRef="245"/>
+            <reference idRef="246"/>
+          </array>
+          <string name="bounds">20 359 134 659 </string>
+        </object>
+        <object class="IBCarbonGroupBox" id="230">
+          <int name="fontStyle">0</int>
+          <string name="title">Decode Buffer</string>
+          <boolean name="autoToggle">FALSE</boolean>
+          <boolean name="primary">FALSE</boolean>
+          <int name="selectedItem">0</int>
+          <string name="viewFrame">359 154 300 137 </string>
+          <array count="6" name="subviews">
+            <object class="IBCarbonStaticText" id="231">
+              <string name="title">Size (ms)</string>
+              <string name="viewFrame">16 30 78 16 </string>
+              <string name="bounds">184 375 200 453 </string>
+            </object>
+            <object class="IBCarbonStaticText" id="232">
+              <string name="title">Initial Size (ms)</string>
+              <string name="viewFrame">16 62 115 16 </string>
+              <string name="bounds">216 375 232 490 </string>
+            </object>
+            <object class="IBCarbonStaticText" id="233">
+              <string name="title">Optimal Size (ms)</string>
+              <string name="viewFrame">16 96 115 16 </string>
+              <string name="bounds">250 375 266 490 </string>
+            </object>
+            <object class="IBCarbonEditText" id="247">
+              <ostype name="command">VPds</ostype>
+              <boolean name="useInlineInput">TRUE</boolean>
+              <boolean name="isUnicode">TRUE</boolean>
+              <boolean name="isSingleLine">TRUE</boolean>
+              <string name="foreColor">0 0 0 </string>
+              <string name="viewFrame">151 30 121 16 </string>
+              <string name="bounds">184 510 200 631 </string>
+            </object>
+            <object class="IBCarbonEditText" id="248">
+              <ostype name="command">VPdi</ostype>
+              <boolean name="useInlineInput">TRUE</boolean>
+              <boolean name="isUnicode">TRUE</boolean>
+              <boolean name="isSingleLine">TRUE</boolean>
+              <string name="foreColor">0 0 0 </string>
+              <string name="viewFrame">151 62 121 16 </string>
+              <string name="bounds">216 510 232 631 </string>
+            </object>
+            <object class="IBCarbonEditText" id="249">
+              <ostype name="command">VPdo</ostype>
+              <boolean name="useInlineInput">TRUE</boolean>
+              <boolean name="isUnicode">TRUE</boolean>
+              <boolean name="isSingleLine">TRUE</boolean>
+              <string name="foreColor">0 0 0 </string>
+              <string name="viewFrame">151 96 121 16 </string>
+              <string name="bounds">250 510 266 631 </string>
+            </object>
+          </array>
+          <string name="bounds">154 359 291 659 </string>
+        </object>
+        <object class="IBCarbonGroupBox" id="234">
+          <int name="fontStyle">0</int>
+          <string name="title">KeyFrames</string>
+          <boolean name="autoToggle">FALSE</boolean>
+          <boolean name="primary">FALSE</boolean>
+          <int name="selectedItem">0</int>
+          <string name="viewFrame">359 307 300 143 </string>
+          <array count="6" name="subviews">
+            <object class="IBCarbonStaticText" id="235">
+              <string name="title">Mode</string>
+              <string name="viewFrame">16 35 78 16 </string>
+              <string name="bounds">342 375 358 453 </string>
+            </object>
+            <object class="IBCarbonStaticText" id="236">
+              <string name="title">Min Interval</string>
+              <string name="viewFrame">16 72 78 16 </string>
+              <string name="bounds">379 375 395 453 </string>
+            </object>
+            <reference idRef="237"/>
+            <object class="IBCarbonComboBox" id="250">
+              <ostype name="command">VPkm</ostype>
+              <boolean name="autoSizeList">FALSE</boolean>
+              <boolean name="autoDisclosure">FALSE</boolean>
+              <boolean name="autoCompletion">FALSE</boolean>
+              <array count="3" name="list">
+                <string></string>
+                <string>Disabled</string>
+                <string>Auto</string>
+              </array>
+              <string name="viewFrame">148 30 127 21 </string>
+              <string name="bounds">337 507 358 634 </string>
+            </object>
+            <object class="IBCarbonEditText" id="251">
+              <ostype name="command">VPmi</ostype>
+              <boolean name="useInlineInput">TRUE</boolean>
+              <boolean name="isUnicode">TRUE</boolean>
+              <boolean name="isSingleLine">TRUE</boolean>
+              <string name="foreColor">0 0 0 </string>
+              <string name="viewFrame">151 69 121 16 </string>
+              <string name="bounds">376 510 392 631 </string>
+            </object>
+            <reference idRef="252"/>
+          </array>
+          <string name="bounds">307 359 450 659 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="256">
+          <string name="title">CPU Use</string>
+          <string name="viewFrame">45 484 78 16 </string>
+          <string name="bounds">484 45 500 123 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="257">
+          <string name="title">Noise Sensitivity</string>
+          <string name="viewFrame">45 524 118 16 </string>
+          <string name="bounds">524 45 540 163 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="258">
+          <string name="title">Sharpness</string>
+          <string name="viewFrame">45 564 78 16 </string>
+          <string name="bounds">564 45 580 123 </string>
+        </object>
+        <object class="IBCarbonStaticText" id="259">
+          <string name="title">Motion Detection Threshold</string>
+          <int name="justification">-2</int>
+          <string name="viewFrame">45 589 129 36 </string>
+          <string name="bounds">589 45 625 174 </string>
+        </object>
+        <reference idRef="264"/>
+      </array>
+      <string name="bounds">0 0 725 716 </string>
+    </object>
+    <reference idRef="244"/>
+    <reference idRef="236"/>
+    <reference idRef="226"/>
+    <reference idRef="254"/>
     <reference idRef="248"/>
-    <reference idRef="222"/>
-    <reference idRef="250"/>
-    <reference idRef="271"/>
-    <reference idRef="199"/>
-    <reference idRef="258"/>
-    <reference idRef="210"/>
-    <reference idRef="219"/>
+    <reference idRef="270"/>
+    <reference idRef="256"/>
+    <reference idRef="262"/>
+    <reference idRef="242"/>
     <reference idRef="234"/>
-    <reference idRef="246"/>
-    <reference idRef="241"/>
-    <reference idRef="261"/>
+    <object class="IBCarbonWindow" id="198">
+      <boolean name="hasCloseBox">TRUE</boolean>
+      <boolean name="hasHorizontalZoom">TRUE</boolean>
+      <boolean name="hasVerticalZoom">TRUE</boolean>
+      <boolean name="receiveUpdates">FALSE</boolean>
+      <boolean name="isResizable">FALSE</boolean>
+      <boolean name="compositing">TRUE</boolean>
+      <int name="carbonWindowClass">4</int>
+      <int name="windowPosition">7</int>
+      <string name="title">VP8 Advanced</string>
+      <reference name="rootControl" idRef="199"/>
+      <string name="windowRect">240 196 965 912 </string>
+      <string name="ScreenRectAtEncodeTime">91 0 1028 1680 </string>
+    </object>
+    <reference idRef="218"/>
+    <reference idRef="269"/>
+    <reference idRef="211"/>
     <reference idRef="233"/>
-    <reference idRef="229"/>
-    <reference idRef="238"/>
-    <reference idRef="212"/>
+    <reference idRef="251"/>
+    <reference idRef="230"/>
+    <reference idRef="259"/>
+    <reference idRef="213"/>
+    <reference idRef="263"/>
+    <reference idRef="261"/>
+    <reference idRef="181"/>
+    <reference idRef="215"/>
+    <reference idRef="247"/>
+    <reference idRef="182"/>
     <reference idRef="180"/>
+    <reference idRef="271"/>
+    <reference idRef="250"/>
+    <reference idRef="241"/>
+    <reference idRef="209"/>
+    <reference idRef="227"/>
+    <reference idRef="184"/>
+    <reference idRef="266"/>
+    <reference idRef="185"/>
+    <reference idRef="255"/>
+    <reference idRef="239"/>
+    <reference idRef="210"/>
+    <reference idRef="260"/>
+    <reference idRef="214"/>
+    <reference idRef="221"/>
+    <reference idRef="235"/>
+    <reference idRef="219"/>
+    <reference idRef="249"/>
+    <reference idRef="224"/>
+    <reference idRef="258"/>
+    <reference idRef="231"/>
+    <reference idRef="212"/>
+    <reference idRef="191"/>
+    <reference idRef="232"/>
+    <reference idRef="222"/>
+    <reference idRef="240"/>
+    <reference idRef="257"/>
+    <reference idRef="267"/>
+    <reference idRef="183"/>
   </array>
   <array count="73" name="allParents">
-    <reference idRef="199"/>
-    <reference idRef="264"/>
     <reference idRef="255"/>
-    <reference idRef="264"/>
+    <reference idRef="199"/>
+    <reference idRef="199"/>
     <reference idRef="226"/>
-    <reference idRef="167"/>
     <reference idRef="199"/>
-    <reference idRef="199"/>
+    <reference idRef="255"/>
     <reference idRef="199"/>
     <reference idRef="234"/>
-    <reference idRef="199"/>
-    <reference idRef="255"/>
-    <reference idRef="199"/>
-    <reference idRef="264"/>
-    <reference idRef="199"/>
-    <reference idRef="199"/>
+    <reference idRef="254"/>
     <reference idRef="226"/>
-    <reference idRef="199"/>
-    <reference idRef="199"/>
-    <reference idRef="199"/>
-    <reference idRef="199"/>
-    <reference idRef="255"/>
-    <reference idRef="230"/>
-    <reference idRef="199"/>
+    <reference idRef="264"/>
     <reference idRef="1"/>
-    <reference idRef="234"/>
-    <reference idRef="167"/>
-    <reference idRef="230"/>
-    <reference idRef="254"/>
-    <reference idRef="234"/>
-    <reference idRef="264"/>
-    <reference idRef="199"/>
-    <reference idRef="234"/>
-    <reference idRef="199"/>
-    <reference idRef="230"/>
-    <reference idRef="254"/>
-    <reference idRef="255"/>
-    <reference idRef="230"/>
-    <reference idRef="167"/>
-    <reference idRef="199"/>
-    <reference idRef="199"/>
     <reference idRef="166"/>
     <reference idRef="199"/>
-    <reference idRef="167"/>
-    <reference idRef="167"/>
-    <reference idRef="199"/>
+    <reference idRef="264"/>
+    <reference idRef="226"/>
+    <reference idRef="234"/>
+    <reference idRef="226"/>
+    <reference idRef="198"/>
+    <reference idRef="255"/>
     <reference idRef="234"/>
     <reference idRef="199"/>
-    <reference idRef="167"/>
     <reference idRef="199"/>
+    <reference idRef="230"/>
     <reference idRef="264"/>
     <reference idRef="199"/>
+    <reference idRef="199"/>
+    <reference idRef="254"/>
     <reference idRef="199"/>
     <reference idRef="1"/>
+    <reference idRef="199"/>
     <reference idRef="264"/>
-    <reference idRef="226"/>
+    <reference idRef="199"/>
     <reference idRef="230"/>
-    <reference idRef="254"/>
     <reference idRef="234"/>
-    <reference idRef="264"/>
-    <reference idRef="198"/>
     <reference idRef="199"/>
     <reference idRef="199"/>
     <reference idRef="199"/>
     <reference idRef="199"/>
-    <reference idRef="226"/>
-    <reference idRef="254"/>
+    <reference idRef="199"/>
+    <reference idRef="167"/>
     <reference idRef="199"/>
     <reference idRef="230"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="264"/>
+    <reference idRef="234"/>
+    <reference idRef="254"/>
+    <reference idRef="199"/>
     <reference idRef="226"/>
+    <reference idRef="167"/>
+    <reference idRef="264"/>
+    <reference idRef="167"/>
     <reference idRef="199"/>
     <reference idRef="199"/>
+    <reference idRef="199"/>
+    <reference idRef="199"/>
+    <reference idRef="199"/>
+    <reference idRef="199"/>
+    <reference idRef="234"/>
+    <reference idRef="199"/>
+    <reference idRef="230"/>
+    <reference idRef="255"/>
+    <reference idRef="199"/>
+    <reference idRef="230"/>
+    <reference idRef="199"/>
+    <reference idRef="167"/>
+    <reference idRef="230"/>
+    <reference idRef="254"/>
+    <reference idRef="199"/>
+    <reference idRef="199"/>
+    <reference idRef="264"/>
     <reference idRef="167"/>
   </array>
   <dictionary count="3" name="nameTable">
@@ -716,5 +741,5 @@
     <reference idRef="166"/>
   </dictionary>
   <string name="targetFramework">IBCarbonFramework</string>
-  <unsigned_int name="nextObjectID">272</unsigned_int>
+  <unsigned_int name="nextObjectID">276</unsigned_int>
 </object>
