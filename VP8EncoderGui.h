@@ -6,6 +6,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
+#ifndef _VP8ENCODER_GUI_H_
+#define _VP8ENCODER_GUI_H_
 
 #define kDEADLINE 'VPdl'
 #define kTHREADCOUNT 'VPtc' 
@@ -38,6 +40,6 @@
 
 
 
-
-
 ComponentResult runAdvancedWindow(VP8EncoderGlobals globals);
+
+#endif

@@ -91,15 +91,14 @@ VP8_Encoder_Open(
     glob->frameCount = 0;
     glob->raw = NULL;
     glob->codec = NULL;
-    glob->cfg = calloc(1, sizeof(vpx_codec_enc_cfg_t));
     glob->numPasses = 1; //hopefully I can make this value save....
 
-    if (! glob->cfg)
+    int i;
+    for (i=0;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
     {
-        err = memFullErr;
-        goto bail;
+        glob->settings[i]= UINT_MAX;
     }
-
+    
 bail:
     dbg_printf("[vp8e - %08lx] Open Called exit %d \n", (UInt32)glob, err);
     return err;
@@ -133,9 +132,6 @@ VP8_Encoder_Close(
             vpx_img_free(glob->raw);
             free(glob->raw);
         }
-
-        if (glob->cfg)
-            free(glob->cfg);
 
         free(glob);
     }
@@ -440,7 +436,7 @@ VP8_Encoder_PrepareToCompressFrames(
     compressorPixelBufferAttributes = NULL;
 
     /* Populate encoder configuration */
-    glob->res = vpx_codec_enc_config_default((&vpx_codec_vp8_cx_algo), glob->cfg, 0);
+    glob->res = vpx_codec_enc_config_default((&vpx_codec_vp8_cx_algo), &glob->cfg, 0);
 
     if (glob->res)
     {
@@ -449,10 +445,10 @@ VP8_Encoder_PrepareToCompressFrames(
         goto bail;
     }
 
-    glob->cfg->g_w = glob->width;
-    glob->cfg->g_h = glob->height;
+    glob->cfg.g_w = glob->width;
+    glob->cfg.g_h = glob->height;
     dbg_printf("[vp8e - %08lx] resolution %dx%d\n", (UInt32)glob,
-               glob->cfg->g_w, glob->cfg->g_h);
+               glob->cfg.g_w, glob->cfg.g_h);
 
 bail:
 
@@ -476,11 +472,11 @@ static ComponentResult setMaxKeyDist(VP8EncoderGlobals glob)
     if (err) return err;
 
     if (maxInterval == 0)
-        glob->cfg->kf_max_dist = 300;  //default : don't pass in 0 as vp8 sdk reserves that for key every frame
+        glob->cfg.kf_max_dist = 300;  //default : don't pass in 0 as vp8 sdk reserves that for key every frame
     else
-        glob->cfg->kf_max_dist = maxInterval;
+        glob->cfg.kf_max_dist = maxInterval;
 
-    dbg_printf("[vp8e - %08lx] setMaxKeyDist %ld\n", (UInt32)glob, glob->cfg->kf_max_dist);
+    dbg_printf("[vp8e - %08lx] setMaxKeyDist %ld\n", (UInt32)glob, glob->cfg.kf_max_dist);
     return noErr;
 }
 
@@ -500,18 +496,18 @@ static ComponentResult setFrameRate(VP8EncoderGlobals glob)
         return err; //use the defaults
     if (fps > 29.965 && fps < 29.975) // I am putting everything in this threshold as 29.97
     {
-        glob->cfg->g_timebase.num = 1001;
-        glob->cfg->g_timebase.den = 30000;
+        glob->cfg.g_timebase.num = 1001;
+        glob->cfg.g_timebase.den = 30000;
     }
     else 
     {
         //I'm using a default of a millisecond timebase, this may not be 100% accurate
         // however, container uses this timebase so this estimate is best.
-        glob->cfg->g_timebase.num = 1000;
-        glob->cfg->g_timebase.den = fps * 1000;
+        glob->cfg.g_timebase.num = 1000;
+        glob->cfg.g_timebase.den = fps * 1000;
     }
     dbg_printf("[vp8e - %08lx] Setting g_timebase to %d/%d \n", (UInt32) glob, 
-               glob->cfg->g_timebase.num, glob->cfg->g_timebase.den);
+               glob->cfg.g_timebase.num, glob->cfg.g_timebase.den);
 
 bail:
     return err;
@@ -561,7 +557,7 @@ static ComponentResult setBitrate(VP8EncoderGlobals glob,
         dbg_printf("[vp8e - %08lx] setting bitrate to %d (calculated from Quality Slider)\n", (UInt32)glob, bitrate);
     }
 
-    glob->cfg->rc_target_bitrate = bitrate;
+    glob->cfg.rc_target_bitrate = bitrate;
 
 }
 
@@ -652,7 +648,7 @@ encodeThisSourceFrame(
         setMaxKeyDist(glob);
         setFrameRate(glob);
 
-        if (vpx_codec_enc_init(glob->codec, &vpx_codec_vp8_cx_algo, glob->cfg, 0))
+        if (vpx_codec_enc_init(glob->codec, &vpx_codec_vp8_cx_algo, &glob->cfg, 0))
             dbg_printf("[vp8e - %08lx] Failed to initialize encoder\n", (UInt32)glob);
     }
 
