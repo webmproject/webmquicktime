@@ -10,7 +10,7 @@
 #define __VP8ENCODER_H__
 #define kVP8_EncoderDITLResID 129
 
-#define TOTAL_CUSTOM_VP8_SETTINGS 28
+#define TOTAL_CUSTOM_VP8_SETTINGS 29
 
 typedef unsigned int VP8customSettings[TOTAL_CUSTOM_VP8_SETTINGS];
 

@@ -67,11 +67,11 @@ static void setUIntFromControl(unsigned int * i, WindowRef w, int id)
         dbg_printf("[VP8E] SetUIntfromControl from %d to %d size %d - %d\n",
                    originalVal, *i, size, CFStringGetLength(string));
     }
-    else if (kind.kind == 'cbbx' || kind.kind == 'cbox')
+    else if (kind.kind == 'cbbx' || kind.kind == 'rgrp')
     {
         *i = GetControl32BitValue(ref);
-        dbg_printf("[VP8E] SetUIntfromControl from %d to %d\n",
-                   originalVal, *i);
+        dbg_printf("[VP8E] SetUIntfromControl %d from %d to %d\n",
+                   id, originalVal, *i);
     }
     else
     {
@@ -84,7 +84,7 @@ static void setUIntFromControl(unsigned int * i, WindowRef w, int id)
 static ComponentResult settingsFromGui(VP8customSettings c, WindowRef w)
 {
     int i;
-    for (i=0 ;i<28; i++)
+    for (i=1 ;i<=28; i++)
     {
         setUIntFromControl(&c[i], w, i);
     }
@@ -117,7 +117,7 @@ static void setControlFromUInt(unsigned int i, WindowRef w, int id)
             dbg_printf("[VP8E] Set Control %d, to %s size %d\n",id, buf);
         }
     }
-    else if (kind.kind == 'cbbx' || kind.kind == 'cbox')
+    else if (kind.kind == 'cbbx' || kind.kind == 'rgrp')
     {
         if (i == UINT_MAX) i=0;
         SetControl32BitValue(ref,i );
@@ -133,7 +133,7 @@ static void setControlFromUInt(unsigned int i, WindowRef w, int id)
 static ComponentResult settingsToGui(VP8customSettings c, WindowRef w)
 {
     int i;
-    for (i=0 ;i<28; i++)
+    for (i=1 ;i<=28; i++)
     {
         setControlFromUInt(c[i], w, i);
     }

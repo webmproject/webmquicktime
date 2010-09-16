@@ -8,21 +8,6 @@
       <string name="viewFrame">16 58 101 16 </string>
       <string name="bounds">437 55 453 156 </string>
     </object>
-    <object class="IBCarbonComboBox" id="238">
-      <ostype name="controlSignature">VP8A</ostype>
-      <int name="controlID">5</int>
-      <ostype name="command">VPeu</ostype>
-      <boolean name="autoSizeList">FALSE</boolean>
-      <boolean name="autoDisclosure">FALSE</boolean>
-      <boolean name="autoCompletion">FALSE</boolean>
-      <array count="3" name="list">
-        <string></string>
-        <string>Constant Bitrate</string>
-        <string>Variable Bitrate</string>
-      </array>
-      <string name="viewFrame">190 180 127 21 </string>
-      <string name="bounds">180 190 201 317 </string>
-    </object>
     <object class="IBCarbonStaticText" id="217">
       <string name="title">Dropframe Threshold</string>
       <string name="viewFrame">45 144 137 16 </string>
@@ -92,19 +77,18 @@
           <string name="viewFrame">152 97 121 16 </string>
           <string name="bounds">550 511 566 632 </string>
         </object>
-        <object class="IBCarbonComboBox" id="271">
+        <object class="IBCarbonRadioGroup" id="279">
           <ostype name="controlSignature">VP8A</ostype>
           <int name="controlID">28</int>
-          <ostype name="command">VPat</ostype>
-          <boolean name="autoSizeList">FALSE</boolean>
-          <boolean name="autoDisclosure">FALSE</boolean>
-          <boolean name="autoCompletion">FALSE</boolean>
-          <array count="2" name="list">
-            <string></string>
-            <string>TODO</string>
+          <int name="numRows">1</int>
+          <int name="intercellHeight">1</int>
+          <array count="1" name="radioTitles">
+            <array count="1">
+              <string>Default</string>
+            </array>
           </array>
-          <string name="viewFrame">149 128 127 21 </string>
-          <string name="bounds">581 508 602 635 </string>
+          <string name="viewFrame">102 124 153 18 </string>
+          <string name="bounds">577 461 595 614 </string>
         </object>
       </array>
       <string name="bounds">453 359 615 659 </string>
@@ -270,10 +254,28 @@
       <string name="viewFrame">16 111 84 16 </string>
       <string name="bounds">418 375 434 459 </string>
     </object>
+    <reference idRef="279"/>
     <object class="IBCarbonStaticText" id="229">
       <string name="title">Down Threshold</string>
       <string name="viewFrame">16 88 107 16 </string>
       <string name="bounds">108 375 124 482 </string>
+    </object>
+    <object class="IBCarbonRadioGroup" id="277">
+      <ostype name="controlSignature">VP8A</ostype>
+      <int name="controlID">5</int>
+      <int name="numRows">1</int>
+      <int name="numCols">3</int>
+      <int name="selectedCol">3</int>
+      <int name="intercellHeight">1</int>
+      <array count="1" name="radioTitles">
+        <array count="3">
+          <string>CBR</string>
+          <string>VBR</string>
+          <string>Default</string>
+        </array>
+      </array>
+      <string name="viewFrame">122 183 217 18 </string>
+      <string name="bounds">183 122 201 339 </string>
     </object>
     <object class="IBCarbonRootControl" id="199">
       <string name="viewFrame">0 0 716 725 </string>
@@ -354,7 +356,6 @@
           <string name="viewFrame">45 264 112 16 </string>
           <string name="bounds">264 45 280 157 </string>
         </object>
-        <reference idRef="238"/>
         <object class="IBCarbonEditText" id="239">
           <ostype name="controlSignature">VP8A</ostype>
           <int name="controlID">6</int>
@@ -590,21 +591,6 @@
               <string name="bounds">379 375 395 453 </string>
             </object>
             <reference idRef="237"/>
-            <object class="IBCarbonComboBox" id="250">
-              <ostype name="controlSignature">VP8A</ostype>
-              <int name="controlID">22</int>
-              <ostype name="command">VPkm</ostype>
-              <boolean name="autoSizeList">FALSE</boolean>
-              <boolean name="autoDisclosure">FALSE</boolean>
-              <boolean name="autoCompletion">FALSE</boolean>
-              <array count="3" name="list">
-                <string></string>
-                <string>Disabled</string>
-                <string>Auto</string>
-              </array>
-              <string name="viewFrame">148 30 127 21 </string>
-              <string name="bounds">337 507 358 634 </string>
-            </object>
             <object class="IBCarbonEditText" id="251">
               <ostype name="controlSignature">VP8A</ostype>
               <int name="controlID">23</int>
@@ -617,6 +603,23 @@
               <string name="bounds">376 510 392 631 </string>
             </object>
             <reference idRef="252"/>
+            <object class="IBCarbonRadioGroup" id="278">
+              <ostype name="controlSignature">VP8A</ostype>
+              <int name="controlID">22</int>
+              <int name="numRows">1</int>
+              <int name="numCols">3</int>
+              <int name="selectedCol">3</int>
+              <int name="intercellHeight">1</int>
+              <array count="1" name="radioTitles">
+                <array count="3">
+                  <string>Disable</string>
+                  <string>Auto</string>
+                  <string>Default</string>
+                </array>
+              </array>
+              <string name="viewFrame">60 34 215 18 </string>
+              <string name="bounds">341 419 359 634 </string>
+            </object>
           </array>
           <string name="bounds">307 359 450 659 </string>
         </object>
@@ -642,6 +645,7 @@
           <string name="bounds">589 45 625 174 </string>
         </object>
         <reference idRef="264"/>
+        <reference idRef="277"/>
       </array>
       <string name="bounds">0 0 725 716 </string>
     </object>
@@ -675,17 +679,16 @@
     <reference idRef="233"/>
     <reference idRef="251"/>
     <reference idRef="230"/>
+    <reference idRef="278"/>
     <reference idRef="259"/>
     <reference idRef="213"/>
     <reference idRef="263"/>
-    <reference idRef="261"/>
-    <reference idRef="181"/>
-    <reference idRef="215"/>
     <reference idRef="247"/>
+    <reference idRef="181"/>
+    <reference idRef="261"/>
+    <reference idRef="215"/>
     <reference idRef="182"/>
     <reference idRef="180"/>
-    <reference idRef="271"/>
-    <reference idRef="250"/>
     <reference idRef="241"/>
     <reference idRef="209"/>
     <reference idRef="227"/>
@@ -716,7 +719,6 @@
   <array count="73" name="allParents">
     <reference idRef="255"/>
     <reference idRef="199"/>
-    <reference idRef="199"/>
     <reference idRef="226"/>
     <reference idRef="199"/>
     <reference idRef="255"/>
@@ -731,7 +733,9 @@
     <reference idRef="264"/>
     <reference idRef="226"/>
     <reference idRef="234"/>
+    <reference idRef="264"/>
     <reference idRef="226"/>
+    <reference idRef="199"/>
     <reference idRef="198"/>
     <reference idRef="255"/>
     <reference idRef="234"/>
@@ -750,17 +754,16 @@
     <reference idRef="230"/>
     <reference idRef="234"/>
     <reference idRef="199"/>
+    <reference idRef="234"/>
     <reference idRef="199"/>
     <reference idRef="199"/>
-    <reference idRef="199"/>
-    <reference idRef="199"/>
-    <reference idRef="167"/>
     <reference idRef="199"/>
     <reference idRef="230"/>
     <reference idRef="167"/>
+    <reference idRef="199"/>
+    <reference idRef="199"/>
     <reference idRef="167"/>
-    <reference idRef="264"/>
-    <reference idRef="234"/>
+    <reference idRef="167"/>
     <reference idRef="254"/>
     <reference idRef="199"/>
     <reference idRef="226"/>
@@ -797,5 +800,5 @@
     <reference idRef="166"/>
   </dictionary>
   <string name="targetFramework">IBCarbonFramework</string>
-  <unsigned_int name="nextObjectID">276</unsigned_int>
+  <unsigned_int name="nextObjectID">280</unsigned_int>
 </object>
