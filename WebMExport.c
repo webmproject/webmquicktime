@@ -95,6 +95,7 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr store, ComponentInsta
 
         store->audioSettingsAtom = NULL;
         store->videoSettingsAtom = NULL;
+        store->videoSettingsCustom = NULL;
         store->streams = NULL;
         store->streamCount = 0;
         store->cueHandle = NULL;

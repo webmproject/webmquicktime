@@ -218,7 +218,16 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
         if (err) goto bail;
     }
     
-    
+    //  ------  Transfer Custom Settings   ----
+    err = SCGetInfo(videoCI, scCodecSettingsType, &glob->videoSettingsCustom);                
+    if (glob->videoSettingsCustom != NULL)
+    {
+        err = ICMCompressionSessionOptionsSetProperty(options,
+                                                      kQTPropertyClass_ICMCompressionSessionOptions,
+                                                      kICMCompressionSessionOptionsPropertyID_CompressorSettings,
+                                                      sizeof(glob->videoSettingsCustom),
+                                                      &glob->videoSettingsCustom);
+    }
     
     QTUnlockContainer(glob->videoSettingsAtom);
 

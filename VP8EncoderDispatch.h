@@ -44,9 +44,9 @@ ComponentError(Busy)
 ComponentError(GetCompressedImageSize)
 ComponentError(GetSimilarity)
 ComponentError(TrimImage)                               // 10
-ComponentError(RequestSettings)
-ComponentError(GetSettings)
-ComponentError(SetSettings)
+ComponentCall(RequestSettings)
+ComponentCall(GetSettings)
+ComponentCall(SetSettings)
 ComponentError(Flush)
 ComponentError(SetTimeCode)                         // 15
 ComponentError(IsImageDescriptionEquivalent)

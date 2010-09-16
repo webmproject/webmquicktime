@@ -1,0 +1,3 @@
+rm /var/tmp/webm_debug.txt
+rm -rf /Library/QuickTime/WebM.component
+cp -r build/Development\ Intel/WebM.component /Library/QuickTime/WebM.component

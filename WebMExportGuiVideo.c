@@ -145,7 +145,7 @@ ComponentResult OpenVP8Dlg(WebMExportGlobalsPtr globals, WindowRef window)
     if (err) goto bail;
 
     err = SCGetSettingsAsAtomContainer(stdVideo, &globals->videoSettingsAtom);
-
+    err = SCGetInfo(stdVideo, scCodecSettingsType, &globals->videoSettingsCustom);
 bail:
 
     if (stdVideo != NULL)
@@ -173,6 +173,10 @@ ComponentResult getVideoComponentInstace(WebMExportGlobalsPtr glob, ComponentIns
 
     err = SCSetSettingsFromAtomContainer(*videoCI, glob->videoSettingsAtom);
     if (err) goto bail;
+    if (glob->videoSettingsCustom != NULL)
+    {
+        err = SCSetInfo(*videoCI, scCodecSettingsType, &glob->videoSettingsCustom);            
+    }
 bail:
     return err;
 }

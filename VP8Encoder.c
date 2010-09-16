@@ -91,7 +91,6 @@ VP8_Encoder_Open(
     glob->frameCount = 0;
     glob->raw = NULL;
     glob->codec = NULL;
-    glob->numPasses = 1; //hopefully I can make this value save....
 
     int i;
     for (i=0;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
@@ -846,8 +845,8 @@ pascal ComponentResult VP8_Encoder_DITLInstall(VP8EncoderGlobals storage,
     ControlRef cRef;
     
     
-    unsigned long onePassRadio = (*storage).numPasses == 1;
-    unsigned long twoPassRadio = (*storage).numPasses == 2;
+    unsigned long onePassRadio = (*storage).settings[TOTAL_CUSTOM_VP8_SETTINGS -1] == 1;
+    unsigned long twoPassRadio = (*storage).settings[TOTAL_CUSTOM_VP8_SETTINGS -1] == 2;
     
     GetDialogItemAsControl(d, kItemOnePass + itemOffset, &cRef);
     SetControl32BitValue(cRef, onePassRadio);
@@ -902,12 +901,12 @@ pascal ComponentResult VP8_Encoder_DITLRemove(VP8EncoderGlobals storage,
                                           short itemOffset)
 {
     ControlRef cRef;
-    unsigned long onePass;
+    UInt32 onePass;
     
     GetDialogItemAsControl(d, kItemOnePass + itemOffset, &cRef);
     onePass = GetControl32BitValue(cRef);
     
-    (*storage).numPasses = onePass?1:2;
+    (*storage).settings[TOTAL_CUSTOM_VP8_SETTINGS -1] = onePass?1:2;
     
     return noErr;
 }
@@ -918,4 +917,57 @@ pascal ComponentResult VP8_Encoder_DITLValidateInput(VP8EncoderGlobals storage,
     if (ok)
         *ok = true;
     return noErr;
+}
+
+
+ComponentResult VP8_Encoder_GetSettings(VP8EncoderGlobals globals, Handle settings)
+{
+    ComponentResult err = noErr;
+    
+    dbg_printf("[VP8e -- %08lx] GetSettings()\n", (UInt32) globals);
+    
+    if (!settings) {
+        err = paramErr;
+        dbg_printf("[VP8e -- %08lx] ParamErr\n", (UInt32) globals);        
+    } else {
+        SetHandleSize(settings, TOTAL_CUSTOM_VP8_SETTINGS * 4);
+        ((UInt32 *) *settings)[0] = 'VP80';
+        int i;
+        for (i=1;i< TOTAL_CUSTOM_VP8_SETTINGS; i++)
+        {
+            ((UInt32 *) *settings)[i] = globals->settings[i];
+        }
+    }
+    
+    return err;
+}
+
+ComponentResult VP8_Encoder_SetSettings(VP8EncoderGlobals globals, Handle settings)
+{
+    ComponentResult err = noErr;
+    dbg_printf("[VP8e -- %08lx] SetSettings() %d\n", (UInt32) globals, GetHandleSize(settings));
+
+    int i;
+    if (!settings || GetHandleSize(settings) == 0) {
+        dbg_printf("[VP8e] no handle\n");
+        for (i=1;i< TOTAL_CUSTOM_VP8_SETTINGS; i++)
+            globals->settings[i] = UINT_MAX; //default
+    } 
+    else if (GetHandleSize(settings) == TOTAL_CUSTOM_VP8_SETTINGS * 4 && ((UInt32 *) *settings)[0] == 'VP80') {
+        for (i=1;i< TOTAL_CUSTOM_VP8_SETTINGS; i++)
+        {
+            globals->settings[i] = ((UInt32 *) *settings)[i];
+        }
+    } else {
+        dbg_printf("[VP8e] ParamErr\n");
+        err = paramErr;
+    }
+    
+    return err;
+}
+ComponentResult VP8_Encoder_RequestSettings(VP8EncoderGlobals globals, Handle settings,
+                                   Rect *rp, ModalFilterUPP filterProc)
+{
+    dbg_printf("[VP8e -- %08lx] RequestSettings()\n", (UInt32) globals);
+    return badComponentSelector;
 }

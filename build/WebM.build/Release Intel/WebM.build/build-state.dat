@@ -1,0 +1,1018 @@
+TWebM
+v7
+r0
+t304972182.701757
+cCheck dependencies
+cProcessInfoPlistFile "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Info.plist" Info.plist
+cCopyStringsFile "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/English.lproj/InfoPlist.strings" English.lproj/InfoPlist.strings
+cStripNIB /Users/ryanthompson/webm/webmquicktime/WebMExport.nib
+cProcessPCH /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch.gch VP8Codec_Prefix.pch normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMAudioStream.o" /Users/ryanthompson/webm/webmquicktime/WebMAudioStream.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMCommon.o" /Users/ryanthompson/webm/webmquicktime/WebMCommon.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExport.o" /Users/ryanthompson/webm/webmquicktime/WebMExport.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGui.o" /Users/ryanthompson/webm/webmquicktime/WebMExportGui.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiAudio.o" /Users/ryanthompson/webm/webmquicktime/WebMExportGuiAudio.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiVideo.o" /Users/ryanthompson/webm/webmquicktime/WebMExportGuiVideo.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMMux.o" /Users/ryanthompson/webm/webmquicktime/WebMMux.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMVideoStream.o" /Users/ryanthompson/webm/webmquicktime/WebMVideoStream.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Decoder.o" /Users/ryanthompson/webm/webmquicktime/VP8Decoder.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Encoder.o" /Users/ryanthompson/webm/webmquicktime/VP8Encoder.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/log.o" /Users/ryanthompson/webm/webmquicktime/log.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/PixelUtilities.o" /Users/ryanthompson/webm/webmquicktime/PixelUtilities.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/Raw_debug.o" /Users/ryanthompson/webm/webmquicktime/Raw_debug.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlWriter.o" /Users/ryanthompson/webm/webmquicktime/libmkv/EbmlWriter.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/testlibmkv.o" /Users/ryanthompson/webm/webmquicktime/libmkv/testlibmkv.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMElement.o" /Users/ryanthompson/webm/webmquicktime/libmkv/WebMElement.c normal i386 c com.apple.compilers.gcc.4_2
+cCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlDataHWriter.o" /Users/ryanthompson/webm/webmquicktime/EbmlDataHWriter.c normal i386 c com.apple.compilers.gcc.4_2
+cLd "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/MacOS/WebM" normal i386
+cRez "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/Objects/VP8CodecUniversal.rsrc" VP8CodecUniversal.r
+cResMergerCollector "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/WebM.rsrc"
+cResMergerProduct "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/WebM.rsrc"
+cTouch "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component"
+
+N/Developer/SDKs/MacOSX10.5.sdk
+c000000004B7E366000000000000000EE
+t1266562656
+s238
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/AudioUnit.framework/Headers/AudioUnit.h
+c000000004864A72E00000000000003CC
+t1214555950
+s972
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Carbon.framework/Headers/Carbon.h
+c000000004864BE3E00000000000005D7
+t1214561854
+s1495
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Carbon.framework/Headers/Carbon.r
+c000000004864BE3E0000000000000331
+t1214561854
+s817
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/CoreServices.framework/Headers/Components.k.h
+c0000000048649DFB000000000000095B
+t1214553595
+s2395
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/QuickTime.framework/Headers/ComponentDispatchHelper.c
+c000000004864C1A30000000000003D1A
+t1214562723
+s15642
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/QuickTime.framework/Headers/ImageCodec.k.h
+c000000004864C1680000000000006316
+t1214562664
+s25366
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/QuickTime.framework/Headers/ImageCompression.k.h
+c000000004864C165000000000000A108
+t1214562661
+s41224
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/QuickTime.framework/Headers/QuickTime.h
+c000000004864C165000000000000067F
+t1214562661
+s1663
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/QuickTime.framework/Headers/QuickTime.r
+c000000004864C1A300000000000003B3
+t1214562723
+s947
+
+N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/QuickTime.framework/Headers/QuickTimeComponents.k.h
+c000000004864C16A000000000001B10A
+t1214562666
+s110858
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/include/inttypes.h
+c0000000047BA993000000000000027D1
+t1203411248
+s10193
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/include/stdio.h
+c0000000047BA99310000000000003D1D
+t1203411249
+s15645
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/include/stdlib.h
+c0000000047BA99310000000000002A79
+t1203411249
+s10873
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/include/string.h
+c0000000047BA99320000000000001731
+t1203411250
+s5937
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/include/sys/time.h
+c0000000047E883D20000000000001E18
+t1206420434
+s7704
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/include/wchar.h
+c0000000047BA993200000000000025DA
+t1203411250
+s9690
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stdarg.h
+c000000004AC59D9300000000000010DD
+t1254464915
+s4317
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stddef.h
+c000000004AC59D930000000000003197
+t1254464915
+s12695
+
+N/Developer/SDKs/MacOSX10.5.sdk/usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stdint.h
+c000000004AC59D93000000000000190C
+t1254464915
+s6412
+
+N/System/Library/Frameworks/Carbon.framework/Carbon
+c000000004B91C664000000000000A5F0
+t1267844708
+s42480
+
+N/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation
+c000000004B747C15000000000077CFF0
+t1265925141
+s7852016
+
+N/System/Library/Frameworks/CoreServices.framework/CoreServices
+c000000004A11F09A0000000000021710
+t1242689690
+s136976
+
+N/System/Library/Frameworks/QuartzCore.framework/QuartzCore
+c000000004B748DB50000000000CF0BF0
+t1265929653
+s13569008
+
+N/System/Library/Frameworks/QuickTime.framework/QuickTime
+c000000004B8F14BA00000000007838C0
+t1267668154
+s7878848
+
+N/Users/ryanthompson/webm/webmquicktime/EbmlDataHWriter.c
+c000000004C6544140000000000000A88
+t1281704980
+s2696
+i<QuickTime/QuickTime.h>
+i"EbmlDataHWriter.h"
+i"EbmlWriter.h"
+i<stdlib.h>
+i<wchar.h>
+i<string.h>
+i"log.h"
+
+N/Users/ryanthompson/webm/webmquicktime/EbmlDataHWriter.h
+c000000004C6198CE0000000000000356
+t1281464526
+s854
+
+N/Users/ryanthompson/webm/webmquicktime/English.lproj/InfoPlist.strings
+c000000004C6198CE000000000000008A
+t1281464526
+s138
+
+N/Users/ryanthompson/webm/webmquicktime/PixelUtilities.c
+c000000004C6198CE0000000000002B66
+t1281464526
+s11110
+i"PixelUtilities.h"
+
+N/Users/ryanthompson/webm/webmquicktime/PixelUtilities.h
+c000000004C6198CE0000000000001208
+t1281464526
+s4616
+i<QuickTime/QuickTime.h>
+
+N/Users/ryanthompson/webm/webmquicktime/Raw_debug.c
+c000000004C6198CE0000000000000414
+t1281464526
+s1044
+i"vpx/vpx_encoder.h"
+i"vpx/vpx_codec_impl_top.h"
+i"vpx/vpx_codec_impl_bottom.h"
+i"vpx/vp8cx.h"
+i"Raw_debug.h"
+i<stdio.h>
+i<stdlib.h>
+i<stdarg.h>
+i<string.h>
+
+N/Users/ryanthompson/webm/webmquicktime/Raw_debug.h
+c000000004C6198CE0000000000000293
+t1281464526
+s659
+
+N/Users/ryanthompson/webm/webmquicktime/VP8CodecUniversal.r
+c000000004C6E997D0000000000002405
+t1282316669
+s9221
+i<Carbon/Carbon.r>
+i<QuickTime/QuickTime.r>
+i"ConditionalMacros.r"
+i"MacTypes.r"
+i"Components.r"
+i"ImageCodec.r"
+i"VP8CodecVersion.h"
+i"WebMExportVersions.h"
+
+N/Users/ryanthompson/webm/webmquicktime/VP8CodecVersion.h
+c000000004C6198CE000000000000024F
+t1281464526
+s591
+
+N/Users/ryanthompson/webm/webmquicktime/VP8Codec_Prefix.pch
+c000000004C6198CE00000000000001AB
+t1281464526
+s427
+i<Carbon/Carbon.h>
+
+N/Users/ryanthompson/webm/webmquicktime/VP8Decoder.c
+c000000004C6EB59E00000000000067F1
+t1282323870
+s26609
+i<QuickTime/QuickTime.h>
+i<ConditionalMacros.h>
+i<Endian.h>
+i<ImageCodec.h>
+i"vpx/vpx_decoder.h"
+i"vpx/vpx_codec_impl_top.h"
+i"vpx/vpx_codec_impl_bottom.h"
+i"vpx/vp8dx.h"
+i"log.h"
+i"VP8CodecVersion.h"
+i"WebMExportVersions.h"
+i"Raw_debug.h"
+i<CoreServices/Components.k.h>
+i<QuickTime/ImageCodec.k.h>
+i<QuickTime/ImageCompression.k.h>
+i<QuickTime/ComponentDispatchHelper.c>
+i<Components.k.h>
+i<ImageCodec.k.h>
+i<ImageCompression.k.h>
+i<ComponentDispatchHelper.c>
+
+N/Users/ryanthompson/webm/webmquicktime/VP8Encoder.c
+c000000004C7BCEDB00000000000078FE
+t1283182299
+s30974
+i<QuickTime/QuickTime.h>
+i<ConditionalMacros.h>
+i<Endian.h>
+i<ImageCodec.h>
+i"VP8CodecVersion.h"
+i"vpx/vpx_encoder.h"
+i"vpx/vpx_codec_impl_top.h"
+i"vpx/vpx_codec_impl_bottom.h"
+i"vpx/vp8cx.h"
+i"log.h"
+i"Raw_debug.h"
+i<CoreServices/Components.k.h>
+i<QuickTime/ImageCodec.k.h>
+i<QuickTime/ImageCompression.k.h>
+i<QuickTime/ComponentDispatchHelper.c>
+i<Components.k.h>
+i<ImageCodec.k.h>
+i<ImageCompression.k.h>
+i<ComponentDispatchHelper.c>
+
+N/Users/ryanthompson/webm/webmquicktime/WebMAudioStream.c
+c000000004C6EA4F40000000000003F98
+t1282319604
+s16280
+i<QuickTime/QuickTime.h>
+i<AudioUnit/AudioUnit.h>
+i"WebMExportStructs.h"
+i"WebMExportVersions.h"
+i"WebMAudioStream.h"
+i"Raw_debug.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMAudioStream.h
+c000000004C6198CE000000000000034E
+t1281464526
+s846
+
+N/Users/ryanthompson/webm/webmquicktime/WebMCommon.c
+c000000004C6EA5110000000000000BC9
+t1282319633
+s3017
+i"WebMCommon.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMCommon.h
+c000000004C65671D00000000000006DC
+t1281713949
+s1756
+i<QuickTime/QuickTime.h>
+i<QuickTimeComponents.h>
+i<windows.h>
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExport.c
+c000000004C7BAE0A000000000000782E
+t1283173898
+s30766
+i<QuickTime/QuickTime.h>
+i<Carbon/Carbon.h>
+i<QuickTimeComponents.h>
+i"log.h"
+i"WebMExportStructs.h"
+i"WebMExportVersions.h"
+i"VP8CodecVersion.h"
+i"WebMExport.h"
+i"WebMExportGui.h"
+i<CoreServices/Components.k.h>
+i<QuickTime/QuickTimeComponents.k.h>
+i<QuickTime/ImageCompression.k.h>
+i<QuickTime/ComponentDispatchHelper.c>
+i<Components.k.h>
+i<QuickTimeComponents.k.h>
+i<ImageCompression.k.h>
+i<ComponentDispatchHelper.c>
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExport.h
+c000000004C6EA4F400000000000002D5
+t1282319604
+s725
+i"WebMExportVersions.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExport.nib
+c000000004C6198CE00000000000000AA
+t1281464526
+s170
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExportGui.c
+c000000004C6EA4F400000000000016E9
+t1282319604
+s5865
+i"WebMExportStructs.h"
+i"WebMExportGui.h"
+i<QuickTime/QuickTime.h>
+i<QuickTimeComponents.h>
+i"log.h"
+i"WebMExportVersions.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExportGui.h
+c000000004C6E79E10000000000000318
+t1282308577
+s792
+i"WebMExportGuiVideo.h"
+i"WebMExportGuiAudio.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExportGuiAudio.c
+c000000004C6198CE0000000000000BF8
+t1281464526
+s3064
+i"WebMExportStructs.h"
+i<QuickTime/QuickTime.h>
+i<QuickTimeComponents.h>
+i"log.h"
+i"WebMExportVersions.h"
+i"WebMExportGuiAudio.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExportGuiAudio.h
+c000000004C6198CE000000000000026D
+t1281464526
+s621
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExportGuiVideo.c
+c000000004C72AE2600000000000013D2
+t1282584102
+s5074
+i"WebMExportStructs.h"
+i<QuickTime/QuickTime.h>
+i<QuickTimeComponents.h>
+i"log.h"
+i"WebMExportVersions.h"
+i"WebMExportGuiVideo.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExportGuiVideo.h
+c000000004C72AE34000000000000035C
+t1282584116
+s860
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExportStructs.h
+c000000004C76CD150000000000000A9E
+t1282854165
+s2718
+i<QuickTime/QuickTime.h>
+i<QuickTimeComponents.h>
+i<windows.h>
+i"EbmlDataHWriter.h"
+i"WebMCommon.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMExportVersions.h
+c000000004C7BD42A000000000000032C
+t1283183658
+s812
+
+N/Users/ryanthompson/webm/webmquicktime/WebMMux.c
+c000000004C7D4A150000000000004F50
+t1283279381
+s20304
+i<QuickTime/QuickTime.h>
+i"WebMExportStructs.h"
+i"EbmlIDs.h"
+i"log.h"
+i"WebMAudioStream.h"
+i"WebMMux.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMMux.h
+c000000004C6198CE000000000000020B
+t1281464526
+s523
+
+N/Users/ryanthompson/webm/webmquicktime/WebMVideoStream.c
+c000000004C7C10810000000000003596
+t1283199105
+s13718
+i<QuickTime/QuickTime.h>
+i"WebMExportStructs.h"
+i"WebMVideoStream.h"
+
+N/Users/ryanthompson/webm/webmquicktime/WebMVideoStream.h
+c000000004C6198CE0000000000000307
+t1281464526
+s775
+
+N/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component
+t1283279382
+s102
+
+N/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Info.plist
+t1282941836
+s715
+
+N/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/MacOS/WebM
+t1283279382
+s648384
+
+N/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/English.lproj/InfoPlist.strings
+t1282941837
+s138
+
+N/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/WebM.rsrc
+t1283183887
+s943
+
+N/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/WebMExport.nib
+t1282941838
+s102
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlDataHWriter.o
+t1283271225
+s7256
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlWriter.o
+t1283271230
+s8740
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/PixelUtilities.o
+t1282941844
+s7844
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/Raw_debug.o
+t1282941845
+s14120
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Decoder.o
+t1283183887
+s35432
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Encoder.o
+t1283183887
+s50436
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebM.LinkFileList
+c000000004C78238C00000000000007AE
+t1282941836
+s1966
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMAudioStream.o
+t1283183886
+s25292
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMCommon.o
+t1282941843
+s8288
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMElement.o
+t1282941845
+s9456
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExport.o
+t1283183886
+s47456
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGui.o
+t1283183886
+s17128
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiAudio.o
+t1283183886
+s13648
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiVideo.o
+t1283183887
+s14324
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMMux.o
+t1283279382
+s27836
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMVideoStream.o
+t1283199105
+s27464
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/log.o
+t1282941844
+s5560
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/testlibmkv.o
+t1282941845
+s7604
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/Objects/VP8CodecUniversal.rsrc
+t1283183887
+s943
+
+N/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/WebM.rsrc
+t1283183887
+s943
+
+N/Users/ryanthompson/webm/webmquicktime/lib/libvpx.a
+c000000004C6D3F2400000000000A4C40
+t1282228004
+s674880
+
+N/Users/ryanthompson/webm/webmquicktime/libmkv/EbmlBufferWriter.h
+c000000004C6198CE0000000000000180
+t1281464526
+s384
+
+N/Users/ryanthompson/webm/webmquicktime/libmkv/EbmlIDs.h
+c000000004C6198CE0000000000001833
+t1281464526
+s6195
+
+N/Users/ryanthompson/webm/webmquicktime/libmkv/EbmlWriter.c
+c000000004C7D2A3E0000000000001189
+t1283271230
+s4489
+i"EbmlWriter.h"
+i<stdlib.h>
+i<wchar.h>
+i<string.h>
+
+N/Users/ryanthompson/webm/webmquicktime/libmkv/EbmlWriter.h
+c000000004C7D15DB000000000000073B
+t1283266011
+s1851
+i<stddef.h>
+i"EbmlBufferWriter.h"
+
+N/Users/ryanthompson/webm/webmquicktime/libmkv/WebMElement.c
+c000000004C6D947A0000000000002501
+t1282249850
+s9473
+i"EbmlBufferWriter.h"
+i"EbmlIDs.h"
+i"WebMElement.h"
+i<stdio.h>
+
+N/Users/ryanthompson/webm/webmquicktime/libmkv/WebMElement.h
+c000000004C6D948E000000000000065D
+t1282249870
+s1629
+
+N/Users/ryanthompson/webm/webmquicktime/libmkv/testlibmkv.c
+c000000004C6198CE000000000000082D
+t1281464526
+s2093
+i"EbmlIDs.h"
+i"EbmlBufferWriter.h"
+i"WebMElement.h"
+i<stdio.h>
+
+N/Users/ryanthompson/webm/webmquicktime/log.c
+c000000004C6198CE0000000000000E35
+t1281464526
+s3637
+i<QuickTime/QuickTime.h>
+i"log.h"
+i<sys/time.h>
+i<stdarg.h>
+
+N/Users/ryanthompson/webm/webmquicktime/log.h
+c000000004C6198CE00000000000002C5
+t1281464526
+s709
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vp8.h
+c000000004C619A9A0000000000000E78
+t1281464986
+s3704
+i"vpx/vpx_codec_impl_top.h"
+i"vpx/vpx_codec_impl_bottom.h"
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vp8cx.h
+c000000004C619A9A0000000000002291
+t1281464986
+s8849
+i"vp8.h"
+i"vpx/vpx_codec_impl_top.h"
+i"vpx/vpx_codec_impl_bottom.h"
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vp8dx.h
+c000000004C619A9A000000000000043B
+t1281464986
+s1083
+i"vp8.h"
+i"vpx/vpx_codec_impl_top.h"
+i"vp8.h"
+i"vpx/vpx_codec_impl_bottom.h"
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vpx_codec.h
+c000000004C619A9A0000000000004F94
+t1281464986
+s20372
+i"vpx_integer.h"
+i"vpx_image.h"
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vpx_codec_impl_bottom.h
+c000000004C619A9A0000000000000278
+t1281464986
+s632
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vpx_codec_impl_top.h
+c000000004C619A9A0000000000000280
+t1281464986
+s640
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vpx_decoder.h
+c000000004C619A9A0000000000003230
+t1281464986
+s12848
+i"vpx_codec.h"
+i"vpx_decoder_compat.h"
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vpx_decoder_compat.h
+c000000004C619A9A0000000000005D60
+t1281464986
+s23904
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vpx_encoder.h
+c000000004C619A9A0000000000007DD5
+t1281464986
+s32213
+i"vpx_codec.h"
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vpx_image.h
+c000000004C619A9A0000000000002ABA
+t1281464986
+s10938
+
+N/Users/ryanthompson/webm/webmquicktime/vpx/vpx_integer.h
+c000000004C619A9A0000000000000541
+t1281464986
+s1345
+i<stddef.h>
+i<stdint.h>
+i<inttypes.h>
+
+N/var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-ccjjfyqcmaipdhaigeyezmfdbtkl/VP8Codec_Prefix.pch.gch
+t1281465008
+s47942032
+
+N/var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch.gch
+t1282941843
+s47942032
+
+NInfo.plist
+c000000004C73D6B100000000000002FB
+t1282660017
+s763
+
+CCheck dependencies
+r0
+lSLF07#2@18"Check dependencies304972182#304972182#0(0"0(0#1#0"8615559776#0"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlDataHWriter.o" /Users/ryanthompson/webm/webmquicktime/EbmlDataHWriter.c normal i386 c com.apple.compilers.gcc.4_2
+s304964025.022053
+e304964025.405424
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlDataHWriter.o
+x/Users/ryanthompson/webm/webmquicktime/EbmlDataHWriter.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@64"Compile /Users/ryanthompson/webm/webmquicktime/EbmlDataHWriter.c304964025#304964025#0(0"0(0#0#56"/Users/ryanthompson/webm/webmquicktime/EbmlDataHWriter.c8625937504#1138"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/EbmlDataHWriter.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlDataHWriter.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlWriter.o" /Users/ryanthompson/webm/webmquicktime/libmkv/EbmlWriter.c normal i386 c com.apple.compilers.gcc.4_2
+s304964030.131790
+e304964030.475917
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlWriter.o
+x/Users/ryanthompson/webm/webmquicktime/libmkv/EbmlWriter.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@66"Compile /Users/ryanthompson/webm/webmquicktime/libmkv/EbmlWriter.c304964030#304964030#0(0"0(0#0#58"/Users/ryanthompson/webm/webmquicktime/libmkv/EbmlWriter.c8635192096#1135"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/libmkv/EbmlWriter.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/EbmlWriter.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/PixelUtilities.o" /Users/ryanthompson/webm/webmquicktime/PixelUtilities.c normal i386 c com.apple.compilers.gcc.4_2
+s304634644.486914
+e304634644.932650
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/PixelUtilities.o
+x/Users/ryanthompson/webm/webmquicktime/PixelUtilities.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@63"Compile /Users/ryanthompson/webm/webmquicktime/PixelUtilities.c304634644#304634644#0(0"0(0#0#55"/Users/ryanthompson/webm/webmquicktime/PixelUtilities.c8623783872#1136"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/PixelUtilities.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/PixelUtilities.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/Raw_debug.o" /Users/ryanthompson/webm/webmquicktime/Raw_debug.c normal i386 c com.apple.compilers.gcc.4_2
+s304634644.881280
+e304634645.084304
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/Raw_debug.o
+x/Users/ryanthompson/webm/webmquicktime/Raw_debug.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@58"Compile /Users/ryanthompson/webm/webmquicktime/Raw_debug.c304634644#304634645#0(0"0(0#0#50"/Users/ryanthompson/webm/webmquicktime/Raw_debug.c8630225472#1126"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/Raw_debug.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/Raw_debug.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Decoder.o" /Users/ryanthompson/webm/webmquicktime/VP8Decoder.c normal i386 c com.apple.compilers.gcc.4_2
+s304876687.005517
+e304876687.504191
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Decoder.o
+x/Users/ryanthompson/webm/webmquicktime/VP8Decoder.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@59"Compile /Users/ryanthompson/webm/webmquicktime/VP8Decoder.c304876687#304876687#0(0"0(0#0#51"/Users/ryanthompson/webm/webmquicktime/VP8Decoder.c8603234944#1128"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/VP8Decoder.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Decoder.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Encoder.o" /Users/ryanthompson/webm/webmquicktime/VP8Encoder.c normal i386 c com.apple.compilers.gcc.4_2
+s304876687.011147
+e304876687.534289
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Encoder.o
+x/Users/ryanthompson/webm/webmquicktime/VP8Encoder.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@59"Compile /Users/ryanthompson/webm/webmquicktime/VP8Encoder.c304876687#304876687#0(0"0(0#0#51"/Users/ryanthompson/webm/webmquicktime/VP8Encoder.c8627322848#1128"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/VP8Encoder.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/VP8Encoder.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMAudioStream.o" /Users/ryanthompson/webm/webmquicktime/WebMAudioStream.c normal i386 c com.apple.compilers.gcc.4_2
+s304876685.294860
+e304876686.983726
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMAudioStream.o
+x/Users/ryanthompson/webm/webmquicktime/WebMAudioStream.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@64"Compile /Users/ryanthompson/webm/webmquicktime/WebMAudioStream.c304876685#304876686#0(0"0(0#0#56"/Users/ryanthompson/webm/webmquicktime/WebMAudioStream.c8598443040#1138"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/WebMAudioStream.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMAudioStream.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMCommon.o" /Users/ryanthompson/webm/webmquicktime/WebMCommon.c normal i386 c com.apple.compilers.gcc.4_2
+s304634643.518835
+e304634643.958486
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMCommon.o
+x/Users/ryanthompson/webm/webmquicktime/WebMCommon.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@59"Compile /Users/ryanthompson/webm/webmquicktime/WebMCommon.c304634643#304634643#0(0"0(0#0#51"/Users/ryanthompson/webm/webmquicktime/WebMCommon.c8624471136#1128"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/WebMCommon.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMCommon.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMElement.o" /Users/ryanthompson/webm/webmquicktime/libmkv/WebMElement.c normal i386 c com.apple.compilers.gcc.4_2
+s304634644.959730
+e304634645.142894
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMElement.o
+x/Users/ryanthompson/webm/webmquicktime/libmkv/WebMElement.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@67"Compile /Users/ryanthompson/webm/webmquicktime/libmkv/WebMElement.c304634644#304634645#0(0"0(0#0#59"/Users/ryanthompson/webm/webmquicktime/libmkv/WebMElement.c8622352768#1137"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/libmkv/WebMElement.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMElement.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExport.o" /Users/ryanthompson/webm/webmquicktime/WebMExport.c normal i386 c com.apple.compilers.gcc.4_2
+s304876685.296489
+e304876687.010998
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExport.o
+x/Users/ryanthompson/webm/webmquicktime/WebMExport.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@59"Compile /Users/ryanthompson/webm/webmquicktime/WebMExport.c304876685#304876687#0(0"0(0#0#51"/Users/ryanthompson/webm/webmquicktime/WebMExport.c8626094784#1128"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/WebMExport.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExport.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGui.o" /Users/ryanthompson/webm/webmquicktime/WebMExportGui.c normal i386 c com.apple.compilers.gcc.4_2
+s304876685.297495
+e304876687.005362
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGui.o
+x/Users/ryanthompson/webm/webmquicktime/WebMExportGui.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@62"Compile /Users/ryanthompson/webm/webmquicktime/WebMExportGui.c304876685#304876687#0(0"0(0#0#54"/Users/ryanthompson/webm/webmquicktime/WebMExportGui.c8619411264#1134"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/WebMExportGui.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGui.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiAudio.o" /Users/ryanthompson/webm/webmquicktime/WebMExportGuiAudio.c normal i386 c com.apple.compilers.gcc.4_2
+s304876685.298871
+e304876686.990483
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiAudio.o
+x/Users/ryanthompson/webm/webmquicktime/WebMExportGuiAudio.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@67"Compile /Users/ryanthompson/webm/webmquicktime/WebMExportGuiAudio.c304876685#304876686#0(0"0(0#0#59"/Users/ryanthompson/webm/webmquicktime/WebMExportGuiAudio.c8625513344#1144"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/WebMExportGuiAudio.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiAudio.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiVideo.o" /Users/ryanthompson/webm/webmquicktime/WebMExportGuiVideo.c normal i386 c com.apple.compilers.gcc.4_2
+s304876686.983955
+e304876687.411636
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiVideo.o
+x/Users/ryanthompson/webm/webmquicktime/WebMExportGuiVideo.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@67"Compile /Users/ryanthompson/webm/webmquicktime/WebMExportGuiVideo.c304876686#304876687#0(0"0(0#0#59"/Users/ryanthompson/webm/webmquicktime/WebMExportGuiVideo.c8617745120#1144"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/WebMExportGuiVideo.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMExportGuiVideo.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMMux.o" /Users/ryanthompson/webm/webmquicktime/WebMMux.c normal i386 c com.apple.compilers.gcc.4_2
+s304972182.013500
+e304972182.517659
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMMux.o
+x/Users/ryanthompson/webm/webmquicktime/WebMMux.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@56"Compile /Users/ryanthompson/webm/webmquicktime/WebMMux.c304972182#304972182#0(0"0(0#0#48"/Users/ryanthompson/webm/webmquicktime/WebMMux.c8635336768#1122"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/WebMMux.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMMux.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMVideoStream.o" /Users/ryanthompson/webm/webmquicktime/WebMVideoStream.c normal i386 c com.apple.compilers.gcc.4_2
+s304891905.342757
+e304891905.648109
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMVideoStream.o
+x/Users/ryanthompson/webm/webmquicktime/WebMVideoStream.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@64"Compile /Users/ryanthompson/webm/webmquicktime/WebMVideoStream.c304891905#304891905#0(0"0(0#0#56"/Users/ryanthompson/webm/webmquicktime/WebMVideoStream.c8632196288#1138"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/WebMVideoStream.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebMVideoStream.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/log.o" /Users/ryanthompson/webm/webmquicktime/log.c normal i386 c com.apple.compilers.gcc.4_2
+s304634644.477782
+e304634644.889303
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/log.o
+x/Users/ryanthompson/webm/webmquicktime/log.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@52"Compile /Users/ryanthompson/webm/webmquicktime/log.c304634644#304634644#0(0"0(0#0#44"/Users/ryanthompson/webm/webmquicktime/log.c8625730176#1114"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/log.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/log.o"0#
+
+CCompileC "build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/testlibmkv.o" /Users/ryanthompson/webm/webmquicktime/libmkv/testlibmkv.c normal i386 c com.apple.compilers.gcc.4_2
+s304634644.932815
+e304634645.111370
+r1
+xCompileC
+xbuild/WebM.build/Release Intel/WebM.build/Objects-normal/i386/testlibmkv.o
+x/Users/ryanthompson/webm/webmquicktime/libmkv/testlibmkv.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@66"Compile /Users/ryanthompson/webm/webmquicktime/libmkv/testlibmkv.c304634644#304634645#0(0"0(0#0#58"/Users/ryanthompson/webm/webmquicktime/libmkv/testlibmkv.c8624267168#1135"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -include /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch -c /Users/ryanthompson/webm/webmquicktime/libmkv/testlibmkv.c -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/testlibmkv.o"0#
+
+CCopyStringsFile "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/English.lproj/InfoPlist.strings" English.lproj/InfoPlist.strings
+s304634636.813897
+e304634637.032098
+r1
+xCopyStringsFile
+x/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/English.lproj/InfoPlist.strings
+xEnglish.lproj/InfoPlist.strings
+lSLF07#2@36"Copy English.lproj/InfoPlist.strings304634636#304634637#0(0"0(0#0#70"/Users/ryanthompson/webm/webmquicktime/English.lproj/InfoPlist.strings8624469344#379"    cd /Users/ryanthompson/webm/webmquicktime    setenv ICONV /usr/bin/iconv    /Developer/Library/Xcode/Plug-ins/CoreBuildTasks.xcplugin/Contents/Resources/copystrings --validate --inputencoding utf-16 --outputencoding UTF-16 English.lproj/InfoPlist.strings --outdir "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/English.lproj"0#
+
+CLd "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/MacOS/WebM" normal i386
+s304972182.517745
+e304972182.698724
+r1
+xLd
+x/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/MacOS/WebM
+xnormal
+xi386
+lSLF07#2@98"Link /Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/MacOS/WebM304972182#304972182#0(0"0(0#0#0"8616566656#761"    cd /Users/ryanthompson/webm/webmquicktime    setenv MACOSX_DEPLOYMENT_TARGET 10.5    /Developer/usr/bin/gcc-4.2 -arch i386 -bundle -isysroot /Developer/SDKs/MacOSX10.5.sdk "-L/Users/ryanthompson/webm/webmquicktime/build/Release Intel" -L/Users/ryanthompson/webm/webmquicktime/lib "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" -filelist "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/Objects-normal/i386/WebM.LinkFileList" -mmacosx-version-min=10.5 -dead_strip -read_only_relocs suppress -framework Carbon -framework CoreServices -framework QuartzCore -framework QuickTime -lvpx -framework CoreFoundation -o "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/MacOS/WebM"0#
+
+CProcessInfoPlistFile "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Info.plist" Info.plist
+s304634636.808381
+e304634636.813776
+r1
+xProcessInfoPlistFile
+x/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Info.plist
+xInfo.plist
+lSLF07#2@18"Process Info.plist304634636#304634636#0(0"0(0#0#49"/Users/ryanthompson/webm/webmquicktime/Info.plist8629408032#223"    cd /Users/ryanthompson/webm/webmquicktime    builtin-infoPlistUtility Info.plist -expandbuildsettings -platform macosx -o "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Info.plist"0#
+
+CProcessPCH /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-ccjjfyqcmaipdhaigeyezmfdbtkl/VP8Codec_Prefix.pch.gch VP8Codec_Prefix.pch normal i386 c com.apple.compilers.gcc.4_2
+s303157805.531548
+e303157808.751840
+r1
+xProcessPCH
+x/var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-ccjjfyqcmaipdhaigeyezmfdbtkl/VP8Codec_Prefix.pch.gch
+xVP8Codec_Prefix.pch
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@30"Precompile VP8Codec_Prefix.pch303157805#303157808#0(0"0(0#0#58"/Users/ryanthompson/webm/webmquicktime/VP8Codec_Prefix.pch8630605312#980"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c-header -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -c /Users/ryanthompson/webm/webmquicktime/VP8Codec_Prefix.pch -o /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-ccjjfyqcmaipdhaigeyezmfdbtkl/VP8Codec_Prefix.pch.gch0#
+
+CProcessPCH /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch.gch VP8Codec_Prefix.pch normal i386 c com.apple.compilers.gcc.4_2
+s304634638.567098
+e304634643.517544
+r1
+xProcessPCH
+x/var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch.gch
+xVP8Codec_Prefix.pch
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@30"Precompile VP8Codec_Prefix.pch304634638#304634643#0(0"0(0#0#58"/Users/ryanthompson/webm/webmquicktime/VP8Codec_Prefix.pch8630379648#1021"    cd /Users/ryanthompson/webm/webmquicktime    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c-header -arch i386 -fmessage-length=0 -pipe -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-deprecated-declarations -mmacosx-version-min=10.5 -gdwarf-2 "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/WebM.hmap" "-F/Users/ryanthompson/webm/webmquicktime/build/Release Intel" "-I/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -I/Users/ryanthompson/webm/webmquicktime "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources/i386" "-I/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/DerivedSources" -c /Users/ryanthompson/webm/webmquicktime/VP8Codec_Prefix.pch -o /var/folders/++/++4RdU++6+0++4RjPqRgNE+-bOM/-Caches-/com.apple.Xcode.105894/SharedPrecompiledHeaders/VP8Codec_Prefix-dzzeaxnakldfchawccbmbwzkiind/VP8Codec_Prefix.pch.gch0#
+
+CResMergerCollector "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/WebM.rsrc"
+s304876687.745160
+e304876687.760049
+r1
+xResMergerCollector
+x/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/WebM.rsrc
+lSLF07#2@136"Merge resources into /Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/WebM.rsrc304876687#304876687#0(0"0(0#0#0"8608851520#347"    cd /Users/ryanthompson/webm/webmquicktime    /Developer/Tools/ResMerger -dstIs DF "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/Objects/VP8CodecUniversal.rsrc" -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/WebM.rsrc"0#
+
+CResMergerProduct "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/WebM.rsrc"
+s304876687.760175
+e304876687.773607
+r1
+xResMergerProduct
+x/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/WebM.rsrc
+lSLF07#2@123"Merge resources into /Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/WebM.rsrc304876687#304876687#0(0"0(0#0#0"8605893056#313"    cd /Users/ryanthompson/webm/webmquicktime    /Developer/Tools/ResMerger "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/WebM.rsrc" -dstIs DF -o "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/WebM.rsrc"0#
+
+CRez "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/Objects/VP8CodecUniversal.rsrc" VP8CodecUniversal.r
+s304876687.638650
+e304876687.745048
+r1
+xRez
+x/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/Objects/VP8CodecUniversal.rsrc
+xVP8CodecUniversal.r
+lSLF07#2@23"Rez VP8CodecUniversal.r304876687#304876687#0(0"0(0#0#58"/Users/ryanthompson/webm/webmquicktime/VP8CodecUniversal.r8617142592#676"    cd /Users/ryanthompson/webm/webmquicktime    /Developer/Tools/Rez -o "/Users/ryanthompson/webm/webmquicktime/build/WebM.build/Release Intel/WebM.build/ResourceManagerResources/Objects/VP8CodecUniversal.rsrc" -d SystemSevenOrLater=1 -useDF -script Roman -ro -d i386_YES -arch i386 -i "/Users/ryanthompson/webm/webmquicktime/build/Release Intel" -i /Users/ryanthompson/webm/webmquicktime/libmkv -i "/Users/ryanthompson/webm/webmquicktime/build/Release Intel" -i "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/include" -i /Users/ryanthompson/webm/webmquicktime -isysroot /Developer/SDKs/MacOSX10.5.sdk /Users/ryanthompson/webm/webmquicktime/VP8CodecUniversal.r0#
+
+CStripNIB /Users/ryanthompson/webm/webmquicktime/WebMExport.nib
+s304634636.815200
+e304634638.566876
+r1
+xStripNIB
+x/Users/ryanthompson/webm/webmquicktime/WebMExport.nib
+lSLF07#2@23"StripNIB WebMExport.nib304634636#304634638#0(0"0(0#0#53"/Users/ryanthompson/webm/webmquicktime/WebMExport.nib8624252160#284"    cd /Users/ryanthompson/webm/webmquicktime    /Developer/usr/bin/ibtool --strip "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component/Contents/Resources/WebMExport.nib" --output-format human-readable-text /Users/ryanthompson/webm/webmquicktime/WebMExport.nib0#
+
+CTouch "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component"
+s304972182.699023
+e304972182.701724
+r1
+xTouch
+x/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component
+lSLF07#2@79"Touch /Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component304972182#304972182#0(0"0(0#0#0"8615882432#144"    cd /Users/ryanthompson/webm/webmquicktime    /usr/bin/touch -c "/Users/ryanthompson/webm/webmquicktime/build/Release Intel/WebM.component"0#
+

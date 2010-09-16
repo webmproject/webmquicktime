@@ -10,9 +10,10 @@
 #define __VP8ENCODER_H__
 #define kVP8_EncoderDITLResID 129
 
-#define TOTAL_CUSTOM_VP8_SETTINGS 29
+//NOTE: the last custom setting is the 2 pass custom setting
+#define TOTAL_CUSTOM_VP8_SETTINGS 30
 
-typedef unsigned int VP8customSettings[TOTAL_CUSTOM_VP8_SETTINGS];
+typedef UInt32 VP8customSettings[TOTAL_CUSTOM_VP8_SETTINGS];
 
 typedef struct
 {
@@ -34,9 +35,7 @@ typedef struct
     vpx_image_t          *raw;
     VP8customSettings    settings;
     int                  frameCount;
-    int                  canceled;
     
-    unsigned long numPasses;
 } VP8EncoderGlobalsRecord, *VP8EncoderGlobals;
 
 #endif

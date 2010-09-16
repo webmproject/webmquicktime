@@ -104,6 +104,7 @@ typedef struct
     /////////////////
     QTAtomContainer     audioSettingsAtom;      //hold on to any audio settings the user changes
     QTAtomContainer     videoSettingsAtom;
+    Handle              videoSettingsCustom;     //this contains vp8 custom settings.
 
     /* settings dialog vars */
     Boolean            bMovieHasAudio;
