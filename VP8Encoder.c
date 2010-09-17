@@ -557,6 +557,50 @@ static ComponentResult setBitrate(VP8EncoderGlobals glob,
     }
 
     glob->cfg.rc_target_bitrate = bitrate;
+}
+
+
+static void setUInt(unsigned int * i, UInt32 val)
+{
+    if (val == UINT_MAX)
+        return;
+    *i= val;
+}
+
+static void setCustom(VP8EncoderGlobals glob)
+{
+    setUInt(&glob->cfg.g_threads, glob->settings[2]);
+    setUInt(&glob->cfg.g_error_resilient, glob->settings[3]);
+    setUInt(&glob->cfg.rc_dropframe_thresh, glob->settings[4]);
+    if(glob->settings[5] == 1)
+        glob->cfg.rc_end_usage = VPX_CBR;
+    else if (glob->settings[5] ==2)
+        glob->cfg.rc_end_usage = VPX_VBR;
+    setUInt(&glob->cfg.g_lag_in_frames, glob->settings[6]);
+
+    setUInt(&glob->cfg.rc_min_quantizer, glob->settings[8]);
+    setUInt(&glob->cfg.rc_max_quantizer, glob->settings[9]);
+    setUInt(&glob->cfg.rc_undershoot_pct, glob->settings[10]);
+    setUInt(&glob->cfg.rc_overshoot_pct, glob->settings[11]);
+    
+    setUInt(&glob->cfg.rc_resize_allowed, glob->settings[16]);
+    setUInt(&glob->cfg.rc_resize_up_thresh, glob->settings[17]);
+    setUInt(&glob->cfg.rc_resize_down_thresh, glob->settings[18]);
+    setUInt(&glob->cfg.rc_buf_sz, glob->settings[19]);
+    setUInt(&glob->cfg.rc_buf_initial_sz, glob->settings[20]);
+    setUInt(&glob->cfg.rc_buf_optimal_sz, glob->settings[21]);
+    
+    if(glob->settings[22] == 1)
+        glob->cfg.kf_mode = VPX_KF_DISABLED;
+    if(glob->settings[22] == 2)
+        glob->cfg.kf_mode = VPX_KF_AUTO;
+    
+    setUInt(&glob->cfg.kf_min_dist, glob->settings[23]);
+    setUInt(&glob->cfg.kf_max_dist, glob->settings[24]);
+
+    setUInt(&glob->cfg.rc_2pass_vbr_bias_pct, glob->settings[30]);
+    setUInt(&glob->cfg.rc_2pass_vbr_minsection_pct, glob->settings[31]);
+    setUInt(&glob->cfg.rc_2pass_vbr_maxsection_pct, glob->settings[32]);
 
 }
 
@@ -646,6 +690,7 @@ encodeThisSourceFrame(
         setBitrate(glob, sourceFrame); //because we don't know framerate untile we have a source image.. this is done here
         setMaxKeyDist(glob);
         setFrameRate(glob);
+        setCustom(glob);
 
         if (vpx_codec_enc_init(glob->codec, &vpx_codec_vp8_cx_algo, &glob->cfg, 0))
             dbg_printf("[vp8e - %08lx] Failed to initialize encoder\n", (UInt32)glob);
@@ -845,8 +890,8 @@ pascal ComponentResult VP8_Encoder_DITLInstall(VP8EncoderGlobals storage,
     ControlRef cRef;
     
     
-    unsigned long onePassRadio = (*storage).settings[TOTAL_CUSTOM_VP8_SETTINGS -1] == 1;
-    unsigned long twoPassRadio = (*storage).settings[TOTAL_CUSTOM_VP8_SETTINGS -1] == 2;
+    unsigned long onePassRadio = (*storage).settings[1] == 1;
+    unsigned long twoPassRadio = (*storage).settings[1] == 2;
     
     GetDialogItemAsControl(d, kItemOnePass + itemOffset, &cRef);
     SetControl32BitValue(cRef, onePassRadio);
@@ -906,7 +951,7 @@ pascal ComponentResult VP8_Encoder_DITLRemove(VP8EncoderGlobals storage,
     GetDialogItemAsControl(d, kItemOnePass + itemOffset, &cRef);
     onePass = GetControl32BitValue(cRef);
     
-    (*storage).settings[TOTAL_CUSTOM_VP8_SETTINGS -1] = onePass?1:2;
+    (*storage).settings[1] = onePass?1:2;
     
     return noErr;
 }
@@ -933,7 +978,7 @@ ComponentResult VP8_Encoder_GetSettings(VP8EncoderGlobals globals, Handle settin
         SetHandleSize(settings, TOTAL_CUSTOM_VP8_SETTINGS * 4);
         ((UInt32 *) *settings)[0] = 'VP80';
         int i;
-        for (i=1;i< TOTAL_CUSTOM_VP8_SETTINGS; i++)
+        for (i=1;i < TOTAL_CUSTOM_VP8_SETTINGS; i++)
         {
             ((UInt32 *) *settings)[i] = globals->settings[i];
         }

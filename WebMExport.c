@@ -144,7 +144,8 @@ pascal ComponentResult WebMExportClose(WebMExportGlobalsPtr store, ComponentInst
 
         if (store->audioSettingsAtom)
             QTDisposeAtomContainer(store->audioSettingsAtom);
-
+        if(store->videoSettingsCustom)
+            DisposeHandle(store->videoSettingsCustom);
 
         DisposePtr((Ptr) store);
     }

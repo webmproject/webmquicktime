@@ -435,7 +435,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     Boolean startNewCluster = true;  //cluster should start very first
     unsigned int blocksInCluster=0;  //this increments any time a block added
     SInt64 clusterOffset = *(SInt64 *)& ebml.offset;
-    while (!allStreamsDone /*&& lastTime < duration*/)
+    while (!allStreamsDone)
     {
         minTimeMs = ULONG_MAX;
         minTimeStream = NULL;
@@ -536,8 +536,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         if (duration != 0.0)  //if duration is 0, can't show anything
         {
             double percentComplete = minTimeMs / 1000.0 / duration;
-            if (bTwoPass)
-                percentComplete = 50.0 + percentComplete/2.0;
+            /*if (bTwoPass)
+                percentComplete = 50.0 + percentComplete/2.0;*/
             err = _updateProgressBar(globals, percentComplete );
         }
         if (err ) goto bail;

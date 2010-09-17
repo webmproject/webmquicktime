@@ -11,7 +11,7 @@
 #define kVP8_EncoderDITLResID 129
 
 //NOTE: the last custom setting is the 2 pass custom setting
-#define TOTAL_CUSTOM_VP8_SETTINGS 30
+#define TOTAL_CUSTOM_VP8_SETTINGS 33
 
 typedef UInt32 VP8customSettings[TOTAL_CUSTOM_VP8_SETTINGS];
 

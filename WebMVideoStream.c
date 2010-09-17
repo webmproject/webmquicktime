@@ -219,6 +219,11 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
     }
     
     //  ------  Transfer Custom Settings   ----
+    if (glob->videoSettingsCustom == NULL)
+    {
+        glob->videoSettingsCustom = NewHandleClear(0);
+        SetHandleSize(glob->videoSettingsCustom, 0);
+    }
     err = SCGetInfo(videoCI, scCodecSettingsType, &glob->videoSettingsCustom);                
     if (glob->videoSettingsCustom != NULL)
     {

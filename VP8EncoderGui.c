@@ -84,7 +84,8 @@ static void setUIntFromControl(UInt32 * i, WindowRef w, int id)
 static ComponentResult settingsFromGui(VP8customSettings c, WindowRef w)
 {
     int i;
-    for (i=1 ;i<=28; i++)
+    //setting 0 is VP80 and 1 is num passes
+    for (i=2 ;i<=TOTAL_CUSTOM_VP8_SETTINGS; i++)
     {
         setUIntFromControl(&c[i], w, i);
     }
@@ -133,7 +134,7 @@ static void setControlFromUInt(UInt32 i, WindowRef w, int id)
 static ComponentResult settingsToGui(VP8customSettings c, WindowRef w)
 {
     int i;
-    for (i=1 ;i<=28; i++)
+    for (i=2 ;i<=TOTAL_CUSTOM_VP8_SETTINGS; i++)
     {
         setControlFromUInt(c[i], w, i);
     }
