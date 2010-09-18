@@ -180,11 +180,6 @@ pascal OSStatus SettingsWindowEventHandler(EventHandlerCallRef inHandler, EventR
         enableDisableControls(globals, window);
         rval = noErr;
         break;
-    case 'WMtp':              //Two pass checkbox
-        globals->bTwoPass = !globals->bTwoPass;
-        enableDisableControls(globals, window);
-        rval = noErr;
-        break;
             
     default:
         break;

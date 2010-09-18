@@ -93,7 +93,6 @@ typedef struct
     /* settings */
     Boolean             bExportVideo;
     Boolean             bExportAudio;
-    Boolean             bTwoPass;
 
     AudioStreamBasicDescription audioBSD;
 
@@ -105,7 +104,8 @@ typedef struct
     QTAtomContainer     audioSettingsAtom;      //hold on to any audio settings the user changes
     QTAtomContainer     videoSettingsAtom;
     Handle              videoSettingsCustom;     //this contains vp8 custom settings.
-
+    unsigned int        currentPass;
+    
     /* settings dialog vars */
     Boolean            bMovieHasAudio;
     Boolean            bMovieHasVideo;

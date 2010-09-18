@@ -91,7 +91,6 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr store, ComponentInsta
 
         store->bExportVideo = 1;
         store->bExportAudio = 1;
-        store->bTwoPass = 1;
 
         store->audioSettingsAtom = NULL;
         store->videoSettingsAtom = NULL;
@@ -554,7 +553,6 @@ pascal ComponentResult WebMExportDoUserDialog(WebMExportGlobalsPtr store, Movie 
     OSErr       err = resFNotFound;
     Boolean previousAudioExport = store->bExportAudio; 
     Boolean previousVideoExport = store->bExportVideo;
-    Boolean previousTwoPass = store->bTwoPass;
 
     EventTypeSpec eventList[] = {{kEventClassCommand, kEventCommandProcess}};
     EventHandlerUPP settingsWindowEventHandlerUPP = NewEventHandlerUPP(SettingsWindowEventHandler);
@@ -589,7 +587,6 @@ pascal ComponentResult WebMExportDoUserDialog(WebMExportGlobalsPtr store, Movie 
         //restore previous values on cancel
         store->bExportAudio = previousAudioExport;
         store->bExportVideo = previousVideoExport;
-        store->bTwoPass = previousTwoPass;
     }
 
 bail:

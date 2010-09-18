@@ -405,7 +405,6 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     ebml.data_h = data_h;
     ebml.offset.hi = 0;
     ebml.offset.lo = 0;
-    
 
     EbmlLoc startSegment, trackLoc, cuesLoc, segmentInfoLoc, seekInfoLoc;
     globals->progressOpen = false;
@@ -422,7 +421,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
     Boolean bExportVideo = globals->bMovieHasVideo && globals->bExportVideo;
     Boolean bExportAudio = globals->bMovieHasAudio && globals->bExportAudio;
-    Boolean bTwoPass = globals->bTwoPass && bExportVideo;
+    
 
     HLock((Handle)globals->streams);
     err = _updateProgressBar(globals, 0.0);
@@ -435,6 +434,27 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     Boolean startNewCluster = true;  //cluster should start very first
     unsigned int blocksInCluster=0;  //this increments any time a block added
     SInt64 clusterOffset = *(SInt64 *)& ebml.offset;
+    
+    //DO a first pass if needed
+    ComponentInstance videoCI =NULL;
+     err = getVideoComponentInstace(globals, &videoCI);
+    if(err) goto bail;
+    if (globals->videoSettingsCustom == NULL)
+    {
+        globals->videoSettingsCustom = NewHandleClear(0);
+        SetHandleSize(globals->videoSettingsCustom, 0);
+    }
+    err = SCGetInfo(videoCI, scCodecSettingsType, &globals->videoSettingsCustom);
+    globals->currentPass = 2;
+    if (GetHandleSize(globals->videoSettingsCustom) > 2)
+        globals->currentPass = ((UInt32*)globals->videoSettingsCustom)[1] ==2 ? 2 : 1;
+    if (videoCI != NULL)
+    {
+        CloseComponent(videoCI);
+        videoCI= NULL;
+    }
+    
+    
     while (!allStreamsDone)
     {
         minTimeMs = ULONG_MAX;
@@ -555,6 +575,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
     err = _updateProgressBar(globals, 100.0);
 bail:
+    if (videoCI != NULL)
+        CloseComponent(videoCI);
     dbg_printf("[WebM] <   [%08lx] :: muxStreams() = %ld\n", (UInt32) globals, err);
     return err;
 }
