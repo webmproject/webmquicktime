@@ -418,7 +418,7 @@ Boolean isTwoPass(WebMExportGlobalsPtr globals)
     {
         bTwoPass = ((UInt32*)*(globals->videoSettingsCustom))[1] ==2;
         dbg_printf("[WebM] globals->videoSettingsCustom)[0] = %4.4s  twoPass =%d\n",
-                   ((UInt32*) *(globals->videoSettingsCustom))[0], bTwoPass);
+                   &((UInt32*) *(globals->videoSettingsCustom))[0], bTwoPass);
     }
     else 
     {
