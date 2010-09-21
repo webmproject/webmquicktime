@@ -981,6 +981,7 @@ ComponentResult VP8_Encoder_GetSettings(VP8EncoderGlobals globals, Handle settin
         for (i=1;i < TOTAL_CUSTOM_VP8_SETTINGS; i++)
         {
             ((UInt32 *) *settings)[i] = globals->settings[i];
+            //dbg_printf("[vp8e] get setting %d as %lu\n",i,((UInt32 *) *settings)[i]);
         }
     }
     

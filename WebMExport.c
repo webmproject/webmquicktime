@@ -671,8 +671,7 @@ pascal ComponentResult WebMExportGetSettingsAsAtomContainer(WebMExportGlobalsPtr
 
         if (!err)
         {
-            //err = _video_settings_to_ac(store, &vs);
-            dbg_printf("[WebM] vAC [%08lx] :: GetSettingsAsAtomContainer() = %ld %ld\n", (UInt32) store, err, GetHandleSize(vs));
+            dbg_printf("[WebM %08lx] :: GetSettingsAsAtomContainer() = %ld %ld\n", (UInt32) store, err, GetHandleSize(vs));
 
             if (!err)
                 err = QTInsertChildren(ac, kParentAtomIsContainer, vs);

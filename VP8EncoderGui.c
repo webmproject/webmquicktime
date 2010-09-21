@@ -37,7 +37,7 @@ static void setUIntFromControl(UInt32 * i, WindowRef w, int id)
 {
     ControlID   cID = {'VP8A', id};
     ControlRef  ref;
-    unsigned int originalVal = *i; //used for debugging
+    UInt32 originalVal = *i; //used for debugging
     
     OSStatus gotControl = GetControlByID(w, &cID, &ref);
     if(gotControl !=0)
@@ -64,13 +64,13 @@ static void setUIntFromControl(UInt32 * i, WindowRef w, int id)
             *i=UINT_MAX;
         }
 
-        dbg_printf("[VP8E] SetUIntfromControl from %d to %d size %d - %d\n",
-                   originalVal, *i, size, CFStringGetLength(string));
+        dbg_printf("[VP8E] SetUIntfromControl %d from %lu to %lu size %d - %d\n",
+                   id, originalVal, *i, size, CFStringGetLength(string));
     }
     else if (kind.kind == 'cbox' || kind.kind == 'rgrp')
     {
         *i = GetControl32BitValue(ref);
-        dbg_printf("[VP8E] SetUIntfromControl %d from %d to %d\n",
+        dbg_printf("[VP8E] SetUIntfromControl %d from %lu to %lu\n",
                    id, originalVal, *i);
     }
     else
@@ -85,7 +85,7 @@ static ComponentResult settingsFromGui(VP8customSettings c, WindowRef w)
 {
     int i;
     //setting 0 is VP80 and 1 is num passes
-    for (i=2 ;i<=TOTAL_CUSTOM_VP8_SETTINGS; i++)
+    for (i=2 ;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
     {
         setUIntFromControl(&c[i], w, i);
     }
@@ -111,7 +111,7 @@ static void setControlFromUInt(UInt32 i, WindowRef w, int id)
         if (i != UINT_MAX)
         {
             char buf[100];
-            sprintf(buf, "%ld",i);
+            sprintf(buf, "%lu",i);
             CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, buf,kCFStringEncodingASCII);
             SetControlData(ref,kControlEditTextPart, kControlEditTextCFStringTag,
                        sizeof( CFStringRef ),&string);
@@ -122,7 +122,7 @@ static void setControlFromUInt(UInt32 i, WindowRef w, int id)
     {
         if (i == UINT_MAX) i=0;
         SetControl32BitValue(ref,i );
-        dbg_printf("[VP8E] Set Control %d, to %d size %d\n",id, i);
+        dbg_printf("[VP8E] Set Control %d, to %lu \n",id, i);
     }
     else
     {
@@ -134,7 +134,7 @@ static void setControlFromUInt(UInt32 i, WindowRef w, int id)
 static ComponentResult settingsToGui(VP8customSettings c, WindowRef w)
 {
     int i;
-    for (i=2 ;i<=TOTAL_CUSTOM_VP8_SETTINGS; i++)
+    for (i=2 ;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
     {
         setControlFromUInt(c[i], w, i);
     }

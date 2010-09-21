@@ -151,6 +151,7 @@ ComponentResult OpenVP8Dlg(WebMExportGlobalsPtr globals, WindowRef window)
         SetHandleSize(globals->videoSettingsCustom, 0);
     }
     err = SCGetInfo(stdVideo, scCodecSettingsType, &globals->videoSettingsCustom);
+    if (err) goto bail;
 bail:
 
     if (stdVideo != NULL)
@@ -170,7 +171,7 @@ ComponentResult getVideoComponentInstace(WebMExportGlobalsPtr glob, ComponentIns
     ComponentResult err =noErr;
     OpenADefaultComponent(StandardCompressionType, StandardCompressionSubType, videoCI);
     if (err) goto bail;
-    
+
     if (glob->videoSettingsAtom == NULL)
     {
         getDefaultVP8Atom(glob);

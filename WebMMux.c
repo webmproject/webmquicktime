@@ -390,6 +390,52 @@ static ComponentResult _writeAudio(WebMExportGlobalsPtr globals, AudioStreamPtr 
     return err;
 }
 
+Boolean isTwoPass(WebMExportGlobalsPtr globals)
+{
+    //DO a first pass if needed
+    ComponentInstance videoCI =NULL;
+    Boolean bTwoPass = false;
+    ComponentResult err = getVideoComponentInstace(globals, &videoCI);
+    if(err) 
+    {
+        dbg_printf("[WebM] getVideoComponentInstace err = %d\n",err);
+        goto bail;
+    }
+    if (globals->videoSettingsCustom == NULL)
+    {
+        globals->videoSettingsCustom = NewHandleClear(0);
+        SetHandleSize(globals->videoSettingsCustom, 0);
+    }
+    err = SCGetInfo(videoCI, scCodecSettingsType, &globals->videoSettingsCustom);
+    if(err) 
+    {
+        dbg_printf("[WebM] SCGetInfo err = %d\n",err);
+        goto bail;
+    }
+    
+    globals->currentPass = 1;
+    if (GetHandleSize(globals->videoSettingsCustom) > 8)
+    {
+        bTwoPass = ((UInt32*)*(globals->videoSettingsCustom))[1] ==2;
+        dbg_printf("[WebM] globals->videoSettingsCustom)[0] = %4.4s  twoPass =%d\n",
+                   ((UInt32*) *(globals->videoSettingsCustom))[0], bTwoPass);
+    }
+    else 
+    {
+        dbg_printf("[WebM] getVideoComponentInstace handleSize = %d\n",GetHandleSize(globals->videoSettingsCustom) );
+    }
+
+    
+    
+bail:
+    if (videoCI != NULL)
+    {
+        CloseComponent(videoCI);
+        videoCI= NULL;
+    }
+    return bTwoPass;
+}
+
 
 ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 {
@@ -435,24 +481,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     unsigned int blocksInCluster=0;  //this increments any time a block added
     SInt64 clusterOffset = *(SInt64 *)& ebml.offset;
     
-    //DO a first pass if needed
-    ComponentInstance videoCI =NULL;
-     err = getVideoComponentInstace(globals, &videoCI);
-    if(err) goto bail;
-    if (globals->videoSettingsCustom == NULL)
-    {
-        globals->videoSettingsCustom = NewHandleClear(0);
-        SetHandleSize(globals->videoSettingsCustom, 0);
-    }
-    err = SCGetInfo(videoCI, scCodecSettingsType, &globals->videoSettingsCustom);
-    globals->currentPass = 2;
-    if (GetHandleSize(globals->videoSettingsCustom) > 2)
-        globals->currentPass = ((UInt32*)globals->videoSettingsCustom)[1] ==2 ? 2 : 1;
-    if (videoCI != NULL)
-    {
-        CloseComponent(videoCI);
-        videoCI= NULL;
-    }
+    Boolean bTwoPass = isTwoPass(globals);
+    dbg_printf("[WebM] Is Two Pass %d\n",bTwoPass);
     
     
     while (!allStreamsDone)
@@ -575,8 +605,6 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
     err = _updateProgressBar(globals, 100.0);
 bail:
-    if (videoCI != NULL)
-        CloseComponent(videoCI);
     dbg_printf("[WebM] <   [%08lx] :: muxStreams() = %ld\n", (UInt32) globals, err);
     return err;
 }
