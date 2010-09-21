@@ -148,6 +148,13 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   EBMLHeader ebmlHeader;
   ebmlHeader.Parse(&reader, pos);
   
+  dbg_printf("EBMLHeader\n");
+  dbg_printf("EBMLHeader Version\t\t: %lld\n", ebmlHeader.m_version);
+  dbg_printf("EBMLHeader MaxIDLength\t: %lld\n", ebmlHeader.m_maxIdLength);
+  dbg_printf("EBMLHeader MaxSizeLength\t: %lld\n", ebmlHeader.m_maxSizeLength);
+  dbg_printf("EBMLHeader DocType\t: %lld\n", ebmlHeader.m_docType);
+  dbg_printf("Pos\t\t\t: %lld\n", pos);
+  
 #if 0
   // try to use c wrapper for libmkvreader and libmkvparser
   MkvReaderQT* reader = NULL;
@@ -211,13 +218,23 @@ bail:
 	// needs to set this parameter only if you operate on a single track or if you create a new track. If you modify more
 	// than one track, leave the field referred to by this parameter unchanged. 
 	if (usedTrack) *usedTrack = videoTrack;
-  
+
+  dbg_printf("[WebM Import]  << [%08lx] :: FromDataRef(%d, %ld)\n", (UInt32) store, targetTrack != NULL, atTime);
+
 	return err;  
 }
 
 
-// MovieImportValidate
+//--------------------------------------------------------------------------------
 // MovieImportGetMimeTypeList
+pascal ComponentResult WebMImportGetMIMETypeList(WebMImportGlobals store, QTAtomContainer *outMimeInfo)
+{
+  dbg_printf("[WebM Import]  >> [%08lx] :: GetMIMETypeList()\n", (UInt32) store);
+  dbg_printf("[WebM Import]  << [%08lx] :: GetMIMETypeList()\n", (UInt32) store);
+  return GetComponentResource((Component)store->self, 'mime', 263, (Handle *)outMimeInfo);
+}
+
+
+// MovieImportValidate
 // MovieImportValidateDataRef
 // MovieImportRegister
-

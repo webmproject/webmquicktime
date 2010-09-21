@@ -24,17 +24,16 @@
 // canMovieImportPartial | canMovieImportInPlace | hasMovieImportMIMEList | \
 // canMovieImportValidateDataReferences | \
 
-#define kImporterFlags canMovieImportFiles | canMovieImportDataReferences | cmpThreadSafe
+#define kImporterFlags canMovieImportFiles | canMovieImportInPlace | canMovieImportDataReferences | cmpThreadSafe | hasMovieImportMIMEList
 
 resource 'STR ' (263) {
   "WebM" "0.0.1" " see http://webmproject.org"
 };
 
-
 resource 'thng' (263) {
   'eat ',							// Type			
 	'WebM',							// SubType
-	kGoogManufacturer,					// Manufacturer  
+	'vide',					// Manufacturer - for 'eat ' the media type supported by the component
 	0,								// - use componentHasMultiplePlatforms
 	0,
 	0,
@@ -63,3 +62,94 @@ resource 'dlle' (263) {
 	"WebMImportComponentDispatch"
 };
 
+//thga
+resource 'thga' (264) {
+  'eat ',   // Type
+  'WEBM',   // Subtype in ALL CAPS. It will match a suffix case insensitively.
+  'vide',   // for 'eat ' the media type supported by the component
+  kImporterFlags |
+  movieImportSubTypeIsFileExtension,
+  0,
+  0,
+  0,
+  'STR ',
+  263,
+  0,
+  0,
+  0,
+  0,
+  'eat ',
+  'WebM',
+  'vide',
+  0,
+  0,
+  'thnr', 263,
+  cmpAliasOnlyThisFile
+};
+
+// thnr - public component resource
+// same data that MovieImportGetMIMETypeList would return.
+resource 'thnr' (263) {
+  {
+    'mime', 1, 0,
+    'mime', 263, 0,
+  
+    'mcfg', 1, 0,
+    'mcfg', 263, 0
+  }
+};
+
+// mcfg - QT Media Configuration Resource
+// If the kQTMediaConfigUsePluginByDefault flag is set, QuickTime will automatically register the MIME type for the QuickTime Plug-in with all browsers on both platforms.
+resource 'mcfg' (263)
+{
+    kVersionDoesntMatter,
+  {
+    // determine which group this MIME type will be listed under in MIME configuration panel
+    kQTMediaConfigVideoGroupID,
+    
+    kQTMediaConfigUsePluginByDefault
+    | kQTMediaConfigCanUseApp
+    | kQTMediaConfigCanUsePlugin
+    | kQTMediaConfigBinaryFile,
+
+    'WebM',       // MacOS file type when saved (OSType)
+    0,
+    
+    // Component info used by QT plugin to find componet to open this type of file
+    'eat ',
+    'WebM',
+    'vide',
+    kImporterFlags,
+    0,
+    
+    'WEBM',     // filename extension (ALL CAPS)
+    kQTMediaInfoNetGroup,
+    {
+    },
+    
+    {
+      "WebM Movie File",
+      "webm",
+      "QuickTime Player",
+      "WebM Movie Importer",
+      "Version 0.0.1, see http://webmproject.org"
+    },
+    
+    // Array of MIME types that describe this media type
+    {
+      "video/webm"
+    },
+  }
+};
+    
+// atom container resrouce to hold mime types. 
+// Component's GetMIMETypeList simply loads this resource and returns it.
+resource 'mime' (263) {
+  {
+    kMimeInfoMimeTypeTag,     1, "video/webm";
+    kMimeInfoFileExtensionTag,  1, "webm";
+    kMimeInfoDescriptionTag,    1, "WebM";
+  };
+};
+    
