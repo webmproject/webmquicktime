@@ -485,6 +485,88 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     dbg_printf("[WebM] Is Two Pass %d\n",bTwoPass);
     
     
+    //start first pass in a two pass
+    if (bTwoPass)
+    {
+        dbg_printf("[WebM] Starting first pass\n");
+        for (iStream = 0; iStream < globals->streamCount; iStream++)
+        {
+            GenericStream *gs = &(*globals->streams)[iStream];
+            if (gs->trackType == VideoMediaType)
+            {
+                startPass(&gs->vid, 1);
+            }
+        }
+
+        dbg_printf("[WebM] Itterating first pass on all videos\n");    
+        allStreamsDone = false;
+        //in a first pass do only video
+        while (!allStreamsDone)
+        {
+            allStreamsDone = true;
+            for (iStream = 0; iStream < globals->streamCount; iStream++)
+            {
+                GenericStream *gs = &(*globals->streams)[iStream];
+                StreamSource *source;
+            
+                if (gs->trackType == VideoMediaType)
+                {
+                    source =  &gs->vid.source;
+                
+                    if (!source->bQdFrame && globals->bExportVideo)
+                    {
+                        err = _compressVideo(globals, &gs->vid);
+                    
+                    }
+                    if (source->bQdFrame)
+                    {
+                    
+                    allStreamsDone = false;
+                    source->bQdFrame= false;
+                    }
+                }
+                minTimeMs = source->blockTimeMs;
+            }
+            
+            if (duration != 0.0)  //if duration is 0, can't show anything
+            {
+                double percentComplete = minTimeMs / 1000.0 / duration;
+                /*if (bTwoPass)
+                 percentComplete = 50.0 + percentComplete/2.0;*/
+                err = _updateProgressBar(globals, percentComplete );
+            }
+        }
+        dbg_printf("[WebM] Ending First Pass\n");    
+        for (iStream = 0; iStream < globals->streamCount; iStream++)
+        {
+            GenericStream *gs = &(*globals->streams)[iStream];
+            if (gs->trackType == VideoMediaType)
+            {
+                endPass(&gs->vid);
+                //reset the stream to the start
+                gs->vid.source.eos = false;
+                gs->vid.source.bQdFrame = false;
+                gs->vid.source.blockTimeMs = 0;
+                gs->vid.source.time = 0;
+            }
+        }
+        
+    }
+    
+    //start second pass in a two pass
+    if (bTwoPass)
+    {
+        for (iStream = 0; iStream < globals->streamCount; iStream++)
+        {
+            GenericStream *gs = &(*globals->streams)[iStream];
+            if (gs->trackType == VideoMediaType)
+            {
+                startPass(&gs->vid, 2);
+            }
+        }
+    }
+    
+    
     while (!allStreamsDone)
     {
         minTimeMs = ULONG_MAX;
@@ -591,6 +673,18 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
             err = _updateProgressBar(globals, percentComplete );
         }
         if (err ) goto bail;
+    }
+    
+    if (bTwoPass)
+    {
+        for (iStream = 0; iStream < globals->streamCount; iStream++)
+        {
+            GenericStream *gs = &(*globals->streams)[iStream];
+            if (gs->trackType == VideoMediaType)
+            {
+                endPass(&gs->vid, 1);
+            }
+        }
     }
 
     dbg_printf("[webm] done writing streams\n");
