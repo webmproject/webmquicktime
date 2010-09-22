@@ -33,8 +33,10 @@ typedef struct
     vpx_codec_ctx_t      *codec;
     vpx_codec_enc_cfg_t  cfg;
     vpx_image_t          *raw;
+    vpx_fixed_buf_t      stats;
     VP8customSettings    settings;
     int                  frameCount;
+    ICMCompressionPassModeFlags currentPass;
     
 } VP8EncoderGlobalsRecord, *VP8EncoderGlobals;
 

@@ -91,7 +91,11 @@ VP8_Encoder_Open(
     glob->frameCount = 0;
     glob->raw = NULL;
     glob->codec = NULL;
-
+    glob->stats.sz =0;
+    glob->stats.buf = NULL;
+    //default to one pass
+    glob->currentPass = kICMCompressionPassMode_OutputEncodedFrames;
+    
     int i;
     for (i=0;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
     {
@@ -131,6 +135,14 @@ VP8_Encoder_Close(
             vpx_img_free(glob->raw);
             free(glob->raw);
         }
+        
+        if (glob->stats.buf != NULL)
+        {
+            free(glob->stats.buf);
+            glob->stats.buf =NULL;
+            glob->stats.sz=0;
+        }
+            
 
         free(glob);
     }
@@ -1016,4 +1028,46 @@ ComponentResult VP8_Encoder_RequestSettings(VP8EncoderGlobals globals, Handle se
 {
     dbg_printf("[VP8e -- %08lx] RequestSettings()\n", (UInt32) globals);
     return badComponentSelector;
+}
+
+pascal ComponentResult VP8_Encoder_BeginPass(VP8EncoderGlobals globals,ICMCompressionPassModeFlags  passModeFlags,
+                                             UInt32  flags, ICMMultiPassStorageRef  multiPassStorage )
+{
+    ComponentResult err = noErr;
+    dbg_printf("[VP8e -- %08lx] VP8_Encoder_BeginPass(%lu, %lu) \n", (UInt32) globals, passModeFlags,flags);
+    if (passModeFlags == kICMCompressionPassMode_OutputEncodedFrames)
+    {
+        //default 1 pass
+        globals->currentPass = passModeFlags;
+    }
+    if (passModeFlags == kICMCompressionPassMode_WriteToMultiPassStorage)
+    {
+        //doing a first pass
+        if (globals->stats.buf != NULL)
+        {
+            free(globals->stats.buf);
+            globals->stats.buf =NULL;
+            globals->stats.sz=0;
+        }
+        globals->currentPass = passModeFlags;
+    }
+    else if (passModeFlags == kICMCompressionPassMode_ReadFromMultiPassStorage)
+    {
+        //doing a second pass
+        globals->currentPass = passModeFlags;        
+    }
+    else 
+    {
+        return paramErr;/// its asking me to do something I don't know how to do
+    }
+
+    
+    return err;
+}
+pascal ComponentResult VP8_Encoder_EndPass(VP8EncoderGlobals globals)
+{
+    ComponentResult err = noErr;
+    dbg_printf("[VP8e -- %08lx] VP8_Encoder_EndPass(%lu, %lu) \n", (UInt32) globals);
+    //I don't need to do anything here currently
+    return err;
 }
