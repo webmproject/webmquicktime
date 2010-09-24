@@ -133,7 +133,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   Track videoTrack = NULL;
   ComponentInstance dataHandler = 0;
   
-  dbg_printf("[WebM Import]  >> [%08lx] :: FromDataRef(%d, %ld)\n", (UInt32) store, targetTrack != NULL, atTime);
+  dbg_printf("[WebM Import]  >> [%08lx] :: FromDataRef(dataRef = %08lx, atTime = %ld)\n", (UInt32) store, (UInt32) dataRef, atTime); // targetTrack != NULL
   
   // The movieImportMustUseTrack flag indicates that we must use an existing track.
 	// We don't support this and always create a new track, so return paramErr.
@@ -143,11 +143,22 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // try to use c++ lib
   long long pos = 0;
   MkvReaderQT reader;
-  reader.Open(dataRef, dataRefType);
+  int status = reader.Open(dataRef, dataRefType);
+  if (status == 0)
+    dbg_printf("MkvReaderQT::Open() returned success.\n");
+  else
+    dbg_printf("MkvReaderQT::Open() returned FAIL = %d\n", status);
+
+  long long totalLength = 0;
+  long long availLength = 0;
+  reader.Length(&totalLength, &availLength);
+  dbg_printf("reader.m_length = %lld bytes.\n", totalLength);
+  
   using namespace mkvparser;
   EBMLHeader ebmlHeader;
-  ebmlHeader.Parse(&reader, pos);
-  
+  long long headerstatus = ebmlHeader.Parse(&reader, pos);
+  dbg_printf("EBMLHeader.Parse() returned %lld.\n", headerstatus );
+             
   dbg_printf("EBMLHeader\n");
   dbg_printf("EBMLHeader Version\t\t: %lld\n", ebmlHeader.m_version);
   dbg_printf("EBMLHeader MaxIDLength\t: %lld\n", ebmlHeader.m_maxIdLength);
