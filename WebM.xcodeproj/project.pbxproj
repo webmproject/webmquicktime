@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		1011B852123EBB6E003592D2 /* libmkvparser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1011B851123EBB6E003592D2 /* libmkvparser.a */; };
-		1011B8C1123ECA04003592D2 /* libmkvreader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1011B8C0123ECA04003592D2 /* libmkvreader.a */; };
 		10C166E312144F8C00FC5AEB /* WebMImport.c in Sources */ = {isa = PBXBuildFile; fileRef = 10C166E212144F8C00FC5AEB /* WebMImport.c */; settings = {COMPILER_FLAGS = "-x c++"; }; };
 		10C2262C122D91CC00359ACF /* WebMImport.r in Rez */ = {isa = PBXBuildFile; fileRef = 10C2262B122D91CC00359ACF /* WebMImport.r */; };
+		10D73AE7124D4A2A00673FEC /* mkvreaderqt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 10D73AE5124D4A2A00673FEC /* mkvreaderqt.cpp */; };
 		8D01CCCA0486CAD60068D4B7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		BB98158B11FF19420031AA75 /* VP8CodecUniversal.r in Rez */ = {isa = PBXBuildFile; fileRef = BB98158A11FF19420031AA75 /* VP8CodecUniversal.r */; };
@@ -44,13 +44,13 @@
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		1011B851123EBB6E003592D2 /* libmkvparser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmkvparser.a; path = lib/libmkvparser.a; sourceTree = "<group>"; };
 		1011B88D123EBF87003592D2 /* mkvparser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = mkvparser.hpp; path = lib/mkvparser.hpp; sourceTree = "<group>"; };
-		1011B8C0123ECA04003592D2 /* libmkvreader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmkvreader.a; path = lib/libmkvreader.a; sourceTree = "<group>"; };
 		1011B8C4123ECA17003592D2 /* mkvreader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = mkvreader.hpp; path = lib/mkvreader.hpp; sourceTree = "<group>"; };
-		1011B8C5123ECA17003592D2 /* mkvreaderqt.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = mkvreaderqt.hpp; path = lib/mkvreaderqt.hpp; sourceTree = "<group>"; };
 		10BE7572122474730071DC08 /* WebMImportDispatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebMImportDispatch.h; sourceTree = "<group>"; };
 		10BE7575122474890071DC08 /* WebMImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebMImport.h; sourceTree = "<group>"; };
 		10C166E212144F8C00FC5AEB /* WebMImport.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = WebMImport.c; sourceTree = "<group>"; };
 		10C2262B122D91CC00359ACF /* WebMImport.r */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.rez; path = WebMImport.r; sourceTree = "<group>"; };
+		10D73AE5124D4A2A00673FEC /* mkvreaderqt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mkvreaderqt.cpp; sourceTree = "<group>"; };
+		10D73AE6124D4A2A00673FEC /* mkvreaderqt.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = mkvreaderqt.hpp; sourceTree = "<group>"; };
 		8D01CCD10486CAD60068D4B7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D01CCD20486CAD60068D4B7 /* WebM.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WebM.component; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB98158A11FF19420031AA75 /* VP8CodecUniversal.r */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.rez; path = VP8CodecUniversal.r; sourceTree = "<group>"; };
@@ -113,7 +113,6 @@
 				BB98158D11FF19600031AA75 /* libvpx.a in Frameworks */,
 				BB98170611FF23430031AA75 /* CoreFoundation.framework in Frameworks */,
 				1011B852123EBB6E003592D2 /* libmkvparser.a in Frameworks */,
-				1011B8C1123ECA04003592D2 /* libmkvreader.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,8 +170,6 @@
 			isa = PBXGroup;
 			children = (
 				1011B8C4123ECA17003592D2 /* mkvreader.hpp */,
-				1011B8C5123ECA17003592D2 /* mkvreaderqt.hpp */,
-				1011B8C0123ECA04003592D2 /* libmkvreader.a */,
 				1011B88D123EBF87003592D2 /* mkvparser.hpp */,
 				1011B851123EBB6E003592D2 /* libmkvparser.a */,
 			);
@@ -182,6 +179,8 @@
 		10C166DC1214453A00FC5AEB /* WebMDemux */ = {
 			isa = PBXGroup;
 			children = (
+				10D73AE5124D4A2A00673FEC /* mkvreaderqt.cpp */,
+				10D73AE6124D4A2A00673FEC /* mkvreaderqt.hpp */,
 				1011B8BD123EC9DE003592D2 /* libwebm */,
 				10C166E212144F8C00FC5AEB /* WebMImport.c */,
 				10C2262B122D91CC00359ACF /* WebMImport.r */,
@@ -376,6 +375,7 @@
 				BB9815D111FF1CFA0031AA75 /* WebMElement.c in Sources */,
 				BB98161B11FF1FC60031AA75 /* EbmlDataHWriter.c in Sources */,
 				10C166E312144F8C00FC5AEB /* WebMImport.c in Sources */,
+				10D73AE7124D4A2A00673FEC /* mkvreaderqt.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

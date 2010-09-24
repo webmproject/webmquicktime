@@ -167,30 +167,14 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   dbg_printf("Pos\t\t\t: %lld\n", pos);
   
 #if 0
-  // try to use c wrapper for libmkvreader and libmkvparser
-  MkvReaderQT* reader = NULL;
-  reader = CallMkvReaderQTInit();
-  if (reader == NULL) goto bail;
-  stat = CallMkvReaderQTOpen(reader, dataRef, dataRefType);
-  if (stat) goto bail;
-  
-  
-  // Get the File Header - synchronous read.
-  // MkvReaderQT makes the DataHandler calls like DataHScheduleData()
-  EBMLHeader header; // from hwasoo's lib?
-  header = CallEBMLHeaderInit();
-  CallEBMLHeaderParse(header, reader, long long* pos);
-  fileOffset += pos;  //sizeof(header);
-  
-  // debug
-  dbg_printf("EBML Header\n");
-  dbg_printf("EBMLHeader version\t\t:  %lld\n", GetEBMLHeaderVersion(header));
-  dbg_printf("EBMLHeader MaxIDLength\t: %lld\n", GetEBMLHeaderMaxIdLength(header));            
+  fileOffset += pos;  //sizeof(header);  
 #endif
   
+  // Output debug info...
+  //  DumpWebMFileInfo(); // cutnpaste from sample
   
   // while {
-  //    DataHScheduleData()
+  //    DataHScheduleData() (in the mkvreaderqt class)
   //    NewMovieTrack()
   //    NewTrackMedia()
   //    SetTrackEnabled()
