@@ -51,6 +51,28 @@ extern "C" {
 }
 
 //--------------------------------------------------------------------------------
+static const wchar_t* utf8towcs(const char* str)
+{
+  if (str == NULL)
+    return NULL;
+  
+  //TODO: this probably requires that the locale be
+  //configured somehow:
+  
+  const size_t size = mbstowcs(NULL, str, 0);
+  
+  if (size == 0)
+    return NULL;
+  
+  wchar_t* const val = new wchar_t[size+1];
+  
+  mbstowcs(val, str, size);
+  val[size] = L'\0';
+  
+  return val;
+}
+
+//--------------------------------------------------------------------------------
 // Component Open Request - Required
 pascal ComponentResult WebMImportOpen(WebMImportGlobals store, ComponentInstance self)
 {
@@ -140,7 +162,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
 	if (inFlags & movieImportMustUseTrack)
 		return paramErr;
 
-  // try to use c++ lib
+  // Use IMkvReader subclass that knows about quicktime dataRef and dataHandler objects,
+  // rather than plain file io.
   long long pos = 0;
   MkvReaderQT reader;
   int status = reader.Open(dataRef, dataRefType);
@@ -154,6 +177,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   reader.Length(&totalLength, &availLength);
   dbg_printf("reader.m_length = %lld bytes.\n", totalLength);
   
+  // Use the libwebm project (libmkvparser.a) to parse the WebM file.
+  // WebM Header
   using namespace mkvparser;
   EBMLHeader ebmlHeader;
   long long headerstatus = ebmlHeader.Parse(&reader, pos);
@@ -173,8 +198,68 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // Output debug info...
   //  DumpWebMFileInfo(); // cutnpaste from sample
   
+  //
+  // WebM Segment
+  //
+  mkvparser::Segment* webmSegment;
+  long long ret = mkvparser::Segment::CreateInstance(&reader, pos, webmSegment);
+  if (ret) {
+    dbg_printf("Segment::CreateInstance() failed.\n");
+    return -1;
+  }
+
+  ret = webmSegment->Load();
+  if (ret) {
+    dbg_printf("Segment::Load() failed.\n");
+    return -1;
+  }
+  
+  //
+  // WebM SegmentInfo
+  //
+  const SegmentInfo* const webmSegmentInfo = webmSegment->GetInfo();
+  const long long timeCodeScale = webmSegmentInfo->GetTimeCodeScale();
+  const long long duration = webmSegmentInfo->GetDuration();
+  const wchar_t* const title = utf8towcs(webmSegmentInfo->GetTitleAsUTF8());
+  // *** muxingApp, writingApp
+  
+  dbg_printf("Segment Info\n");
+  dbg_printf("TimeCodeScale\t\t: %lld\n", timeCodeScale);
+  dbg_printf("Duration\t\t: %lld ns\n", duration);  
+  const double duration_sec = double(duration) / 1000000000;
+  dbg_printf("Duration\t\t: %7.3f sec\n", duration_sec);
+  
+  dbg_printf("\t\tPosition(Segment)\t: %lld\n", webmSegment->m_start); // position of segment payload
+  dbg_printf("\t\tSize(Segment)\t\t: %lld\n", webmSegment->m_size);  // size of segment payload
+
+  //
+  // WebM Tracks
+  //
+  mkvparser::Tracks* const webmTracks = webmSegment->GetTracks();
+  unsigned long trackIndex = 0;
+  const unsigned long numTracks = webmTracks->GetTracksCount();
+  enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };
+
+  while (trackIndex != numTracks) {
+    const mkvparser::Track* const webmTrack = webmTracks->GetTrackByIndex(trackIndex++);
+
+    if (webmTrack == NULL)
+      continue;
+    
+    unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
+    unsigned long trackNum = webmTrack->GetNumber();
+    const wchar_t* const trackName = utf8towcs(webmTrack->GetNameAsUTF8());
+
+    dbg_printf("Track Type\t\t: %ld\n", trackType);
+    dbg_printf("Track Number\t\t: %ld\n", trackNum);
+    
+    
+    
+  }
+  
+  
+  
   // while {
-  //    DataHScheduleData() (in the mkvreaderqt class)
   //    NewMovieTrack()
   //    NewTrackMedia()
   //    SetTrackEnabled()
