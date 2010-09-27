@@ -178,7 +178,10 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   dbg_printf("reader.m_length = %lld bytes.\n", totalLength);
   
   // Use the libwebm project (libmkvparser.a) to parse the WebM file.
+
+  //
   // WebM Header
+  //
   using namespace mkvparser;
   EBMLHeader ebmlHeader;
   long long headerstatus = ebmlHeader.Parse(&reader, pos);
@@ -224,7 +227,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // *** muxingApp, writingApp
   
   dbg_printf("Segment Info\n");
-  dbg_printf("TimeCodeScale\t\t: %lld\n", timeCodeScale);
+  dbg_printf("TimeCodeScale\t: %lld\n", timeCodeScale);
   dbg_printf("Duration\t\t: %lld ns\n", duration);  
   const double duration_sec = double(duration) / 1000000000;
   dbg_printf("Duration\t\t: %7.3f sec\n", duration_sec);
@@ -242,21 +245,88 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
 
   while (trackIndex != numTracks) {
     const mkvparser::Track* const webmTrack = webmTracks->GetTrackByIndex(trackIndex++);
-
     if (webmTrack == NULL)
       continue;
     
+    // get track info
     unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
     unsigned long trackNum = webmTrack->GetNumber();
     const wchar_t* const trackName = utf8towcs(webmTrack->GetNameAsUTF8());
+    const char* const codecID = webmTrack->GetCodecId();
+    const wchar_t* const codecName = utf8towcs(webmTrack->GetCodecNameAsUTF8());
+    if (trackType == VIDEO_TRACK) {
+      const mkvparser::VideoTrack* const webmVideoTrack = static_cast<const VideoTrack* const>(webmTrack);
+      long long width = webmVideoTrack->GetWidth();
+      long long height = webmVideoTrack->GetHeight();
+      double rate = webmVideoTrack->GetFrameRate();
+    }
 
+    if (trackType == AUDIO_TRACK) {
+      // **** Audio track
+    }
+    
+    // debug print
     dbg_printf("Track Type\t\t: %ld\n", trackType);
-    dbg_printf("Track Number\t\t: %ld\n", trackNum);
+    dbg_printf("Track Number\t: %ld\n", trackNum);    
+    if (codecID != NULL)
+      dbg_printf("Codec Id\t\t: %ls\n", codecID);
+    if (codecName != NULL)
+      dbg_printf("Code Name\t\t: %s\n", codecName);
     
-    
-    
+  }  // end track loop
+  
+  const unsigned long clusterCount = webmSegment->GetCount();
+  if (clusterCount == 0) {
+    dbg_printf("Segment has no Clusters!\n");
+    delete webmSegment;
+    return -1;
   }
   
+  //
+  //  WebM Cluster
+  //
+  mkvparser::Cluster* webmCluster = webmSegment->GetFirst();
+  while ((webmCluster != NULL) && !webmCluster->EOS()) 
+  {
+    const long long timeCode = webmCluster->GetTimeCode();
+    const long long time_ns = webmCluster->GetTime();
+    const BlockEntry* webmBlockEntry = webmCluster->GetFirst();
+    //
+    //  WebM Block
+    //
+    while ((webmBlockEntry != NULL) && (!webmBlockEntry->EOS()))
+    {
+      const mkvparser::Block* const webmBlock = webmBlockEntry->GetBlock();
+      const unsigned long trackNum = webmBlock->GetTrackNumber(); // block's track number (see 
+      const mkvparser::Track* webmTrack = webmTracks->GetTrackByNumber(trackNum);
+      const unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
+      const long size = webmBlock->GetSize();
+      const long long time_ns = webmBlock->GetTime(webmCluster);
+
+      dbg_printf("\t\t\tBlock\t\t:%s,%15ld,%s,%15lld\n",
+             (trackType == VIDEO_TRACK) ? "V" : "A",
+             size,
+             webmBlock->IsKey() ? "I" : "P",
+             time_ns);
+      
+      if (trackType == VIDEO_TRACK) {
+        //
+        // Data
+        //
+
+        // read frame data from WebM Block into buffer
+        unsigned char* buf = (unsigned char*)malloc(size);
+        status = webmBlock->Read(&reader, buf);
+
+        // ****
+        
+      }
+      
+      webmBlockEntry = webmCluster->GetNext(webmBlockEntry);
+    }
+    
+    webmCluster = webmSegment->GetNext(webmCluster);
+  }
   
   
   // while {
@@ -266,6 +336,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   //    AddMediaSampleReference()
   //    incr to next frame
   // InsertMediaIntoTrack()
+  // GetTrackDuration()
   
   
   ImageDescriptionHandle videoDesc = NULL;
@@ -275,7 +346,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // ****
   
 bail:
-	if (videoTrack) {
+	if (videoTrack) { // QT videoTrack
 		if (err) {
 			DisposeMovieTrack(videoTrack);
 			videoTrack = NULL;
