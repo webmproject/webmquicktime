@@ -324,7 +324,9 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         unsigned char* buf = (unsigned char*)malloc(blockSize);  // vp8 frame
         status = webmBlock->Read(&reader, buf);
 
+        //
         // QuickTime movie stuff begins here...
+        //
         // while {
         //    NewMovieTrack()
         //    NewTrackMedia()
@@ -335,15 +337,16 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         // GetTrackDuration()
 
 #if 1
+        // Create image description so QT can find appropriate decoder component
         err = CreateVP8ImageDescription(width, height, &vp8DescHand);
         if (err) goto bail;
         if (movieVideoTrack == NULL) {  // the quicktime movie track (not WebM file track)
-          // create a new QT video track
+          // Create a new QT video track
           movieVideoTrack = NewMovieTrack(theMovie, (**vp8DescHand).width << 16, (**vp8DescHand).height << 16, kNoVolume);
           
-          // create a new QT media for the track
+          // Create a new QT media for the track
           // (the media refers to the actual data samples used by the track.)
-          TimeScale timeScale;
+          TimeScale timeScale  = timeCodeScale; // try using value retreived from WebM SegmentInfo above.
           movieVideoMedia = NewTrackMedia(movieVideoTrack, VideoMediaType, timeScale, dataRef, dataRefType);
           if (err = GetMoviesError()) goto bail;
           
@@ -367,7 +370,6 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         if (err) goto bail;
                    
         // fileOffset += frameSize;   // No, we can get next fileOffset directly from next webmBlock.  Dont need to calculate.
-        
         
 #endif
         
