@@ -155,6 +155,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
 {
   OSErr err = noErr;
   ::Track movieVideoTrack = NULL;
+  Media movieVideoMedia;
   ImageDescriptionHandle vp8DescHand = NULL;
   ComponentInstance dataHandler = 0;
   
@@ -304,10 +305,10 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
       const unsigned long trackNum = webmBlock->GetTrackNumber(); // block's track number (see 
       const mkvparser::Track* webmTrack = webmTracks->GetTrackByNumber(trackNum);
       const unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
-      const long size = webmBlock->GetSize();
-      const long long time_ns = webmBlock->GetTime(webmCluster);
+      const long blockSize = webmBlock->GetSize();
+      const long long blockTime_ns = webmBlock->GetTime(webmCluster);
 
-      dbg_printf("\t\t\tBlock\t\t:%s,%15ld,%s,%15lld\n", (trackType == VIDEO_TRACK) ? "V" : "A", size, webmBlock->IsKey() ? "I" : "P", time_ns);
+      dbg_printf("\t\t\tBlock\t\t:%s,%15ld,%s,%15lld\n", (trackType == VIDEO_TRACK) ? "V" : "A", blockSize, webmBlock->IsKey() ? "I" : "P", time_ns);
       
       if (trackType == VIDEO_TRACK) {
         //
@@ -320,7 +321,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         dbg_printf("height = %ld\n", height);
         
         // read frame data from WebM Block into buffer
-        unsigned char* buf = (unsigned char*)malloc(size);  // vp8 frame
+        unsigned char* buf = (unsigned char*)malloc(blockSize);  // vp8 frame
         status = webmBlock->Read(&reader, buf);
 
         // QuickTime movie stuff begins here...
@@ -332,15 +333,51 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         //    incr to next frame
         // InsertMediaIntoTrack()
         // GetTrackDuration()
-#if 0        
-        Media movieVideoMedia;  // declare here, or at top of function?
-        CreateVP8ImageDescription(width, height, &vp8DescHand);
+
+#if 1
+        err = CreateVP8ImageDescription(width, height, &vp8DescHand);
+        if (err) goto bail;
         if (movieVideoTrack == NULL) {  // the quicktime movie track (not WebM file track)
+          // create a new QT video track
           movieVideoTrack = NewMovieTrack(theMovie, (**vp8DescHand).width << 16, (**vp8DescHand).height << 16, kNoVolume);
+          
+          // create a new QT media for the track
+          // (the media refers to the actual data samples used by the track.)
+          TimeScale timeScale;
+          movieVideoMedia = NewTrackMedia(movieVideoTrack, VideoMediaType, timeScale, dataRef, dataRefType);
+          if (err = GetMoviesError()) goto bail;
+          
+          // Enable the track.
+          SetTrackEnabled(movieVideoTrack, true);
         } // end quicktime movie track
+ 
+        // frameSize = blockSize;       // ****
+        // frameTime = blockTime_ns     // ****
+        TimeValue frameDuration = 1;    // *********** ?
+
+        // Add the sample
+        err = AddMediaSampleReference(movieVideoMedia, 
+                                      webmBlock->m_start,                       // offset into the data file
+                                      blockSize,                                // number of bytes of sample data to be identified by ref
+                                      frameDuration,                            // duration of each sample in the reference
+                                      (SampleDescriptionHandle)vp8DescHand,   // Handle to a sample description
+                                      1,                                        // number of samples contained in the reference
+                                      0,                                        // flags
+                                      NULL);                                    // returns time where reference was inserted, NULL to ignore
+        if (err) goto bail;
+                   
+        // fileOffset += frameSize;   // No, we can get next fileOffset directly from next webmBlock.  Dont need to calculate.
+        
+        
 #endif
         
       } // end video track
+      
+      // clean up temporary info
+      if (vp8DescHand) {
+        DisposeHandle((Handle)vp8DescHand);
+        vp8DescHand = NULL;
+      }
       
       webmBlockEntry = webmCluster->GetNext(webmBlockEntry);
     } // end block loop
@@ -348,9 +385,14 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     webmCluster = webmSegment->GetNext(webmCluster);
   } // end cluster loop
  
+  // Insert the added media into the track
+  // Time value specifying where the segment is to be inserted in the movie's time scale, -1 to add the media data to the end of the track
+  err = InsertMediaIntoTrack(movieVideoTrack, atTime, 0, GetMediaDuration(movieVideoMedia), fixed1);
+  if (err) goto bail;
   
-  ImageDescriptionHandle videoDesc = NULL;
-  Ptr colors = NULL;
+  // Return the duration added 
+  if (movieVideoTrack != NULL)
+    *durationAdded = GetTrackDuration(movieVideoTrack) - atTime;
   
 bail:
 	if (movieVideoTrack) { // QT videoTrack
@@ -364,10 +406,7 @@ bail:
 	}
 	if (vp8DescHand)
 		DisposeHandle((Handle)vp8DescHand);
-  
-	if (colors)
-		DisposePtr(colors);
-  
+ 
 	// Remember to close what you open.
 	if (dataHandler)
 		CloseComponent(dataHandler);
