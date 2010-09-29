@@ -330,8 +330,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         long long height = webmVideoTrack->GetHeight();
         
         // read frame data from WebM Block into buffer
- //       unsigned char* buf = (unsigned char*)malloc(blockSize);  // vp8 frame
- //       status = webmBlock->Read(&reader, buf);
+        // unsigned char* buf = (unsigned char*)malloc(blockSize);  // vp8 frame
+        // status = webmBlock->Read(&reader, buf);
 
         //
         // QuickTime movie stuff begins here...
@@ -345,7 +345,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         // InsertMediaIntoTrack()
         // GetTrackDuration()
 
-#if 1
+#pragma mark QTStuff
+
         // Create image description so QT can find appropriate decoder component (our VP8 decoder)
         err = CreateVP8ImageDescription(width, height, &vp8DescHand);
         if (err) goto bail;
@@ -401,17 +402,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         prevBlockTime = blockTime_ns;
         
         // fileOffset += frameSize;   // No, we can get next fileOffset directly from next webmBlock.  Dont need to calculate.
-        
-#endif
-        
       } // end video track
-      
-      // clean up temporary info
-      if (vp8DescHand) {
-        DisposeHandle((Handle)vp8DescHand);
-        vp8DescHand = NULL;
-      }
-      
+            
       // Advance to next webm Block within this Cluster.
       webmBlockEntry = webmCluster->GetNext(webmBlockEntry);
     } // end block loop
@@ -420,14 +412,12 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     webmCluster = webmSegment->GetNext(webmCluster);
   } // end cluster loop
  
-  // ****
-  // TODO: Add the last block in the file now, using the "prevBlock" fields stored above. 
-#if 0
+  // Add the last block in the file now, using the "prevBlock" fields stored above. 
   if (prevBlock != 0) {
     // Calculate duration of last block by subtracting time from duration of entire segment
-    long long blockDuration_ns = static_cast<TimeValue>(duration - prevBlockTime);    // ns, or (nextFrameTime - frameTime)
+    long long blockDuration_ns = (duration - prevBlockTime);    // ns, or (nextFrameTime - frameTime)
     // Convert from ns to QT time base units
-    TimeValue frameDuration = blockDuration_ns / ns_per_sec * GetMovieTimeScale(theMovie);
+    TimeValue frameDuration = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * GetMovieTimeScale(theMovie));
     dbg_printf("TIME - block duration: %ld\n", blockDuration_ns);
     dbg_printf("TIME - QT frame duration: %ld\n", frameDuration);
     err = AddMediaSampleReference(movieVideoMedia, 
@@ -440,7 +430,6 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
                                   NULL);                                    // returns time where reference was inserted, NULL to ignore
     if (err) goto bail;
   }
-#endif
   
   // Insert the added media into the track
   // Time value specifying where the segment is to be inserted in the movie's time scale, -1 to add the media data to the end of the track
@@ -462,9 +451,11 @@ bail:
 			*outFlags |= movieImportCreateTrack;
 		}
 	}
-	if (vp8DescHand)
-		DisposeHandle((Handle)vp8DescHand);
- 
+  if (vp8DescHand) {
+    DisposeHandle((Handle)vp8DescHand);
+    vp8DescHand = NULL;
+  }
+  
 	// Remember to close what you open.
 	if (dataHandler)
 		CloseComponent(dataHandler);
