@@ -7,7 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 
 
-#include "WebMImport.h"
+#include "WebMImport.hpp"
 
 #include <Carbon/Carbon.h> 
 #include <QuickTime/QuickTime.h>
