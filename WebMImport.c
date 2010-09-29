@@ -358,7 +358,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
           // Create a new QT media for the track
           // (The media refers to the actual data samples used by the track.)
           // TimeScale timeScale  = timeCodeScale; // try using value retreived from WebM SegmentInfo above. NO
-          TimeScale timeScale = GetMovieTimeScale(theMovie);  // 600
+          TimeScale timeScale = GetMovieTimeScale(theMovie);  // QT uses 600 units per second
           movieVideoMedia = NewTrackMedia(movieVideoTrack, VideoMediaType, timeScale, dataRef, dataRefType);
           if (err = GetMoviesError()) goto bail;
 
