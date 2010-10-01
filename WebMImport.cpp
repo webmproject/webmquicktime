@@ -318,7 +318,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
       const long blockSize = webmBlock->m_size; // was webmBlock->GetSize();
       const long long blockTime_ns = webmBlock->GetTime(webmCluster);
       // dbg_printf("libwebm block->GetSize=%ld, block->m_size=%lld\n", webmBlock->GetSize(), webmBlock->m_size);
-      
+      dbg_printf("libwebm block->GetOffset=%ld, block->m_start=%lld\n", webmBlock->GetOffset(), webmBlock->m_start);
+                 
       dbg_printf("TIME - Block Time: %lld\n", blockTime_ns);
       dbg_printf("\t\t\tBlock\t\t:%s,%15ld,%s,%15lld\n", (trackType == VIDEO_TRACK) ? "V" : "A", blockSize, webmBlock->IsKey() ? "I" : "P", blockTime_ns);
       
@@ -330,10 +331,14 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         long long width = webmVideoTrack->GetWidth();
         long long height = webmVideoTrack->GetHeight();
         
-        // read frame data from WebM Block into buffer
-        // unsigned char* buf = (unsigned char*)malloc(blockSize);  // vp8 frame
-        // status = webmBlock->Read(&reader, buf);
-
+#if 0
+        // DEBUG: read frame data from WebM Block into buffer
+        unsigned char* buf = (unsigned char*)malloc(blockSize);  // vp8 frame
+        status = webmBlock->Read(&reader, buf);
+        long long *firstEightBytes;
+        firstEightBytes = (long long*)buf;
+        dbg_printf("BlockData = %llx\n", firstEightBytes);
+#endif        
         //
         // QuickTime movie stuff begins here...
         //
@@ -395,13 +400,14 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
                                         NULL);                                    // returns time where reference was inserted, NULL to ignore
           if (err) goto bail;
           dbg_printf("AddMediaSampleReference(offset=%lld, size=%lld, duration=%ld)\n", prevBlockOffset, prevBlockSize, frameDuration);
+          
 
         }
 
         // save current block info for next iteration
         prevBlock = 1;
-        prevBlockOffset = webmBlock->m_start;
-        prevBlockSize = webmBlock->m_size;      // note: webmBlock->m_size is 4 bytes less than webmBlock->GetSize()
+        prevBlockOffset = webmBlock->GetOffset();   // Block::GetOffset() is offset to vp8 frame data, Block::m_start is offset to MKV Block.
+        prevBlockSize = webmBlock->GetSize();       // note: webmBlock->m_size is 4 bytes less than webmBlock->GetSize()
         prevBlockTime = blockTime_ns;
         
         // fileOffset += frameSize;   // No, we can get next fileOffset directly from next webmBlock.  Dont need to calculate.
