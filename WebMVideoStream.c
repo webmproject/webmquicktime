@@ -11,6 +11,52 @@
 #include "WebMExportStructs.h"
 #include "WebMVideoStream.h"
 
+OSStatus EnableMultiPassWithTemporaryFile(
+                                          ICMCompressionSessionOptionsRef inCompressionSessionOptions,
+                                          ICMMultiPassStorageRef *outMultiPassStorage)
+{
+    FSRef tempDirRef;
+    ICMMultiPassStorageRef multiPassStorage = NULL;
+    
+    OSStatus status;
+    
+    *outMultiPassStorage = NULL;
+    
+    // users temp directory
+    status = FSFindFolder(kUserDomain, kTemporaryFolderType,
+                          kCreateFolder, &tempDirRef);
+    if (noErr != status) goto bail;
+    
+    // create storage using a temporary file with a unique file name
+    status = ICMMultiPassStorageCreateWithTemporaryFile(kCFAllocatorDefault,
+                                                        &tempDirRef,
+                                                        NULL, 0,
+                                                        &multiPassStorage);
+    if (noErr != status) goto bail;
+    
+    // enable multi-pass by setting the compression session options
+    // note - the compression session options object retains the multi-pass
+    // storage object
+    status = ICMCompressionSessionOptionsSetProperty(
+                                                     inCompressionSessionOptions, 
+                                                     kQTPropertyClass_ICMCompressionSessionOptions,
+                                                     kICMCompressionSessionOptionsPropertyID_MultiPassStorage,
+                                                     sizeof(ICMMultiPassStorageRef),
+                                                     &multiPassStorage);
+    
+bail:
+    if (noErr != status) {
+        // this api is NULL safe so we can just call it
+        ICMMultiPassStorageRelease(multiPassStorage);
+    } else {
+        *outMultiPassStorage = multiPassStorage;
+    }
+    
+    return status;
+}
+
+
+
 //callback function of the decompression session
 static void _frameDecompressedCallback(void *refCon, OSStatus inerr,
                                        ICMDecompressionTrackingFlags decompressionFlags,
@@ -26,12 +72,6 @@ static void _frameDecompressedCallback(void *refCon, OSStatus inerr,
     {
         VideoStreamPtr vs = (VideoStreamPtr) refCon;
 
-        if (decompressionFlags & kICMDecompressionTracking_ReleaseSourceData)
-        {
-            // if we were responsible for managing source data buffers,
-            //  we should release the source buffer here,
-            //  using sourceFramemovieGet.refCon to identify it.
-        }
 
         if ((decompressionFlags & kICMDecompressionTracking_EmittingFrame) && pixelBuffer)
         {
@@ -45,14 +85,25 @@ static void _frameDecompressedCallback(void *refCon, OSStatus inerr,
                        CVPixelBufferGetWidth(pixelBuffer),
                        CVPixelBufferGetHeight(pixelBuffer));
 
-            displayDuration = 25; // TODO I'm not sure why 25 was good
-
             // Feed the frame to the compression session.
             dbg_printf("feeding the frame to the compression session\n");
             err = ICMCompressionSessionEncodeFrame(vs->compressionSession, pixelBuffer,
                                                    displayTime, displayDuration,
                                                    validTimeFlags, frameOptions,
                                                    NULL, NULL);
+            if (err !=0)
+            {
+                const char* errString = GetMacOSStatusErrorString(err);
+                dbg_printf("[WebM] ICMCompressionSessionEncodeFrame err = %s\n", errString);
+            }
+        }
+        if (decompressionFlags & kICMDecompressionTracking_ReleaseSourceData)
+        {
+            // if we were responsible for managing source data buffers,
+            //  we should release the source buffer here,
+            //  using sourceFramemovieGet.refCon to identify it.
+            dbg_printf("[WebM] Remove sourceFrame %ld\n", (UInt32)sourceFrameRefCon);
+            
         }
     }
 
@@ -272,6 +323,16 @@ ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, VideoStream
     efor.encodedFrameOutputRefCon = (void *) vs;
     efor.frameDataAllocator = NULL;
 
+    //Even though VP8 doesn't use this, I am enabling a temporary storage file
+    //  This is so quick time allows the two pass
+    if (vs->bTwoPass)
+    {
+        ICMMultiPassStorageRef multiPassStorage = NULL;
+        OSStatus status = EnableMultiPassWithTemporaryFile(options, &multiPassStorage);
+        if (noErr != status) goto bail;
+        ICMMultiPassStorageRelease(multiPassStorage);
+    }
+    
     dbg_printf("[webM] openCompressionSession timeScale = %ld (%d x %d)\n",
                vs->source.timeScale, width, height);
     err = ICMCompressionSessionCreate(NULL, width,
@@ -280,11 +341,16 @@ ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, VideoStream
                                       vs->source.timeScale, options,
                                       NULL, &efor, &vs->compressionSession);
     dbg_printf("[webM] created compression Session %d\n", err);
+    if(err) goto bail;
+    
+    //After initializing the compression session, set passes if there are two passes
+    if (vs->bTwoPass)
+        err = startPass(vs,1);
 
 bail:
 
     if (err)
-        dbg_printf("[WebM] Open Compression Session error = \n", err);
+        dbg_printf("[WebM] Open Comprlession Session error = \n", err);
 
     return err;
 }
@@ -311,10 +377,12 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, VideoStreamPtr v
 {
     ComponentResult err = noErr;
     ICMFrameTimeRecord frameTimeRecord;
-
     initMovieGetParams(&vs->source);
+    dbg_printf("--TODO REMOVE--- InvokeMovieExportGetDataUPP refs %lu %lu\n", vs->source.refCon, vs->source.dataProc);
+    dbg_printDataParams(&vs->source);
     err = InvokeMovieExportGetDataUPP(vs->source.refCon, &vs->source.params,
                                       vs->source.dataProc);
+    dbg_printf("--TODO REMOVE--- crash 2\n");
 
     if (err == eofErr)
     {
@@ -367,5 +435,38 @@ ComponentResult initVideoStream(VideoStreamPtr vs)
 {
     memset(vs, 0, sizeof(VideoStream));
     initBuffer(&vs->outBuf);
+}
 
+ComponentResult startPass(VideoStreamPtr vs,int pass)
+{
+    ComponentResult err = noErr;
+    ICMCompressionPassModeFlags cpFlag =0;
+    if (pass == 1)
+    {
+        ICMCompressionPassModeFlags readFlags;
+        Boolean bSupports = ICMCompressionSessionSupportsMultiPassEncoding(vs->compressionSession,
+                                                                           0, &readFlags);
+        dbg_printf("[WebM] Supports multipass %d, flags %u\n", bSupports, readFlags);
+        cpFlag = kICMCompressionPassMode_WriteToMultiPassStorage;
+    }
+    else if (pass == 2)
+        cpFlag = kICMCompressionPassMode_OutputEncodedFrames | kICMCompressionPassMode_ReadFromMultiPassStorage;
+    else
+        return paramErr;
+
+    OSStatus os= ICMCompressionSessionBeginPass(vs->compressionSession, cpFlag, 0);
+    if (os) 
+    {
+        dbg_printf("[WebM] Error on ICMCompressionSessionBeginPass %d\n", os);
+        err = os;  //TODO choose an apropriate error message
+    }
+    return err;
+}
+
+ComponentResult endPass(VideoStreamPtr vs)
+{
+    ComponentResult err = noErr;
+    OSStatus os = ICMCompressionSessionEndPass(vs->compressionSession);         
+    //TODO return error if it exists
+    return err;    
 }

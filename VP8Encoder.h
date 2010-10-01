@@ -36,7 +36,7 @@ typedef struct
     vpx_fixed_buf_t      stats;
     VP8customSettings    settings;
     int                  frameCount;
-    ICMCompressionPassModeFlags currentPass;
+    enum vpx_enc_pass         currentPass;
     
 } VP8EncoderGlobalsRecord, *VP8EncoderGlobals;
 

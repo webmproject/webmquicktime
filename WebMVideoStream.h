@@ -15,5 +15,6 @@ ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, VideoStream
 
 ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, VideoStreamPtr si);
 ComponentResult initVideoStream(VideoStreamPtr vs);
-
+ComponentResult startPass(VideoStreamPtr vs,int pass);
+ComponentResult endPass(VideoStreamPtr vs);
 #endif

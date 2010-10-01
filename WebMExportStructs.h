@@ -50,6 +50,7 @@ typedef struct
 
     ICMFrameType        frame_type;
     unsigned int        currentFrame;   //the current frame being encoded.
+    Boolean             bTwoPass;
 } VideoStream, *VideoStreamPtr;
 
 typedef struct

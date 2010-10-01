@@ -91,7 +91,7 @@ ComponentError(GetPreferredChunkSizeAndAlignment)
 ComponentCall(PrepareToCompressFrames)                  // 55
 ComponentCall(EncodeFrame)
 ComponentCall(CompleteFrame)
-ComponentError(BeginPass)
-ComponentError(EndPass)
-ComponentError(ProcessBetweenPasses)                    // 60
+ComponentCall(BeginPass)
+ComponentCall(EndPass)
+ComponentCall(ProcessBetweenPasses)                    // 60
 ComponentRangeEnd(1)
