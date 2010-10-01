@@ -315,9 +315,10 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
       const unsigned long trackNum = webmBlock->GetTrackNumber(); // block's track number (see 
       const mkvparser::Track* webmTrack = webmTracks->GetTrackByNumber(trackNum);
       const unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
-      const long blockSize = webmBlock->GetSize();
+      const long blockSize = webmBlock->m_size; // was webmBlock->GetSize();
       const long long blockTime_ns = webmBlock->GetTime(webmCluster);
-
+      // dbg_printf("libwebm block->GetSize=%ld, block->m_size=%lld\n", webmBlock->GetSize(), webmBlock->m_size);
+      
       dbg_printf("TIME - Block Time: %lld\n", blockTime_ns);
       dbg_printf("\t\t\tBlock\t\t:%s,%15ld,%s,%15lld\n", (trackType == VIDEO_TRACK) ? "V" : "A", blockSize, webmBlock->IsKey() ? "I" : "P", blockTime_ns);
       
@@ -393,12 +394,14 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
                                         0,                                        // flags
                                         NULL);                                    // returns time where reference was inserted, NULL to ignore
           if (err) goto bail;
+          dbg_printf("AddMediaSampleReference(offset=%lld, size=%lld, duration=%ld)\n", prevBlockOffset, prevBlockSize, frameDuration);
+
         }
 
         // save current block info for next iteration
         prevBlock = 1;
         prevBlockOffset = webmBlock->m_start;
-        prevBlockSize = blockSize;
+        prevBlockSize = webmBlock->m_size;      // note: webmBlock->m_size is 4 bytes less than webmBlock->GetSize()
         prevBlockTime = blockTime_ns;
         
         // fileOffset += frameSize;   // No, we can get next fileOffset directly from next webmBlock.  Dont need to calculate.
