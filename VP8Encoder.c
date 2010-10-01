@@ -7,7 +7,11 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-
+#define HAVE_CONFIG_H "vpx_codecs_config.h"
+#include "vpx/vpx_encoder.h"
+#include "vpx/vpx_codec_impl_top.h"
+#include "vpx/vpx_codec_impl_bottom.h"
+#include "vpx/vp8cx.h"
 
 #if __APPLE_CC__
 #include <QuickTime/QuickTime.h>
@@ -20,12 +24,8 @@
 #include "log.h"
 #include "Raw_debug.h"
 
+
 #include "VP8CodecVersion.h"
-#define HAVE_CONFIG_H "vpx_codecs_config.h"
-#include "vpx/vpx_encoder.h"
-#include "vpx/vpx_codec_impl_top.h"
-#include "vpx/vpx_codec_impl_bottom.h"
-#include "vpx/vp8cx.h"
 #include "VP8Encoder.h"
 #include "VP8EncoderGui.h"
 
@@ -94,7 +94,7 @@ VP8_Encoder_Open(
     glob->stats.sz =0;
     glob->stats.buf = NULL;
     //default to one pass
-    glob->currentPass = kICMCompressionPassMode_OutputEncodedFrames;
+    glob->currentPass = VPX_RC_ONE_PASS;
     
     int i;
     for (i=0;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
@@ -119,6 +119,14 @@ VP8_Encoder_Close(
 
     if (glob)
     {
+        //TODO I may need to release this stats buffer here....
+        /*if (glob->stats.buf != NULL)
+        {
+            free(glob->stats.buf);
+            glob->stats.buf =NULL;
+            glob->stats.sz=0;
+        }*/
+
         if (glob->codec) //see if i've initialized the vpx_codec
         {
             if (vpx_codec_destroy(glob->codec))
@@ -135,14 +143,6 @@ VP8_Encoder_Close(
             vpx_img_free(glob->raw);
             free(glob->raw);
         }
-        
-        if (glob->stats.buf != NULL)
-        {
-            free(glob->stats.buf);
-            glob->stats.buf =NULL;
-            glob->stats.sz=0;
-        }
-            
 
         free(glob);
     }
@@ -675,6 +675,7 @@ encodeThisSourceFrame(
     VP8EncoderGlobals glob,
     ICMCompressorSourceFrameRef sourceFrame)
 {
+    vpx_codec_err_t codecError;
     ComponentResult err = noErr;
     ICMMutableEncodedFrameRef encodedFrame = NULL;
     unsigned char *dataPtr;
@@ -684,16 +685,13 @@ encodeThisSourceFrame(
     CVPixelBufferRef sourcePixelBuffer = NULL;
     int storageIndex = 0;
 
-    dbg_printf("[vp8e - %08lx] encode this frame\n", (UInt32)glob);
+    dbg_printf("[vp8e - %08lx] encode this frame %08lx\n", (UInt32)glob, (UInt32)sourceFrame);
 
-    long dispNumber = ICMCompressorSourceFrameGetDisplayNumber(sourceFrame);
+    //long dispNumber = ICMCompressorSourceFrameGetDisplayNumber(sourceFrame);
     // Create the buffer for the encoded frame.
-    err = ICMEncodedFrameCreateMutable(glob->session, sourceFrame, glob->maxEncodedDataSize, &encodedFrame);
 
     if (err)
         goto bail;
-
-    dbg_printf("[vp8e - %08lx] created the buffer for the encoded frame\n", (UInt32)glob);
 
     /* Initialize codec */
     if (glob->codec == NULL)
@@ -703,21 +701,25 @@ encodeThisSourceFrame(
         setMaxKeyDist(glob);
         setFrameRate(glob);
         setCustom(glob);
+        glob->cfg.g_pass = glob->currentPass; 
 
         if (vpx_codec_enc_init(glob->codec, &vpx_codec_vp8_cx_algo, &glob->cfg, 0))
-            dbg_printf("[vp8e - %08lx] Failed to initialize encoder\n", (UInt32)glob);
+        {
+            const char *detail = vpx_codec_error_detail(glob->codec);
+            dbg_printf("[vp8e - %08lx] Failed to initialize encoder pass = %d %s\n", (UInt32)glob, glob->currentPass, detail);
+        }
     }
 
-    dataPtr = ICMEncodedFrameGetDataPtr(encodedFrame);
-    dbg_printf("[vp8e - %08lx] getDataPtr %x\n", (UInt32)glob, dataPtr);
 
     ///////         Transfer the current frame to glob->raw
-    sourcePixelBuffer = ICMCompressorSourceFrameGetPixelBuffer(sourceFrame);
-    CVPixelBufferLockBaseAddress(sourcePixelBuffer, 0);
-    //copy our frame to the raw image.  TODO: I'm not checking for any padding here.
-    unsigned char *srcBytes = CVPixelBufferGetBaseAddress(sourcePixelBuffer);
-    dbg_printf("[vp8e - %08lx] CVPixelBufferGetBaseAddress %x\n", (UInt32)glob, sourcePixelBuffer);
-    dbg_printf("[vp8e - %08lx] CopyChunkyYUV422ToPlanarYV12 %dx%d, %x, %d, %x, %d, %x, %d, %x, %d \n", (UInt32)glob,
+    if (sourceFrame != NULL)
+    {
+        sourcePixelBuffer = ICMCompressorSourceFrameGetPixelBuffer(sourceFrame);
+        CVPixelBufferLockBaseAddress(sourcePixelBuffer, 0);
+        //copy our frame to the raw image.  TODO: I'm not checking for any padding here.
+        unsigned char *srcBytes = CVPixelBufferGetBaseAddress(sourcePixelBuffer);
+        dbg_printf("[vp8e - %08lx] CVPixelBufferGetBaseAddress %x\n", (UInt32)glob, sourcePixelBuffer);
+        dbg_printf("[vp8e - %08lx] CopyChunkyYUV422ToPlanarYV12 %dx%d, %x, %d, %x, %d, %x, %d, %x, %d \n", (UInt32)glob,
                glob->width, glob->height,
                CVPixelBufferGetBaseAddress(sourcePixelBuffer),
                CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
@@ -727,7 +729,7 @@ encodeThisSourceFrame(
                glob->raw->stride[PLANE_U],
                glob->raw->planes[PLANE_V],
                glob->raw->stride[PLANE_V]);
-    err = CopyChunkyYUV422ToPlanarYV12(glob->width, glob->height,
+        err = CopyChunkyYUV422ToPlanarYV12(glob->width, glob->height,
                                        CVPixelBufferGetBaseAddress(sourcePixelBuffer),
                                        CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
                                        glob->raw->planes[PLANE_Y],
@@ -737,24 +739,34 @@ encodeThisSourceFrame(
                                        glob->raw->planes[PLANE_V],
                                        glob->raw->stride[PLANE_V]);
 
-    CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, 0);    //TODO here is unlock, where is lock?
-    dbg_printf("[vp8e - %08lx]  CVPixelBufferUnlockBaseAddress %x\n", sourcePixelBuffer);
-    int flags = 0 ; //TODO - find out what I may need in these flags
-    dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d  flags %x\n", (UInt32)glob, glob->codec, glob->raw, glob->frameCount,  flags);
-    vpx_codec_err_t codecError = vpx_codec_encode(glob->codec, glob->raw, glob->frameCount,
+        CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, 0);    
+        dbg_printf("[vp8e - %08lx]  CVPixelBufferUnlockBaseAddress %x\n", sourcePixelBuffer);    
+    
+        int flags = 0 ; //TODO - find out what I may need in these flags
+        dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d  flags %x\n", (UInt32)glob, glob->codec, glob->raw, glob->frameCount,  flags);
+        codecError = vpx_codec_encode(glob->codec, glob->raw, glob->frameCount,
                                  1, flags, VPX_DL_GOOD_QUALITY);
-    dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec exit\n", (UInt32)glob);
-
+        dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec exit\n", (UInt32)glob);
+    }
+    else  //sourceFrame is Null. this indicates the termination of a pass 
+    {
+        int flags = 0 ; //TODO - find out what I may need in these flags
+        dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d ----NULL TERMINATION\n", (UInt32)glob, glob->codec, NULL, glob->frameCount,  flags);
+        codecError = vpx_codec_encode(glob->codec, NULL, glob->frameCount,
+                                      1, flags, VPX_DL_GOOD_QUALITY);
+    }
+    
     if (codecError)
     {
         const char *detail = vpx_codec_error_detail(glob->codec);
         dbg_printf("[vp8e - %08lx]  error vpx encode is %s\n", (UInt32)glob, vpx_codec_error(glob->codec));
-
+        
         if (detail)
             dbg_printf("    %s\n", detail);
-
+        
         goto bail;
     }
+    
 
     vpx_codec_iter_t iter = NULL;
     int got_data = 0;
@@ -772,21 +784,42 @@ encodeThisSourceFrame(
 
         switch (pkt->kind)
         {
-        case VPX_CODEC_CX_FRAME_PKT:
+            case VPX_CODEC_CX_FRAME_PKT:
+                if (encodedFrame == NULL)
+                {
+                    err = ICMEncodedFrameCreateMutable(glob->session, sourceFrame, 
+                                                       glob->maxEncodedDataSize, &encodedFrame);
+                    dataPtr = ICMEncodedFrameGetDataPtr(encodedFrame);
+                    dbg_printf("[vp8e - %08lx] getDataPtr %x\n", (UInt32)glob, dataPtr);
+                }
+                //paranoid check to make sure I don't write past my buffer
+                if (pkt->data.frame.sz + dataSize >=  glob->maxEncodedDataSize)
+                {
+                    dbg_printf("[vp8e - %08lx] Error: buffer overload.  Encoded frame larger than raw frame\n", (UInt32)glob);
+                    goto bail;
+                }
 
-            //paranoid check to make sure I don't write past my buffer
-            if (pkt->data.frame.sz + dataSize >=  glob->maxEncodedDataSize)
+                dbg_printf("[vp8e - %08lx] copying %d bytes of data to output dataBuffer\n", (UInt32)glob, pkt->data.frame.sz);
+                memcpy(&(dataPtr[dataSize]), pkt->data.frame.buf, pkt->data.frame.sz);
+                dataSize += pkt->data.frame.sz;
+                break;
+            case VPX_CODEC_STATS_PKT:
+            if (1)
             {
-                dbg_printf("[vp8e - %08lx] Error: buffer overload.  Encoded frame larger than raw frame\n", (UInt32)glob);
-                goto bail;
+                unsigned long newSize = glob->stats.sz + pkt->data.twopass_stats.sz;
+                glob->stats.buf = realloc(glob->stats.buf, newSize);
+                if (!glob->stats.buf)
+                    return mFulErr;
+                dbg_printf("[vp8e - %08lx] Reallocation buffer size to %ld\n", (UInt32)glob, newSize);
+                memcpy((char*)glob->stats.buf + glob->stats.sz, pkt->data.twopass_stats.buf,
+                       pkt->data.twopass_stats.sz);
+                glob->stats.sz = newSize;
+                glob->stats.buf+= pkt->data.twopass_stats.sz;
             }
-
-            dbg_printf("[vp8e - %08lx] copying %d bytes of data to output dataBuffer\n", (UInt32)glob, pkt->data.frame.sz);
-            memcpy(&(dataPtr[dataSize]), pkt->data.frame.buf, pkt->data.frame.sz);
-            dataSize += pkt->data.frame.sz;
-            break;
-        default:
-            break;
+                break;
+                
+            default:
+                break;
         }
 
         keyFrame = pkt->kind == VPX_CODEC_CX_FRAME_PKT
@@ -804,7 +837,19 @@ encodeThisSourceFrame(
     }
 
     glob->frameCount++ ;
+    
+    if (glob->currentPass == VPX_RC_FIRST_PASS)
+    {
+        //in the first pass no need to export any frames
+        return err;  
+    }
 
+    if (encodedFrame == NULL)
+    {
+        ICMCompressorSessionDropFrame(glob->session,sourceFrame);
+        return err;          
+    }
+    
     // Update the encoded frame to reflect the actual frame size, sample flags and frame type.
     err = ICMEncodedFrameSetDataSize(encodedFrame, dataSize);
 
@@ -1035,39 +1080,66 @@ pascal ComponentResult VP8_Encoder_BeginPass(VP8EncoderGlobals globals,ICMCompre
 {
     ComponentResult err = noErr;
     dbg_printf("[VP8e -- %08lx] VP8_Encoder_BeginPass(%lu, %lu) \n", (UInt32) globals, passModeFlags,flags);
-    if (passModeFlags == kICMCompressionPassMode_OutputEncodedFrames)
+    if ((passModeFlags &kICMCompressionPassMode_OutputEncodedFrames)
+        && !(passModeFlags & kICMCompressionPassMode_ReadFromMultiPassStorage))
     {
-        //default 1 pass
-        globals->currentPass = passModeFlags;
+        dbg_printf("[VP8e -- %08lx] default 1 pass \n", (UInt32) globals);
+        globals->currentPass = VPX_RC_ONE_PASS;
     }
-    if (passModeFlags == kICMCompressionPassMode_WriteToMultiPassStorage)
+    else if ((passModeFlags & kICMCompressionPassMode_WriteToMultiPassStorage) &&
+             !(passModeFlags & kICMCompressionPassMode_OutputEncodedFrames))
     {
-        //doing a first pass
+        dbg_printf("[VP8e -- %08lx] First Pass \n", (UInt32) globals);
         if (globals->stats.buf != NULL)
         {
             free(globals->stats.buf);
             globals->stats.buf =NULL;
             globals->stats.sz=0;
         }
-        globals->currentPass = passModeFlags;
+        globals->currentPass = VPX_RC_FIRST_PASS;
     }
-    else if (passModeFlags == kICMCompressionPassMode_ReadFromMultiPassStorage)
+    else if ((passModeFlags & kICMCompressionPassMode_OutputEncodedFrames)
+        && (passModeFlags & kICMCompressionPassMode_ReadFromMultiPassStorage))
     {
-        //doing a second pass
-        globals->currentPass = passModeFlags;        
+        dbg_printf("[VP8e -- %08lx] Second Pass \n", (UInt32) globals);
+        globals->currentPass = VPX_RC_LAST_PASS;
+        if (globals->codec == NULL) // this should be initialized if there was a first pass
+            return nilHandleErr;
+        globals->cfg.g_pass = VPX_RC_LAST_PASS;
+        globals->cfg.rc_twopass_stats_in = globals->stats; 
+        if(vpx_codec_enc_init(globals->codec,  &vpx_codec_vp8_cx_algo, &globals->cfg, 0))
+        {
+            const char *detail = vpx_codec_error_detail(globals->codec);
+            dbg_printf("[VP8e] Failed to initialize encoder second pass %s\n", detail);
+            return notOpenErr;
+        }
     }
     else 
     {
-        return paramErr;/// its asking me to do something I don't know how to do
+        return paramErr;///not sure what other type of pass there is
     }
 
-    
     return err;
 }
 pascal ComponentResult VP8_Encoder_EndPass(VP8EncoderGlobals globals)
 {
     ComponentResult err = noErr;
     dbg_printf("[VP8e -- %08lx] VP8_Encoder_EndPass(%lu, %lu) \n", (UInt32) globals);
+    if (globals->currentPass == VPX_RC_FIRST_PASS)
+    {
+        //send a null frame to encode frame, this ends off the encoder stats
+        encodeThisSourceFrame(globals, NULL);
+    }
+    //I don't need to do anything here currently
+    return err;
+}
+
+pascal ComponentResult VP8_Encoder_ProcessBetweenPasses(VP8EncoderGlobals globals, ICMMultiPassStorageRef  multiPassStorage, 
+                                                        Boolean * interpassProcessingDoneOut,
+                                                        ICMCompressionPassModeFlags * requestedNextPassModeFlagsOut)
+{
+    ComponentResult err = noErr;
+    dbg_printf("[VP8e -- %08lx] VP8_Encoder_ProcessBetweenPasses \n", (UInt32) globals);
     //I don't need to do anything here currently
     return err;
 }

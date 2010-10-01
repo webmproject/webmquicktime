@@ -95,6 +95,7 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
                     //framerate estime should be replaced with more accurate
                     fps = vs->source.timeScale / 100.0;
                 }
+                //TODO this seems wrong, it seems like this is the input rather than the output
                 err = InvokeMovieExportGetDataUPP(vs->source.refCon, &vs->source.params,
                                                   vs->source.dataProc);
                 ImageDescription *id = *(ImageDescriptionHandle) vs->source.params.desc;
@@ -293,7 +294,7 @@ static ComponentResult _compressVideo(WebMExportGlobalsPtr globals, VideoStreamP
         return err; //paranoid check
 
     dbg_printf("[webM] call Compress Next frame %d\n", vs->currentFrame);
-    // get next frame as vp8 frame
+    // get next frame as vp8 frame
     err = compressNextFrame(globals, vs);
 
     if (err != noErr)
@@ -316,6 +317,24 @@ static void _startNewCluster(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
     Ebml_StartSubElement(ebml, &globals->clusterStart, Cluster);
     Ebml_SerializeUnsigned(ebml, Timecode, globals->clusterTime);
 }
+static void _advanceVideoTime(WebMExportGlobalsPtr globals, VideoStreamPtr vs)
+{
+    StreamSource *source =  &vs->source;
+    //this now represents the next frame we want to encode
+    double fps = globals->framerate;
+    if (fps == 0)
+        fps = source->params.sourceTimeScale * 1.0/ source->params.durationPerSample * 1.0; 
+    vs->currentFrame += 1;  
+    source->time = (SInt32)((vs->currentFrame * 1.0) / fps * source->timeScale); //TODO  -- I am assuming that each frame has a similar fps
+    /*source->time += source->params.durationPerSample * source->timeScale
+     / source->params.sourceTimeScale;  //TODO precision loss??*/
+    
+    source->blockTimeMs = getTimeAsSeconds(source) * 1000;
+    dbg_printf("[WebM] Next frame calculated %f from %f fps, durationPerSample %ld * timeScale %d / sourceTimeScale %d to %d \n"
+               , getTimeAsSeconds(source),fps,  source->params.durationPerSample ,source->timeScale
+               , source->params.sourceTimeScale, source->time);
+    
+}
 
 static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, VideoStreamPtr vs, EbmlGlobal *ebml)
 {
@@ -333,20 +352,7 @@ static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, VideoStreamPtr 
                      isKeyFrame, 0 /*unsigned char lacingFlag*/, 0/*int discardable*/,
                      vs->outBuf.data, vs->outBuf.size);
     vs->source.bQdFrame = false;
-    
-    //this now represents the next frame we want to encode
-    double fps = globals->framerate;
-    if (fps == 0)
-        fps = source->params.sourceTimeScale * 1.0/ source->params.durationPerSample * 1.0; 
-    vs->currentFrame += 1;  
-    source->time = (SInt32)((vs->currentFrame * 1.0) / fps * source->timeScale); //TODO  -- I am assuming that each frame has a similar fps
-        /*source->time += source->params.durationPerSample * source->timeScale
-            / source->params.sourceTimeScale;  //TODO precision loss??*/
-
-    source->blockTimeMs = getTimeAsSeconds(source) * 1000;
-    dbg_printf("[WebM] Next frame calculated %f from %f fps, durationPerSample %ld * timeScale %d / sourceTimeScale %d to %d \n"
-               , getTimeAsSeconds(source),fps,  source->params.durationPerSample ,source->timeScale
-               , source->params.sourceTimeScale, source->time);
+    _advanceVideoTime( globals,  vs);
     
     return err;
 }
@@ -478,26 +484,20 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
 
     globals->clusterTime = 0;  //assuming 0 start time
     Boolean startNewCluster = true;  //cluster should start very first
-    unsigned int blocksInCluster=0;  //this increments any time a block added
+    unsigned int blocksInCluster=1;  //this increments any time a block added
     SInt64 clusterOffset = *(SInt64 *)& ebml.offset;
     
     Boolean bTwoPass = isTwoPass(globals);
     dbg_printf("[WebM] Is Two Pass %d\n",bTwoPass);
     
-    
+    for (iStream = 0; iStream < globals->streamCount; iStream++)
+    {
+        GenericStream *gs = &(*globals->streams)[iStream];
+        gs->vid.bTwoPass = bTwoPass;
+    }
     //start first pass in a two pass
     if (bTwoPass)
     {
-        dbg_printf("[WebM] Starting first pass\n");
-        for (iStream = 0; iStream < globals->streamCount; iStream++)
-        {
-            GenericStream *gs = &(*globals->streams)[iStream];
-            if (gs->trackType == VideoMediaType)
-            {
-                startPass(&gs->vid, 1);
-            }
-        }
-
         dbg_printf("[WebM] Itterating first pass on all videos\n");    
         allStreamsDone = false;
         //in a first pass do only video
@@ -516,13 +516,12 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
                     if (!source->bQdFrame && globals->bExportVideo)
                     {
                         err = _compressVideo(globals, &gs->vid);
-                    
+                        _advanceVideoTime(globals, &gs->vid);
                     }
                     if (source->bQdFrame)
                     {
-                    
-                    allStreamsDone = false;
-                    source->bQdFrame= false;
+                        allStreamsDone = false;
+                        source->bQdFrame= false;
                     }
                 }
                 minTimeMs = source->blockTimeMs;
@@ -551,11 +550,6 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
             }
         }
         
-    }
-    
-    //start second pass in a two pass
-    if (bTwoPass)
-    {
         for (iStream = 0; iStream < globals->streamCount; iStream++)
         {
             GenericStream *gs = &(*globals->streams)[iStream];
@@ -564,7 +558,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
                 startPass(&gs->vid, 2);
             }
         }
-    }
+    } //end if bTwoPass
     
     
     while (!allStreamsDone)
@@ -636,7 +630,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         if (startNewCluster)
         {
             globals->clusterTime = minTimeMs;
-            blocksInCluster =0;
+            blocksInCluster =1;
             clusterOffset = *(SInt64 *)& ebml.offset;
             dbg_printf("[WebM] Start new cluster offset %lld time %ld\n", clusterOffset, minTimeMs);
             _startNewCluster(globals, &ebml);
