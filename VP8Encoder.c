@@ -814,7 +814,6 @@ encodeThisSourceFrame(
                 memcpy((char*)glob->stats.buf + glob->stats.sz, pkt->data.twopass_stats.buf,
                        pkt->data.twopass_stats.sz);
                 glob->stats.sz = newSize;
-                glob->stats.buf+= pkt->data.twopass_stats.sz;
             }
                 break;
                 
@@ -1106,7 +1105,9 @@ pascal ComponentResult VP8_Encoder_BeginPass(VP8EncoderGlobals globals,ICMCompre
         if (globals->codec == NULL) // this should be initialized if there was a first pass
             return nilHandleErr;
         globals->cfg.g_pass = VPX_RC_LAST_PASS;
-        globals->cfg.rc_twopass_stats_in = globals->stats; 
+        globals->cfg.rc_twopass_stats_in.sz = globals->stats.sz; 
+        globals->cfg.rc_twopass_stats_in.buf = globals->stats.buf; 
+        globals->frameCount = 0;
         if(vpx_codec_enc_init(globals->codec,  &vpx_codec_vp8_cx_algo, &globals->cfg, 0))
         {
             const char *detail = vpx_codec_error_detail(globals->codec);
@@ -1127,8 +1128,13 @@ pascal ComponentResult VP8_Encoder_EndPass(VP8EncoderGlobals globals)
     dbg_printf("[VP8e -- %08lx] VP8_Encoder_EndPass(%lu, %lu) \n", (UInt32) globals);
     if (globals->currentPass == VPX_RC_FIRST_PASS)
     {
+        unsigned int prevStatsSize = 0;
+        while (globals->stats.sz != prevStatsSize)
+        {
+            prevStatsSize = globals->stats.sz;
+            encodeThisSourceFrame(globals, NULL);
+        }
         //send a null frame to encode frame, this ends off the encoder stats
-        encodeThisSourceFrame(globals, NULL);
     }
     //I don't need to do anything here currently
     return err;
