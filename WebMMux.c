@@ -529,10 +529,10 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
             
             if (duration != 0.0)  //if duration is 0, can't show anything
             {
-                double percentComplete = minTimeMs / 1000.0 / duration;
+                double percentComplete = minTimeMs / 1000.0 / duration /2.0;
                 /*if (bTwoPass)
                  percentComplete = 50.0 + percentComplete/2.0;*/
-                err = _updateProgressBar(globals, percentComplete );
+                err = _updateProgressBar(globals, percentComplete);
             }
         }
         dbg_printf("[WebM] Ending First Pass\n");    
@@ -547,6 +547,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
                 gs->vid.source.bQdFrame = false;
                 gs->vid.source.blockTimeMs = 0;
                 gs->vid.source.time = 0;
+                gs->vid.currentFrame = 0;
             }
         }
         
@@ -558,9 +559,11 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
                 startPass(&gs->vid, 2);
             }
         }
+
+        allStreamsDone = false;    //reset
+    
     } //end if bTwoPass
-    
-    
+
     while (!allStreamsDone)
     {
         minTimeMs = ULONG_MAX;
@@ -662,8 +665,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         if (duration != 0.0)  //if duration is 0, can't show anything
         {
             double percentComplete = minTimeMs / 1000.0 / duration;
-            /*if (bTwoPass)
-                percentComplete = 50.0 + percentComplete/2.0;*/
+            if (bTwoPass)
+                percentComplete = 0.5 + percentComplete/2.0;
             err = _updateProgressBar(globals, percentComplete );
         }
         if (err ) goto bail;
