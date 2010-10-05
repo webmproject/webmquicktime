@@ -378,11 +378,8 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, VideoStreamPtr v
     ComponentResult err = noErr;
     ICMFrameTimeRecord frameTimeRecord;
     initMovieGetParams(&vs->source);
-    dbg_printf("--TODO REMOVE--- InvokeMovieExportGetDataUPP refs %lu %lu\n", vs->source.refCon, vs->source.dataProc);
-    dbg_printDataParams(&vs->source);  //TODO REMOVE
     err = InvokeMovieExportGetDataUPP(vs->source.refCon, &vs->source.params,
                                       vs->source.dataProc);
-    dbg_printf("--TODO REMOVE--- crash 2\n");
 
     if (err == eofErr)
     {

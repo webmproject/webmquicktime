@@ -210,8 +210,8 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
     }
     if (as->framesIn ==0)
     {
-        dbg_printf("TODO REMOVE -- mDataByteSize = %ld, num Packets = %ld",
-                   ioData->mBuffers[0].mDataByteSize, *ioNumberDataPackets);
+        //dbg_printf("TODO REMOVE -- mDataByteSize = %ld, num Packets = %ld",
+        //           ioData->mBuffers[0].mDataByteSize, *ioNumberDataPackets);
     }
     as->framesIn += *ioNumberDataPackets;
 

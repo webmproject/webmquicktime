@@ -589,7 +589,10 @@ static void setCustom(VP8EncoderGlobals glob)
     else if (glob->settings[5] ==2)
         glob->cfg.rc_end_usage = VPX_VBR;
     setUInt(&glob->cfg.g_lag_in_frames, glob->settings[6]);
+    
 
+    
+    
     setUInt(&glob->cfg.rc_min_quantizer, glob->settings[8]);
     setUInt(&glob->cfg.rc_max_quantizer, glob->settings[9]);
     setUInt(&glob->cfg.rc_undershoot_pct, glob->settings[10]);
@@ -616,6 +619,29 @@ static void setCustom(VP8EncoderGlobals glob)
 
 }
 
+static void setCustomPostInit(VP8EncoderGlobals glob)
+{
+    if (glob->settings[12] != UINT_MAX)
+        vpx_codec_control(glob->codec, VP8E_SET_CPUUSED, glob->settings[12]);
+    if (glob->settings[13] != UINT_MAX)
+        vpx_codec_control(glob->codec, VP8E_SET_NOISE_SENSITIVITY, glob->settings[13]);
+    if (glob->settings[14] != UINT_MAX)
+        vpx_codec_control(glob->codec, VP8E_SET_SHARPNESS, glob->settings[14]);
+    if (glob->settings[15] != UINT_MAX)
+        vpx_codec_control(glob->codec, VP8E_SET_STATIC_THRESHOLD, glob->settings[15]);
+    //setUIntPostInit(glob, VP8E_SET_TOKEN_PARTITIONS, 25);  // TODO not sure how to set this.
+    
+    //TODO verify this when enabling alt - ref
+    if (glob->settings[25] != UINT_MAX)
+        vpx_codec_control(glob->codec, VP8E_SET_ENABLEAUTOALTREF, glob->settings[25]);
+    if (glob->settings[26] != UINT_MAX)
+        vpx_codec_control(glob->codec, VP8E_SET_ARNR_MAXFRAMES, glob->settings[26]);
+    if (glob->settings[27] != UINT_MAX)
+        vpx_codec_control(glob->codec, VP8E_SET_ARNR_STRENGTH, glob->settings[27]);
+    if (glob->settings[28] != UINT_MAX)
+        vpx_codec_control(glob->codec, VP8E_SET_ARNR_TYPE, glob->settings[28]);
+}
+                      
 // Presents the compressor with a frame to encode.
 // The compressor may encode the frame immediately or queue it for later encoding.
 // If the compressor queues the frame for later decode, it must retain it (by calling ICMCompressorSourceFrameRetain)
@@ -708,6 +734,7 @@ encodeThisSourceFrame(
             const char *detail = vpx_codec_error_detail(glob->codec);
             dbg_printf("[vp8e - %08lx] Failed to initialize encoder pass = %d %s\n", (UInt32)glob, glob->currentPass, detail);
         }
+        setCustomPostInit(glob);
     }
 
 
@@ -1114,6 +1141,7 @@ pascal ComponentResult VP8_Encoder_BeginPass(VP8EncoderGlobals globals,ICMCompre
             dbg_printf("[VP8e] Failed to initialize encoder second pass %s\n", detail);
             return notOpenErr;
         }
+        setCustomPostInit(globals); //not sure if I this is needed just following ivfenc example
     }
     else 
     {
