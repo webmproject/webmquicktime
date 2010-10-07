@@ -37,59 +37,111 @@ static ComponentResult setBitrate(VP8EncoderGlobals glob,
 static void setUInt(unsigned int * i, UInt32 val);
 static void setCustom(VP8EncoderGlobals glob);
 static void initializeCodec(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame);
-static void converColorSpace(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame);
+static ComponentResult convertColorSpace(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame);
 
-//initialize the codec if needed
-static void initializeCodec(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame)
+//these are for the source frame queue
+static void addSourceFrame(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame);
+static ICMCompressorSourceFrameRef popSourceFrame(VP8EncoderGlobals glob);
+
+
+
+
+static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_cx_pkt_t *pkt)
 {
-    if (glob->codec != NULL)
-        return;
-    glob->codec = calloc(1, sizeof(vpx_codec_ctx_t));
-    setBitrate(glob, sourceFrame); //because we don't know framerate untile we have a source image.. this is done here
-    setMaxKeyDist(glob);
-    setFrameRate(glob);
-    setCustom(glob);
-    glob->cfg.g_pass = glob->currentPass; 
-                        
-    if (vpx_codec_enc_init(glob->codec, &vpx_codec_vp8_cx_algo, &glob->cfg, 0))
+    ICMMutableEncodedFrameRef encodedFrame = NULL;
+    unsigned char *dataPtr;
+    size_t dataSize = 0;
+    ComponentResult err= noErr;
+    MediaSampleFlags mediaSampleFlags;
+    
+    Boolean keyFrame = false;
+    Boolean droppableFrame = false;
+    
+    //get the source frame off the queue
+    //for an alt-ref frame this won't work.
+    ICMCompressorSourceFrameRef sourceFrame = popSourceFrame(glob);
+    
+    err = ICMEncodedFrameCreateMutable(glob->session, sourceFrame, 
+                                           glob->maxEncodedDataSize, &encodedFrame);
+    if (err) goto bail;
+    dataPtr = ICMEncodedFrameGetDataPtr(encodedFrame);
+    dbg_printf("[vp8e - %08lx] getDataPtr %x\n", (UInt32)glob, dataPtr);
+
+    //paranoid check to make sure I don't write past my buffer
+    if (pkt->data.frame.sz + dataSize >=  glob->maxEncodedDataSize)
     {
-        const char *detail = vpx_codec_error_detail(glob->codec);
-        dbg_printf("[vp8e - %08lx] Failed to initialize encoder pass = %d %s\n", (UInt32)glob, glob->currentPass, detail);
+        dbg_printf("[vp8e - %08lx] Error: buffer overload.  Encoded frame larger than raw frame\n", (UInt32)glob);
+        goto bail;
     }
-    setCustomPostInit(glob);
-}
+    
+    dbg_printf("[vp8e - %08lx] copying %d bytes of data to output dataBuffer\n", (UInt32)glob, pkt->data.frame.sz);
+    memcpy(&(dataPtr[dataSize]), pkt->data.frame.buf, pkt->data.frame.sz);
+    dataSize = pkt->data.frame.sz;
+    
+    
+    if (dataSize == 0)
+        dbg_printf("[vp8e - %08lx] Warning: No data generated for this frame\n", (UInt32)glob);
+    else
+    {
+        dbg_printf("[vp8e - %08lx]  Encoded frame %d with %d bytes of data\n", (UInt32)glob, glob->frameCount, dataSize);
+    }
+    
+    
+    keyFrame = pkt->kind ==  (pkt->data.frame.flags & VPX_FRAME_IS_KEY);
+    dbg_printf(keyFrame ? "Key Packet\n" : "Non Key Packet\n");
+    droppableFrame = pkt->data.frame.flags & VPX_FRAME_IS_DROPPABLE;
+    dbg_printf(droppableFrame ? "Droppable frame\n" : "Not droppable frame\n");
+    if (encodedFrame == NULL)
+    {
+        ICMCompressorSessionDropFrame(glob->session,sourceFrame);
+        return err;          
+    }
+    
+    // Update the encoded frame to reflect the actual frame size, sample flags and frame type.
+    err = ICMEncodedFrameSetDataSize(encodedFrame, dataSize);
+    
+    if (err) goto bail;
+    
+    mediaSampleFlags = 0;
+    
+    if (! keyFrame)
+    {
+        mediaSampleFlags |= mediaSampleNotSync;
+        
+        if (droppableFrame)
+            mediaSampleFlags |= mediaSampleDroppable;
+    }
+    
+    //TODO here is where we should add alt-ref
+    ICMFrameType frameType = keyFrame ? kICMFrameType_I : kICMFrameType_P;    
+    dbg_printf("[vp8e - %08lx] frame type set to %c", (UInt32)glob, keyFrame ? 'I' : 'P');
+    
+    if (kICMFrameType_I == frameType)
+        mediaSampleFlags |= mediaSampleDoesNotDependOnOthers;
+    
+    err = ICMEncodedFrameSetMediaSampleFlags(encodedFrame, mediaSampleFlags);
+    
+    if (err)
+        goto bail;
+    
+    err = ICMEncodedFrameSetFrameType(encodedFrame, frameType);
+    
+    if (err)
+        goto bail;
+    
+    // Output the encoded frame.
+    dbg_printf("[vp8e - %08lx]  Emit Encoded Frames\n", (UInt32)glob);
+    err = ICMCompressorSessionEmitEncodedFrame(glob->session, encodedFrame, 1, &sourceFrame);
+    
+    if (err)
+        goto bail;
+    
+    
+bail:
+    // Since we created this, we must also release it.
+    if (encodedFrame)
+        ICMEncodedFrameRelease(encodedFrame);
 
-static ComponentResult convertColorSpace(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame)
-{
-    CVPixelBufferRef sourcePixelBuffer = NULL;
-    sourcePixelBuffer = ICMCompressorSourceFrameGetPixelBuffer(sourceFrame);
-    CVPixelBufferLockBaseAddress(sourcePixelBuffer, 0);
-    //copy our frame to the raw image.  TODO: I'm not checking for any padding here.
-    unsigned char *srcBytes = CVPixelBufferGetBaseAddress(sourcePixelBuffer);
-    dbg_printf("[vp8e - %08lx] CVPixelBufferGetBaseAddress %x\n", (UInt32)glob, sourcePixelBuffer);
-    dbg_printf("[vp8e - %08lx] CopyChunkyYUV422ToPlanarYV12 %dx%d, %x, %d, %x, %d, %x, %d, %x, %d \n", (UInt32)glob,
-               glob->width, glob->height,
-               CVPixelBufferGetBaseAddress(sourcePixelBuffer),
-               CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
-               glob->raw->planes[PLANE_Y],
-               glob->raw->stride[PLANE_Y],
-               glob->raw->planes[PLANE_U],
-               glob->raw->stride[PLANE_U],
-               glob->raw->planes[PLANE_V],
-               glob->raw->stride[PLANE_V]);
-    ComponentResult err = CopyChunkyYUV422ToPlanarYV12(glob->width, glob->height,
-                                       CVPixelBufferGetBaseAddress(sourcePixelBuffer),
-                                       CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
-                                       glob->raw->planes[PLANE_Y],
-                                       glob->raw->stride[PLANE_Y],
-                                       glob->raw->planes[PLANE_U],
-                                       glob->raw->stride[PLANE_U],
-                                       glob->raw->planes[PLANE_V],
-                                       glob->raw->stride[PLANE_V]);
-    
-    CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, 0);    
-    dbg_printf("[vp8e - %08lx]  CVPixelBufferUnlockBaseAddress %x\n", sourcePixelBuffer);    
-    
     return err;
 }
                      
@@ -98,11 +150,7 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
 {
     vpx_codec_err_t codecError;
     ComponentResult err = noErr;
-    ICMMutableEncodedFrameRef encodedFrame = NULL;
-    unsigned char *dataPtr;
     const UInt8 *decoderDataPtr;
-    size_t dataSize = 0;
-    MediaSampleFlags mediaSampleFlags;
     int storageIndex = 0;
     
     dbg_printf("[vp8e - %08lx] encode this frame %08lx\n", (UInt32)glob, (UInt32)sourceFrame);
@@ -146,8 +194,6 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
     
     vpx_codec_iter_t iter = NULL;
     int got_data = 0;
-    Boolean keyFrame = false;
-    Boolean droppableFrame = false;
     
     while (1)
     {
@@ -161,23 +207,9 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
         switch (pkt->kind)
         {
             case VPX_CODEC_CX_FRAME_PKT:
-                if (encodedFrame == NULL)
-                {
-                    err = ICMEncodedFrameCreateMutable(glob->session, sourceFrame, 
-                                                       glob->maxEncodedDataSize, &encodedFrame);
-                    dataPtr = ICMEncodedFrameGetDataPtr(encodedFrame);
-                    dbg_printf("[vp8e - %08lx] getDataPtr %x\n", (UInt32)glob, dataPtr);
-                }
-                //paranoid check to make sure I don't write past my buffer
-                if (pkt->data.frame.sz + dataSize >=  glob->maxEncodedDataSize)
-                {
-                    dbg_printf("[vp8e - %08lx] Error: buffer overload.  Encoded frame larger than raw frame\n", (UInt32)glob);
+                err = emitEncodedFrame(glob, pkt);
+                if (err)
                     goto bail;
-                }
-                
-                dbg_printf("[vp8e - %08lx] copying %d bytes of data to output dataBuffer\n", (UInt32)glob, pkt->data.frame.sz);
-                memcpy(&(dataPtr[dataSize]), pkt->data.frame.buf, pkt->data.frame.sz);
-                dataSize += pkt->data.frame.sz;
                 break;
             case VPX_CODEC_STATS_PKT:
                 if (1)
@@ -197,18 +229,6 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
                 break;
         }
         
-        keyFrame = pkt->kind == VPX_CODEC_CX_FRAME_PKT
-        && (pkt->data.frame.flags & VPX_FRAME_IS_KEY);
-        dbg_printf(keyFrame ? "Key Packet\n" : "Non Key Packet\n");
-        droppableFrame = pkt->data.frame.flags & VPX_FRAME_IS_DROPPABLE;
-        dbg_printf(droppableFrame ? "Droppable frame\n" : "Not droppable frame\n");
-    }
-    
-    if (got_data == 0)
-        dbg_printf("[vp8e - %08lx] Warning: No data generated for this frame\n", (UInt32)glob);
-    else
-    {
-        dbg_printf("[vp8e - %08lx]  Encoded frame %d with %d bytes of data  -- got_data packets %d\n", (UInt32)glob, glob->frameCount, dataSize, got_data);
     }
     
     glob->frameCount++ ;
@@ -219,70 +239,73 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
         return err;  
     }
     
-    if (encodedFrame == NULL)
-    {
-        ICMCompressorSessionDropFrame(glob->session,sourceFrame);
-        return err;          
-    }
-    
-    // Update the encoded frame to reflect the actual frame size, sample flags and frame type.
-    err = ICMEncodedFrameSetDataSize(encodedFrame, dataSize);
-    
-    if (err) goto bail;
-    
-    mediaSampleFlags = 0;
-    
-    if (! keyFrame)
-    {
-        mediaSampleFlags |= mediaSampleNotSync;
-        
-        if (droppableFrame)
-            mediaSampleFlags |= mediaSampleDroppable;
-    }
-    
-    ICMFrameType frameType = kICMFrameType_P;
-    
-    if (keyFrame)
-    {
-        frameType = kICMFrameType_I;
-        dbg_printf("[vp8e - %08lx] frame type set to I", (UInt32)glob);
-    }
-    else
-    {
-        dbg_printf("[vp8e - %08lx] frame type set to P", (UInt32)glob);
-    }
-    
-    if (kICMFrameType_I == frameType)
-        mediaSampleFlags |= mediaSampleDoesNotDependOnOthers;
-    
-    err = ICMEncodedFrameSetMediaSampleFlags(encodedFrame, mediaSampleFlags);
-    
-    if (err)
-        goto bail;
-    
-    err = ICMEncodedFrameSetFrameType(encodedFrame, frameType);
-    
-    if (err)
-        goto bail;
-    
-    // Output the encoded frame.
-    dbg_printf("[vp8e - %08lx]  Emit Encoded Frames\n", (UInt32)glob);
-    err = ICMCompressorSessionEmitEncodedFrame(glob->session, encodedFrame, 1, &sourceFrame);
-    
-    if (err)
-        goto bail;
     
 bail:
     
     if (err)
         dbg_printf("[vp8e - %08lx]  bailed with err %d\n", (UInt32)glob, err);
     
-    // Since we created this, we must also release it.
-    ICMEncodedFrameRelease(encodedFrame);
     
     return err;
 }
 
+//initialize the codec if needed
+static void initializeCodec(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame)
+{
+    if (glob->codec != NULL)
+        return;
+    glob->codec = calloc(1, sizeof(vpx_codec_ctx_t));
+    setBitrate(glob, sourceFrame); //because we don't know framerate untile we have a source image.. this is done here
+    setMaxKeyDist(glob);
+    setFrameRate(glob);
+    setCustom(glob);
+    glob->cfg.g_pass = glob->currentPass; 
+    
+    if (vpx_codec_enc_init(glob->codec, &vpx_codec_vp8_cx_algo, &glob->cfg, 0))
+    {
+        const char *detail = vpx_codec_error_detail(glob->codec);
+        dbg_printf("[vp8e - %08lx] Failed to initialize encoder pass = %d %s\n", (UInt32)glob, glob->currentPass, detail);
+    }
+    setCustomPostInit(glob);
+}
+
+
+//creates raw yv12 from sourceframe
+static ComponentResult convertColorSpace(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame)
+{
+    CVPixelBufferRef sourcePixelBuffer = NULL;
+    sourcePixelBuffer = ICMCompressorSourceFrameGetPixelBuffer(sourceFrame);
+    CVPixelBufferLockBaseAddress(sourcePixelBuffer, 0);
+    //copy our frame to the raw image.  TODO: I'm not checking for any padding here.
+    unsigned char *srcBytes = CVPixelBufferGetBaseAddress(sourcePixelBuffer);
+    dbg_printf("[vp8e - %08lx] CVPixelBufferGetBaseAddress %x\n", (UInt32)glob, sourcePixelBuffer);
+    dbg_printf("[vp8e - %08lx] CopyChunkyYUV422ToPlanarYV12 %dx%d, %x, %d, %x, %d, %x, %d, %x, %d \n", (UInt32)glob,
+               glob->width, glob->height,
+               CVPixelBufferGetBaseAddress(sourcePixelBuffer),
+               CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
+               glob->raw->planes[PLANE_Y],
+               glob->raw->stride[PLANE_Y],
+               glob->raw->planes[PLANE_U],
+               glob->raw->stride[PLANE_U],
+               glob->raw->planes[PLANE_V],
+               glob->raw->stride[PLANE_V]);
+    ComponentResult err = CopyChunkyYUV422ToPlanarYV12(glob->width, glob->height,
+                                                       CVPixelBufferGetBaseAddress(sourcePixelBuffer),
+                                                       CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
+                                                       glob->raw->planes[PLANE_Y],
+                                                       glob->raw->stride[PLANE_Y],
+                                                       glob->raw->planes[PLANE_U],
+                                                       glob->raw->stride[PLANE_U],
+                                                       glob->raw->planes[PLANE_V],
+                                                       glob->raw->stride[PLANE_V]);
+    
+    CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, 0);    
+    dbg_printf("[vp8e - %08lx]  CVPixelBufferUnlockBaseAddress %x\n", sourcePixelBuffer);    
+    
+    return err;
+}
+
+///////////Functions for configuring the encoder
 
 static ComponentResult setMaxKeyDist(VP8EncoderGlobals glob)
 {
@@ -453,5 +476,36 @@ void setCustomPostInit(VP8EncoderGlobals glob)
         vpx_codec_control(glob->codec, VP8E_SET_ARNR_STRENGTH, glob->settings[27]);
     if (glob->settings[28] != UINT_MAX)
         vpx_codec_control(glob->codec, VP8E_SET_ARNR_TYPE, glob->settings[28]);
+}
+
+
+#define SFQ_INC_SIZE 10
+//The source frame queue is maintained so we can match output packets to source frames in the queue
+static void addSourceFrame(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame)
+{
+    if (glob->sourceQueue.size +1 < glob->sourceQueue.max)
+    {
+        glob->sourceQueue.max += SFQ_INC_SIZE;
+        glob->sourceQueue.queue = realloc(glob->sourceQueue.queue, glob->sourceQueue.max * sizeof(ICMCompressorSourceFrameRef));
+    }
+    glob->sourceQueue.queue[glob->sourceQueue.size] = sourceFrame;
+    glob->sourceQueue.size += 1;
+}
+
+static ICMCompressorSourceFrameRef popSourceFrame(VP8EncoderGlobals glob)
+{
+    if (glob->sourceQueue.size <=0)
+    {
+        dbg_printf("[VP8E] **ERROR in source frame queue! Popping a frame that doesn't exist!\n");
+        return NULL;
+    }
+    ICMCompressorSourceFrameRef rval = glob->sourceQueue.queue[0];
+    int i;
+    for (i=1;i < glob->sourceQueue.size; i ++)
+    {
+        glob->sourceQueue.queue[i-1] = glob->sourceQueue.queue[i];
+    }
+    glob->sourceQueue.size -=1;
+    return rval;
 }
 

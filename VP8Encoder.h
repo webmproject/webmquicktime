@@ -15,6 +15,13 @@
 
 typedef UInt32 VP8customSettings[TOTAL_CUSTOM_VP8_SETTINGS];
 
+typedef struct 
+{
+    ICMCompressorSourceFrameRef* queue;
+    int size;
+    int max;
+}ICMCompressorSourceFrameRefQueue;
+
 typedef struct
 {
     ComponentInstance               self;
@@ -37,6 +44,7 @@ typedef struct
     VP8customSettings    settings;
     int                  frameCount;
     enum vpx_enc_pass         currentPass;
+    ICMCompressorSourceFrameRefQueue sourceQueue;
     
 } VP8EncoderGlobalsRecord, *VP8EncoderGlobals;
 

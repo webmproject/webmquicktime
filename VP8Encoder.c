@@ -92,6 +92,9 @@ VP8_Encoder_Open(
     glob->stats.buf = NULL;
     //default to one pass
     glob->currentPass = VPX_RC_ONE_PASS;
+    glob->sourceQueue.size = 0;
+    glob->sourceQueue.max = 0;
+    glob->sourceQueue.queue = NULL;
     
     int i;
     for (i=0;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
@@ -140,6 +143,9 @@ VP8_Encoder_Close(
             vpx_img_free(glob->raw);
             free(glob->raw);
         }
+
+        if (glob->sourceQueue.queue != NULL)
+            free(glob->sourceQueue.queue);
 
         free(glob);
     }
