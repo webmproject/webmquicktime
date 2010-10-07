@@ -31,6 +31,7 @@
 		BB9815D111FF1CFA0031AA75 /* WebMElement.c in Sources */ = {isa = PBXBuildFile; fileRef = BB9815CB11FF1CFA0031AA75 /* WebMElement.c */; };
 		BB98161B11FF1FC60031AA75 /* EbmlDataHWriter.c in Sources */ = {isa = PBXBuildFile; fileRef = BB98161911FF1FC60031AA75 /* EbmlDataHWriter.c */; };
 		BB98170611FF23430031AA75 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB98170511FF23430031AA75 /* CoreFoundation.framework */; };
+		BBB2D454125E08A100F54FBA /* VP8EncoderEncode.c in Sources */ = {isa = PBXBuildFile; fileRef = BBB2D453125E08A100F54FBA /* VP8EncoderEncode.c */; };
 		FBFA8DED0829E7CF00560632 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBFA8DEA0829E7CF00560632 /* CoreServices.framework */; };
 		FBFA8DEE0829E7CF00560632 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBFA8DEB0829E7CF00560632 /* QuartzCore.framework */; };
 		FBFA8DEF0829E7CF00560632 /* QuickTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBFA8DEC0829E7CF00560632 /* QuickTime.framework */; };
@@ -87,6 +88,8 @@
 		BB98161911FF1FC60031AA75 /* EbmlDataHWriter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = EbmlDataHWriter.c; sourceTree = "<group>"; };
 		BB98161A11FF1FC60031AA75 /* EbmlDataHWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EbmlDataHWriter.h; sourceTree = "<group>"; };
 		BB98170511FF23430031AA75 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		BBB2D452125E08A100F54FBA /* VP8EncoderEncode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VP8EncoderEncode.h; sourceTree = "<group>"; };
+		BBB2D453125E08A100F54FBA /* VP8EncoderEncode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = VP8EncoderEncode.c; sourceTree = "<group>"; };
 		FBFA8DEA0829E7CF00560632 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		FBFA8DEB0829E7CF00560632 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = /System/Library/Frameworks/QuartzCore.framework; sourceTree = "<absolute>"; };
 		FBFA8DEC0829E7CF00560632 /* QuickTime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickTime.framework; path = /System/Library/Frameworks/QuickTime.framework; sourceTree = "<absolute>"; };
@@ -184,6 +187,8 @@
 				BB155ABC1236A314003707C7 /* VP8Encoder.h */,
 				BB124ADE12392B0300A26F24 /* VP8EncoderGui.h */,
 				BB124ADF12392B0300A26F24 /* VP8EncoderGui.c */,
+				BBB2D452125E08A100F54FBA /* VP8EncoderEncode.h */,
+				BBB2D453125E08A100F54FBA /* VP8EncoderEncode.c */,
 			);
 			name = VP8Encoder;
 			sourceTree = "<group>";
@@ -342,6 +347,7 @@
 				BB9815D111FF1CFA0031AA75 /* WebMElement.c in Sources */,
 				BB98161B11FF1FC60031AA75 /* EbmlDataHWriter.c in Sources */,
 				BB124AE012392B0300A26F24 /* VP8EncoderGui.c in Sources */,
+				BBB2D454125E08A100F54FBA /* VP8EncoderEncode.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
