@@ -37,6 +37,7 @@ static ComponentResult setBitrate(VP8EncoderGlobals glob,
 static void setUInt(unsigned int * i, UInt32 val);
 static void setCustom(VP8EncoderGlobals glob);
 static void initializeCodec(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame);
+static void converColorSpace(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame);
 
 //initialize the codec if needed
 static void initializeCodec(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame)
@@ -57,6 +58,40 @@ static void initializeCodec(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef 
     }
     setCustomPostInit(glob);
 }
+
+static ComponentResult convertColorSpace(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame)
+{
+    CVPixelBufferRef sourcePixelBuffer = NULL;
+    sourcePixelBuffer = ICMCompressorSourceFrameGetPixelBuffer(sourceFrame);
+    CVPixelBufferLockBaseAddress(sourcePixelBuffer, 0);
+    //copy our frame to the raw image.  TODO: I'm not checking for any padding here.
+    unsigned char *srcBytes = CVPixelBufferGetBaseAddress(sourcePixelBuffer);
+    dbg_printf("[vp8e - %08lx] CVPixelBufferGetBaseAddress %x\n", (UInt32)glob, sourcePixelBuffer);
+    dbg_printf("[vp8e - %08lx] CopyChunkyYUV422ToPlanarYV12 %dx%d, %x, %d, %x, %d, %x, %d, %x, %d \n", (UInt32)glob,
+               glob->width, glob->height,
+               CVPixelBufferGetBaseAddress(sourcePixelBuffer),
+               CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
+               glob->raw->planes[PLANE_Y],
+               glob->raw->stride[PLANE_Y],
+               glob->raw->planes[PLANE_U],
+               glob->raw->stride[PLANE_U],
+               glob->raw->planes[PLANE_V],
+               glob->raw->stride[PLANE_V]);
+    ComponentResult err = CopyChunkyYUV422ToPlanarYV12(glob->width, glob->height,
+                                       CVPixelBufferGetBaseAddress(sourcePixelBuffer),
+                                       CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
+                                       glob->raw->planes[PLANE_Y],
+                                       glob->raw->stride[PLANE_Y],
+                                       glob->raw->planes[PLANE_U],
+                                       glob->raw->stride[PLANE_U],
+                                       glob->raw->planes[PLANE_V],
+                                       glob->raw->stride[PLANE_V]);
+    
+    CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, 0);    
+    dbg_printf("[vp8e - %08lx]  CVPixelBufferUnlockBaseAddress %x\n", sourcePixelBuffer);    
+    
+    return err;
+}
                      
 ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
                                       ICMCompressorSourceFrameRef sourceFrame)
@@ -68,7 +103,6 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
     const UInt8 *decoderDataPtr;
     size_t dataSize = 0;
     MediaSampleFlags mediaSampleFlags;
-    CVPixelBufferRef sourcePixelBuffer = NULL;
     int storageIndex = 0;
     
     dbg_printf("[vp8e - %08lx] encode this frame %08lx\n", (UInt32)glob, (UInt32)sourceFrame);
@@ -82,41 +116,15 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
     ///////         Transfer the current frame to glob->raw
     if (sourceFrame != NULL)
     {
-        sourcePixelBuffer = ICMCompressorSourceFrameGetPixelBuffer(sourceFrame);
-        CVPixelBufferLockBaseAddress(sourcePixelBuffer, 0);
-        //copy our frame to the raw image.  TODO: I'm not checking for any padding here.
-        unsigned char *srcBytes = CVPixelBufferGetBaseAddress(sourcePixelBuffer);
-        dbg_printf("[vp8e - %08lx] CVPixelBufferGetBaseAddress %x\n", (UInt32)glob, sourcePixelBuffer);
-        dbg_printf("[vp8e - %08lx] CopyChunkyYUV422ToPlanarYV12 %dx%d, %x, %d, %x, %d, %x, %d, %x, %d \n", (UInt32)glob,
-                   glob->width, glob->height,
-                   CVPixelBufferGetBaseAddress(sourcePixelBuffer),
-                   CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
-                   glob->raw->planes[PLANE_Y],
-                   glob->raw->stride[PLANE_Y],
-                   glob->raw->planes[PLANE_U],
-                   glob->raw->stride[PLANE_U],
-                   glob->raw->planes[PLANE_V],
-                   glob->raw->stride[PLANE_V]);
-        err = CopyChunkyYUV422ToPlanarYV12(glob->width, glob->height,
-                                           CVPixelBufferGetBaseAddress(sourcePixelBuffer),
-                                           CVPixelBufferGetBytesPerRow(sourcePixelBuffer),
-                                           glob->raw->planes[PLANE_Y],
-                                           glob->raw->stride[PLANE_Y],
-                                           glob->raw->planes[PLANE_U],
-                                           glob->raw->stride[PLANE_U],
-                                           glob->raw->planes[PLANE_V],
-                                           glob->raw->stride[PLANE_V]);
-        
-        CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, 0);    
-        dbg_printf("[vp8e - %08lx]  CVPixelBufferUnlockBaseAddress %x\n", sourcePixelBuffer);    
-        
+        err = convertColorSpace(glob, sourceFrame);
+        if (err) goto bail;
         int flags = 0 ; //TODO - find out what I may need in these flags
         dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d  flags %x\n", (UInt32)glob, glob->codec, glob->raw, glob->frameCount,  flags);
         codecError = vpx_codec_encode(glob->codec, glob->raw, glob->frameCount,
                                       1, flags, VPX_DL_GOOD_QUALITY);
         dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec exit\n", (UInt32)glob);
     }
-    else  //sourceFrame is Null. this indicates the termination of a pass 
+    else  //sourceFrame is Null. this could be termination of a pass 
     {
         int flags = 0 ; //TODO - find out what I may need in these flags
         dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d ----NULL TERMINATION\n", (UInt32)glob, glob->codec, NULL, glob->frameCount,  flags);
