@@ -9,36 +9,59 @@
 
 #include "WebMCommon.h"
 
-void initBuffer(WebMBuffer *buf)
+void initFrameQueue(WebMQueuedFrames *queue)
 {
-    buf->data = NULL;
-    buf->size = 0;
-    buf->offset = 0;
+    queue->size =0;
+    queue->queueSize = 0;
+    queue->queue = NULL;
 }
 
-int freeBuffer(WebMBuffer *buf)
+WebMBufferedFrame* getFrame(WebMQueuedFrames *queue)
 {
-    if (buf->data != NULL)
-        free(buf->data);
+    return queue->queue[0];
+}
 
-    initBuffer(buf);
+void releaseFrame(WebMQueuedFrames *queue)
+{
+    if (queue->size <=0)
+        return;
+    WebMBufferedFrame* frame = getFrame(queue);
+    free(frame->data);
+    free(frame);
+    //advance all frames in the queue
+    int i;
+    for (i=1; i < queue->size; i ++)
+        queue->queue[i-1] = queue->queue[i];
+    
+}
+
+int addFrameToQueue(WebMQueuedFrames *queue, void * data, UInt32 dataSize, 
+                    UInt64 timeMs, UInt32 frameType, UInt32 indx)
+{
+    if (queue->queueSize +1 < queue->size)
+    {
+        queue->queue = realloc(queue->queue, (queue->queueSize +1) * sizeof(WebMBufferedFrame));
+    }
+    WebMBufferedFrame * frame = malloc(sizeof(WebMBufferedFrame));
+    if (frame == NULL)
+        return -1;
+    frame->data = data;
+    frame->size = dataSize;
+    frame->timeMs = timeMs;
+    frame->frameType = frameType;
+    frame->indx = indx;
     return 0;
 }
-
-int allocBuffer(WebMBuffer *buf, size_t size)
+int frameQueueSize(WebMQueuedFrames *queue)
 {
-    int iFreed = freeBuffer(buf);
+    return queue->size;
+}
 
-    if (iFreed)
-        return iFreed;
-
-    buf->data = malloc(size);
-
-    if (buf->data == NULL)
-        return 1;
-
-    buf->size = size;
-    buf->offset = 0;
+int freeFrameQueue(WebMQueuedFrames *queue)
+{
+    while(queue->size > 0)
+        releaseFrame(queue);
+    free(queue->queue);
 }
 
 void initMovieGetParams(StreamSource *source)

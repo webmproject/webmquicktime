@@ -512,16 +512,15 @@ pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr store, OSTyp
         {
             VideoStreamPtr p = &gs->vid;
             initVideoStream(p);
-            source = &p->source;
         }
         else if (trackType == SoundMediaType)
         {
             AudioStreamPtr p = &gs->aud;
             initAudioStream(p);
-            source = &p->source;
         }
-
-        initStreamSource(source, scale, *trackIDPtr,  propertyProc,
+        initFrameQueue(&gs->frameQueue);
+        
+        initStreamSource(&gs->source, scale, *trackIDPtr,  propertyProc,
                          getDataProc, refCon);
     }
     else
@@ -886,7 +885,6 @@ static void CloseAllStreams(WebMExportGlobalsPtr store)
         for (i = 0; i < store->streamCount; i++)
         {
             GenericStream *gs = &(*store->streams)[i];
-            WebMBuffer *buf;
 
             if (gs->trackType == VideoMediaType)
             {
@@ -904,12 +902,15 @@ static void CloseAllStreams(WebMExportGlobalsPtr store)
                     p->compressionSession = NULL;
                 }
 
-                buf = &p->outBuf;
             }
             else if (gs->trackType == SoundMediaType)
-                buf = &gs->aud.outBuf;
+            {
+                if (gs->aud.vorbisComponentInstance != NULL)
+                    CloseComponent(gs->aud.vorbisComponentInstance);
 
-            freeBuffer(buf);
+            }
+
+            freeFrameQueue(&gs->frameQueue);
         }
 
         DisposeHandle((Handle) store->streams);
