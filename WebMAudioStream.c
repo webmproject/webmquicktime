@@ -39,7 +39,7 @@ static void _printAudioStreamDesc(AudioStreamBasicDescription *desc)
                desc->mBytesPerPacket, desc->mChannelsPerFrame);
 }
 
-ComponentResult getInputBasicDescription(AudioStreamPtr as, AudioStreamBasicDescription *inFormat)
+ComponentResult getInputBasicDescription(GenericStreamPtr as, AudioStreamBasicDescription *inFormat)
 {
     dbg_printf("[webm] enter getInputBasicDescription\n" );
     ComponentResult err = noErr;
@@ -91,7 +91,7 @@ bail:
 
 
 
-ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, AudioStreamPtr as)
+ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, GenericStreamPtr as)
 {
     dbg_printf("[WebM] enter initVorbisComponent\n");
     ComponentResult err = noErr;
@@ -99,7 +99,7 @@ ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, AudioStreamPtr
         getDefaultVorbisAtom(globals);
 
     //This chunk initializes the Component instance that will be used for decompression  : TODO put this in its own function
-    err = OpenADefaultComponent(StandardCompressionType, StandardCompressionSubTypeAudio, &as->vorbisComponentInstance);
+    err = OpenADefaultComponent(StandardCompressionType, StandardCompressionSubTypeAudio, &as->aud.vorbisComponentInstance);
 
     if (err) goto bail;
 
@@ -115,17 +115,17 @@ ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, AudioStreamPtr
     getInputBasicDescription(as, inFormat);
 
 
-    err = SCSetSettingsFromAtomContainer(as->vorbisComponentInstance, globals->audioSettingsAtom);
+    err = SCSetSettingsFromAtomContainer(as->aud.vorbisComponentInstance, globals->audioSettingsAtom);
 
     if (err) goto bail;
 
-    err = QTGetComponentProperty(as->vorbisComponentInstance, kQTPropertyClass_SCAudio,
+    err = QTGetComponentProperty(as->aud.vorbisComponentInstance, kQTPropertyClass_SCAudio,
                                  kQTSCAudioPropertyID_BasicDescription,
-                                 sizeof(AudioStreamBasicDescription), &as->asbd, NULL);
+                                 sizeof(AudioStreamBasicDescription), &as->aud.asbd, NULL);
 
     if (err) goto bail;
 
-    err = QTSetComponentProperty(as->vorbisComponentInstance,  kQTPropertyClass_SCAudio, kQTSCAudioPropertyID_InputBasicDescription,
+    err = QTSetComponentProperty(as->aud.vorbisComponentInstance,  kQTPropertyClass_SCAudio, kQTSCAudioPropertyID_InputBasicDescription,
                                  sizeof(AudioStreamBasicDescription), inFormat);
 bail:
 
@@ -143,7 +143,7 @@ static ComponentResult
 _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBufferList *ioData,
                      AudioStreamPacketDescription **outDataPacketDescription, void *inRefCon)
 {
-    AudioStreamPtr as = (AudioStreamPtr) inRefCon;
+    GenericStreamPtr as = (GenericStreamPtr) inRefCon;
     StreamSource *source = &as->source;
     MovieExportGetDataParams *params = &source->params;
 
@@ -220,19 +220,19 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
 
 
 
-static void _initAudioBufferList(AudioStreamPtr as, AudioBufferList **audioBufferList, UInt32 ioPackets)
+static void _initAudioBufferList(GenericStreamPtr as, AudioBufferList **audioBufferList, UInt32 ioPackets)
 {
     int i;
 
     UInt32 maxBytesPerPacket = 4096;
 
-    if (as->asbd.mBytesPerPacket)
+    if (as->aud.asbd.mBytesPerPacket)
     {
-        maxBytesPerPacket = as->asbd.mBytesPerPacket;
+        maxBytesPerPacket = as->aud.asbd.mBytesPerPacket;
     }
     else
     {
-        if (QTGetComponentProperty(as->vorbisComponentInstance, kQTPropertyClass_SCAudio,
+        if (QTGetComponentProperty(as->aud.vorbisComponentInstance, kQTPropertyClass_SCAudio,
                                    kQTSCAudioPropertyID_MaximumOutputPacketSize,
                                    sizeof(maxBytesPerPacket), &maxBytesPerPacket, NULL) != noErr)
             dbg_printf("[Webm] Error getting max Bytes per packet\n");
@@ -247,21 +247,23 @@ static void _initAudioBufferList(AudioStreamPtr as, AudioBufferList **audioBuffe
     (*audioBufferList)->mNumberBuffers = ioPackets;
     UInt32 wantedSize = maxBytesPerPacket * ioPackets;
 
-    if (as->outBuf.data == NULL || as->outBuf.size != wantedSize)
+    
+    
+    if (as->aud.buf.data == NULL || as->aud.buf.size != wantedSize)
     {
-        allocBuffer(&as->outBuf, wantedSize);
+        allocBuffer(&as->aud.buf, wantedSize);
     }
 
     for (i = 0; i < ioPackets; i++)
     {
-        (*audioBufferList)->mBuffers[i].mNumberChannels = as->asbd.mChannelsPerFrame;
+        (*audioBufferList)->mBuffers[i].mNumberChannels = as->aud.asbd.mChannelsPerFrame;
         (*audioBufferList)->mBuffers[i].mDataByteSize = maxBytesPerPacket;
-        (*audioBufferList)->mBuffers[i].mData = (void *)((unsigned char *)as->outBuf.data + maxBytesPerPacket * i);
+        (*audioBufferList)->mBuffers[i].mData = (void *)((unsigned char *)as->aud.buf.data + maxBytesPerPacket * i);
     }
 }
 
 
-ComponentResult compressAudio(AudioStreamPtr as)
+ComponentResult compressAudio(GenericStreamPtr as)
 {
     ComponentResult err = noErr;
 
@@ -275,11 +277,11 @@ ComponentResult compressAudio(AudioStreamPtr as)
 
     AudioBufferList *audioBufferList = NULL;
     _initAudioBufferList(as, &audioBufferList, ioPackets);  //allocates memory
-    dbg_printf("[WebM] call SCAudioFillBuffer(%x,%x,%x,%x,%x, %x)\n", as->vorbisComponentInstance, _fillBuffer_callBack,
+    dbg_printf("[WebM] call SCAudioFillBuffer(%x,%x,%x,%x,%x, %x)\n", as->aud.vorbisComponentInstance, _fillBuffer_callBack,
                (void *) as, &ioPackets,
                audioBufferList, packetDesc);
 
-    err = SCAudioFillBuffer(as->vorbisComponentInstance, _fillBuffer_callBack,
+    err = SCAudioFillBuffer(as->aud.vorbisComponentInstance, _fillBuffer_callBack,
                             (void *) as, &ioPackets,
                             audioBufferList, packetDesc);
     dbg_printf("[WebM] exit SCAudioFillBuffer %d packets, err = %d\n", ioPackets, err);
@@ -288,7 +290,7 @@ ComponentResult compressAudio(AudioStreamPtr as)
     if (err == eofErr)
     {
         dbg_printf("[WebM] Total Frames in = %lld, Total Frames Out = %lld\n",
-                   as->framesIn, as->currentEncodedFrames);
+                   as->framesIn, as->framesOut);
         if (ioPackets == 0)
             as->source.eos = true;
         err= noErr;
@@ -298,7 +300,7 @@ ComponentResult compressAudio(AudioStreamPtr as)
 
     if (ioPackets > 0)
     {
-        as->outBuf.offset = 0;
+        as->aud.buf.offset = 0;
         int i = 0;
 
         for (i = 0; i < ioPackets; i++)
@@ -307,11 +309,14 @@ ComponentResult compressAudio(AudioStreamPtr as)
             if (packetDesc[i].mVariableFramesInPacket ==0)
             {
                 //as->currentEncodedFrames += 13230; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
-                as->currentEncodedFrames += 3092; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
+                //I think I had this number here earlier to account for a bug, which is now fixed...
+                
+                
+                as->framesOut += 3092; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
             }
             else
-                as->currentEncodedFrames += packetDesc[i].mVariableFramesInPacket;
-            as->outBuf.offset += packetDesc[i].mDataByteSize;
+                as->framesOut += packetDesc[i].mVariableFramesInPacket;
+            as->aud.buf.offset += packetDesc[i].mDataByteSize;
         }
     }
 
@@ -386,14 +391,14 @@ static void _dbg_printVorbisHeader(const UInt8 *ptr)
 
 }
 
-ComponentResult write_vorbisPrivateData(AudioStreamPtr as, UInt8 **buf, UInt32 *bufSize)
+ComponentResult write_vorbisPrivateData(GenericStreamPtr as, UInt8 **buf, UInt32 *bufSize)
 {
     ComponentResult err = noErr;
     void *magicCookie = NULL;
     UInt32 cookieSize = 0;
     dbg_printf("[WebM] Get Vorbis Private Data\n");
 
-    err = QTGetComponentPropertyInfo(as->vorbisComponentInstance,
+    err = QTGetComponentPropertyInfo(as->aud.vorbisComponentInstance,
                                      kQTPropertyClass_SCAudio,
                                      kQTSCAudioPropertyID_MagicCookie,
                                      NULL, &cookieSize, NULL);
@@ -403,7 +408,7 @@ ComponentResult write_vorbisPrivateData(AudioStreamPtr as, UInt8 **buf, UInt32 *
     dbg_printf("[WebM] Cookie Size %d\n", cookieSize);
 
     magicCookie = calloc(1, cookieSize);
-    err = QTGetComponentProperty(as->vorbisComponentInstance,
+    err = QTGetComponentProperty(as->aud.vorbisComponentInstance,
                                  kQTPropertyClass_SCAudio,
                                  kQTSCAudioPropertyID_MagicCookie,
                                  cookieSize, magicCookie, NULL);
@@ -487,13 +492,15 @@ bail:
     return err;
 }
 
-ComponentResult initAudioStream(AudioStreamPtr as)
+ComponentResult initAudioStream(GenericStreamPtr as)
 {
-    as->vorbisComponentInstance = NULL;
-    memset(&as->asbd, 0, sizeof(AudioStreamBasicDescription));
-    as->currentEncodedFrames = 0;
+    as->aud.vorbisComponentInstance = NULL;
+    memset(&as->aud.asbd, 0, sizeof(AudioStreamBasicDescription));
+    as->framesOut = 0;
     as->framesIn =0;
-    initBuffer(&as->outBuf);
+    as->aud.buf.size =0;
+    as->aud.buf.offset=0;
+    as->aud.buf.data = NULL;
 
     return noErr;
 }

@@ -11,10 +11,10 @@
 #define _WEBM_AUDIO_STREAM_H
 
 
-ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, AudioStreamPtr as);
-ComponentResult compressAudio(AudioStreamPtr as);
-ComponentResult write_vorbisPrivateData(AudioStreamPtr as, UInt8 **buf, UInt32 *bufSize);
-ComponentResult getInputBasicDescription(AudioStreamPtr as, AudioStreamBasicDescription *inFormat);
-ComponentResult initAudioStream(AudioStreamPtr as);
+ComponentResult initVorbisComponent(WebMExportGlobalsPtr globals, GenericStreamPtr as);
+ComponentResult compressAudio(GenericStreamPtr as);
+ComponentResult write_vorbisPrivateData(GenericStreamPtr as, UInt8 **buf, UInt32 *bufSize);
+ComponentResult getInputBasicDescription(GenericStreamPtr as, AudioStreamBasicDescription *inFormat);
+ComponentResult initAudioStream(GenericStreamPtr as);
 
 #endif
