@@ -11,6 +11,7 @@
 
 #include <Carbon/Carbon.h> 
 #include <QuickTime/QuickTime.h>
+#include <vector>
 
 #include "mkvparser.hpp"
 #include "mkvreaderqt.hpp"
@@ -19,6 +20,13 @@ extern "C" {
 #include "log.h"
 }
 
+
+//typedef std::multimap<long, SampleReferencePtr> SampleRefMap;
+typedef std::vector<SampleReferenceRecord> SampleRefVec;
+typedef std::vector<long long> SampleTimeVec;
+
+#define USE_SAMPLE_MAP 1
+  
 // WebM Import Component Globals structure
 typedef struct {
   ComponentInstance self;
@@ -33,6 +41,9 @@ typedef struct {
   long  dataHOffset;
   long  fileSize;
   ComponentInstance dataHandler;
+  //SampleRefVec videoSamples;
+  SampleRefVec audioSamples;
+  SampleTimeVec audioTimes;
 } WebMImportGlobalsRec, *WebMImportGlobals;
 
 
@@ -59,8 +70,9 @@ extern "C" {
 }
 
 OSErr CreateVP8ImageDescription(long width, long height, ImageDescriptionHandle *descOut);
-OSErr CreateAudioDescription(SoundDescriptionHandle *descOut);
-OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, const mkvparser::AudioTrack* webmAudioTrack);
+OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::AudioTrack* webmAudioTrack);
+OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack);
+OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns);
 
 
 //--------------------------------------------------------------------------------
@@ -173,6 +185,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   ImageDescriptionHandle vp8DescHand = NULL;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
+
+  store->audioDescHand = NULL; // leak?
   
   dbg_printf("[WebM Import]  >> [%08lx] :: FromDataRef(dataRef = %08lx, atTime = %ld)\n", (UInt32) store, (UInt32) dataRef, atTime); // targetTrack != NULL
   
@@ -438,7 +452,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         // WebM Audio Data
         //
         const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const mkvparser::AudioTrack* const>(webmTrack);
-        err = AddAudioBlock(store, webmBlock, webmAudioTrack);
+        err = AddAudioBlock(store, webmBlock, blockTime_ns, webmAudioTrack);
         if (err) goto bail;
       }
       
@@ -469,10 +483,18 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     if (err) goto bail;
   }
   
+  //
+  // Add audio samples to media
+  //
+  FinishAddingAudioBlocks(store, duration);   // duration = webmSegmentInfo->GetDuration();
+  
   // Insert the added media into the track
   // Time value specifying where the segment is to be inserted in the movie's time scale, -1 to add the media data to the end of the track
   TimeValue mediaDuration = GetMediaDuration(movieVideoMedia);
-  err = InsertMediaIntoTrack(movieVideoTrack, atTime, 0, mediaDuration, fixed1);
+  err = InsertMediaIntoTrack(movieVideoTrack, atTime, 0, mediaDuration, fixed1);                // VIDEO
+  if (err) goto bail;
+  TimeValue audioMediaDuration = GetMediaDuration(store->movieAudioMedia);
+  err = InsertMediaIntoTrack(store->movieAudioTrack, atTime, 0, audioMediaDuration, fixed1);    // AUDIO
   if (err) goto bail;
   
   // Return the duration added 
@@ -501,7 +523,7 @@ bail:
 	// Return the track identifier of the track that received the imported data in the usedTrack pointer. Your component
 	// needs to set this parameter only if you operate on a single track or if you create a new track. If you modify more
 	// than one track, leave the field referred to by this parameter unchanged. 
-	if (usedTrack) *usedTrack = movieVideoTrack;
+	//if (usedTrack) *usedTrack = movieVideoTrack;
 
   dbg_printf("[WebM Import]  << [%08lx] :: FromDataRef(%d, %ld)\n", (UInt32) store, targetTrack != NULL, atTime);
 
@@ -568,22 +590,21 @@ enum {
 //--------------------------------------------------------------------------------
 // CreateAudioDescription
 //  Create audio sample description for Vorbis.
-OSErr CreateAudioDescription(SoundDescriptionHandle *descOut)
+OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::AudioTrack* webmAudioTrack)
 {
   OSErr err = noErr;
   SoundDescriptionHandle descHand = NULL;
-  //SoundDescriptionPtr descPtr;
-	AudioStreamBasicDescription asbd;
 
-   
+  // In all fields, a value of 0 indicates that the field is either unknown, not applicable or otherwise is inapproprate for the format and should be ignored.    
+	AudioStreamBasicDescription asbd;
   asbd.mFormatID = kAudioFormatVorbis;  // kAudioFormatLinearPCM;
-  asbd.mSampleRate = 48000.; // or whatever your sample rate is
-  asbd.mFormatFlags = kAudioFormatFlagIsBigEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // or leave off big endian if it's LittleEndian
-  asbd.mChannelsPerFrame = 1;
-  asbd.mBitsPerChannel = 24;
+  asbd.mSampleRate = webmAudioTrack->GetSamplingRate();       // 48000.; // or whatever your sample rate is
+  //asbd.mFormatFlags = // kAudioFormatFlagIsBigEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // or leave off big endian if it's LittleEndian
+  asbd.mChannelsPerFrame = webmAudioTrack->GetChannels();     // 1;
+  asbd.mBitsPerChannel = 0;       // 24; // or webmAudioTrack->GetBitDepth() ? ****
   asbd.mFramesPerPacket = 1;
-  asbd.mBytesPerFrame = 3;
-  asbd.mBytesPerPacket = 3;
+  asbd.mBytesPerFrame = 0;        // 3;
+  asbd.mBytesPerPacket = 0;       // 3;
   
   err = QTSoundDescriptionCreate(&asbd,     // description of the format
                                  NULL,      // AudioChannelLayout, NULL if there isn't one
@@ -593,7 +614,7 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut)
                                  kQTSoundDescriptionKind_Movie_LowestPossibleVersion,   // QTSoundDescriptionKind
                                  &descHand);     // out, sound description
   if (err == noErr) {
-    descOut = &descHand;
+    *descOut = descHand;
   }
   
   return err;
@@ -601,7 +622,7 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut)
 
 
 //--------------------------------------------------------------------------------
-OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, const mkvparser::AudioTrack* webmAudioTrack)
+OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack)
 {
   OSErr err = noErr;
 
@@ -612,7 +633,7 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
 
   // Create sound description so QT can find appropriate codec component for decoding the audio data.
   if (store->audioDescHand == NULL) {
-    err = CreateAudioDescription(&store->audioDescHand);
+    err = CreateAudioDescription(&store->audioDescHand, webmAudioTrack);
     if (err) {
       dbg_printf("WebM Import - CreateAudioDescription() Failed with %d.\n", err);
       goto bail;
@@ -636,16 +657,95 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
     SetTrackEnabled(store->movieAudioTrack, true);    
   }
 
+#if USE_SAMPLE_MAP
+  // **** Maybe collect sample references first, and then call AddMediaSampleReferences() once at the end.
+  SampleReferencePtr srp;
+  srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
+  srp->dataOffset = webmBlock->GetOffset();
+  srp->dataSize = webmBlock->GetSize();
+  srp->durationPerSample = 0;               // need to calculate this later for all samples.
+  srp->numberOfSamples = 1;
+  srp->sampleFlags = 0; // ?
+  // calculate duration of previous sample (tail of list), set duration, add new sample
+  // Or just add it now, then later loop through to add the samples and calc duration of each one on the fly (next->time - this->time)
+  
+  //store->audioSamples.push_back(srp);
+  //store->audioSamples.insert(make_pair(t, srp));
+  store->audioSamples.push_back(*srp);
+  store->audioTimes.push_back(blockTime_ns);  // **** needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+  
+  //err = AddMediaSampleReferences(movieAudioMedia, store->audioDescHand, 1, samples, NULL);  // SampleReferencePtr
+#else  
   // Add the media sample
   err = AddMediaSampleReference(store->movieAudioMedia, webmBlock->GetOffset(), webmBlock->GetSize(), 0, (SampleDescriptionHandle)store->audioDescHand, 1, 0, NULL);
-  //err = AddMediaSampleReferences(movieAudioMedia, store->audioDescHand, 1, samples, NULL);  // SampleReferencePtr
   if (err) goto bail;
   dbg_printf("AUDIO AddMediaSampleReference(offset=%lld, size=%lld, duration=%ld)\n", webmBlock->GetOffset(), webmBlock->GetSize(), 0);
+#endif
   
   return noErr;
 
 bail:
   dbg_printf("WebM Import - AddAudioBlock() Failed. \n");
   return err;
+}
+
+
+//--------------------------------------------------------------------------------
+//  FinishAddingAudioBlocks
+// Add the sample references to the quicktime media.  
+// The argument lastTime_ns will be timestamp of next sample that is not in store->audioSamples, or it will be set to duration of entire movie.
+// Assume that sample references for all audio blocks have already been added to samples list store->audioSamples.
+//
+OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
+{
+  OSErr err = noErr;
+  const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
+
+  //
+  // Calculate duration value for each sample
+  //
+
+  long numSamples = store->audioSamples.size();
+  long numTimes = store->audioTimes.size();
+  if (numSamples != numTimes) {  
+    dbg_printf("WebM Import - FinishAddingAudioBlocks - ERROR - parallel vectors with different sizes. numSamples=%d, numTimes=%d\n", numSamples, numTimes);
+    // try to recover ****
+  }
+  dbg_printf("WebM Import - FinishAddingAudioBlocks - numSamples = %d, numTimes = %d\n", numSamples, numTimes);
+
+  //SampleRefVec::iterator iter;
+  //SampleTimeVec::iterator timeIter;
+  //for (iter = store->samples.begin(); iter != store->samples.end(); ++iter) {
+  long long blockDuration_ns = 0;
+  for (long i = 0; i < numSamples; ++i) {
+    if (i+1 < numSamples)
+      blockDuration_ns = (store->audioTimes[i+1] - store->audioTimes[i]); 
+    else
+      blockDuration_ns = (lastTime_ns - store->audioTimes[i]);
+    SoundDescriptionHandle sdh = store->audioDescHand;
+    dbg_printf("store->audioDescHand = %x\n", sdh);
+    dbg_printf("(*store->audioDescHand) = %xd\n", (*sdh));
+    double sampleRate = (*sdh)->sampleRate;
+    TimeValue blockDuration_qt = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * sampleRate); //GetMovieTimeScale(store->movie));  ****
+    // store this, dont call GetMovieTimeScale each time ****
+    store->audioSamples[i].durationPerSample = blockDuration_qt;
+
+    dbg_printf("WebM Import - FinishAddingAudioBlocks - i = %d, Time = %lld, Duration = %d\n", i, store->audioTimes[i], store->audioSamples[i].durationPerSample);
+
+                                                        // Alternatively, we can call AddMediaSampleReference() here inside loop, for each block. Supposedly more efficient to call it once after loop, specifying all blocks.
+  }
+
+  //
+  // Add array of samples all at once (better performance than adding each one separately). 
+  //
+  SampleReferencePtr sampleRefs = &store->audioSamples.front(); // &store->audioSamples[0];
+  err = AddMediaSampleReferences(store->movieAudioMedia, (SampleDescriptionHandle)store->audioDescHand, numSamples, sampleRefs, NULL);  // SampleReferencePtr
+  if (err) {
+    dbg_printf("WebM Import - FinishAddingAudioBlocks - AddMediaSampleRefereces() FAILED with err = %d\n", err);
+  }
+  
+  // delete sample refs and times after they have been added to quicktime?
+
+  return err;  
 }
 
