@@ -40,6 +40,7 @@ typedef struct {
   ::Movie movie;
   ImageDescriptionHandle videoDescHand;
   SoundDescriptionHandle audioDescHand;
+  long audioSampleRate;
   Handle dataRef;
   OSType dataRefType;
   long  dataHOffset;
@@ -546,11 +547,11 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
   // In all fields, a value of 0 indicates that the field is either unknown, not applicable or otherwise is inapproprate for the format and should be ignored.    
 	AudioStreamBasicDescription asbd;
   asbd.mFormatID = kAudioFormatVorbis;  // kAudioFormatLinearPCM;
-  asbd.mSampleRate = webmAudioTrack->GetSamplingRate();       // 48000.; // or whatever your sample rate is
+  asbd.mSampleRate = webmAudioTrack->GetSamplingRate();       // 48000.0 or whatever your sample rate is.  AudioStreamBasicDescription.mSampleRate is of type Float64.
   //asbd.mFormatFlags = // kAudioFormatFlagIsBigEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // or leave off big endian if it's LittleEndian
   asbd.mChannelsPerFrame = webmAudioTrack->GetChannels();     // 1;
   asbd.mBitsPerChannel = 0;       // 24; // or webmAudioTrack->GetBitDepth() ? ****
-  asbd.mFramesPerPacket = 1;      // ****
+  asbd.mFramesPerPacket = 0;      // 1;      // ****
   asbd.mBytesPerFrame = 0;        // 3;
   asbd.mBytesPerPacket = 0;       // 3;
   
@@ -565,7 +566,9 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
   if (err == noErr) {
     *descOut = descHand;
   }
-  dbg_printf("WebMImport CreateAudioDescription() - descHand.sampleRate = %7.3f\n", (*descHand)->sampleRate);
+  
+  long convertedSR = (*descHand)->sampleRate >> 16; // convert unsigned fixed to long (whole part)
+  dbg_printf("WebMImport CreateAudioDescription() - descHand.sampleRate = %ld\n", convertedSR); // Note: SoundDescription.sampleRate is of type UnsignedFixed
   return err;
 }
 
@@ -578,6 +581,11 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
 {
   OSErr err = noErr;
 
+  if (store->audioSampleRate == 0) {
+    // Store sampling rate in component global for use by FinishAddingAudioBlocks().
+    store->audioSampleRate = webmAudioTrack->GetSamplingRate();
+  }
+  
   //const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const mkvparser::AudioTrack* const>(webmTrack);
   //dbg_printf("\t\tAudio Track Sampling Rate: %7.3f\n", webmAudioTrack->GetSamplingRate());
   //dbg_printf("\t\tAudio Track Channels: %d\n", webmAudioTrack->GetChannels());
@@ -600,7 +608,7 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
   
     // Create a new QT media for the track    
     long sampleRate = 0;
-    sampleRate = GetMovieTimeScale(store->movie);
+    //sampleRate = GetMovieTimeScale(store->movie);
     sampleRate = webmAudioTrack->GetSamplingRate();
     store->movieAudioMedia = NewTrackMedia(store->movieAudioTrack, SoundMediaType, sampleRate, store->dataRef, store->dataRefType);
     if (err = GetMoviesError()) goto bail;
@@ -675,10 +683,9 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
     else
       blockDuration_ns = (lastTime_ns - store->audioTimes[i]);
     SoundDescriptionHandle sdh = store->audioDescHand;
-    //dbg_printf("store->audioDescHand = %x\n", sdh);
-    //dbg_printf("(*store->audioDescHand) = %xd\n", (*sdh));
-    double sampleRate = (*sdh)->sampleRate; // **** store->audioDescHand is bogus here ****
-    sampleRate = 48000.0; // **** hardcode sampling rate here to test.  
+    //double sampleRate = (*sdh)->sampleRate; // Note: store->audioDescHand is of type UnsignedFixed (not long, not float or double)
+    //sampleRate = 48000.0; // hardcode sampling rate here to test.  
+    double sampleRate = store->audioSampleRate;
     TimeValue blockDuration_qt = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * sampleRate);  // GetMovieTimeScale(store->movie));  ****
     store->audioSamples[i].durationPerSample = blockDuration_qt;  // TimeValue, count of units
 
