@@ -50,6 +50,7 @@ typedef struct {
   SampleTimeVec audioTimes;
 } WebMImportGlobalsRec, *WebMImportGlobals;
 
+static const long long ns_per_sec = 1000000000;
 
 #define MOVIEIMPORT_BASENAME() WebMImport
 #define MOVIEIMPORT_GLOBALS() WebMImportGlobals storage
@@ -77,6 +78,7 @@ OSErr CreateVP8ImageDescription(long width, long height, ImageDescriptionHandle 
 OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::AudioTrack* webmAudioTrack);
 OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack);
 OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns);
+void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::SegmentInfo* webmSegmentInfo, const mkvparser::Tracks* webmTracks);
 
 
 //--------------------------------------------------------------------------------
@@ -175,6 +177,18 @@ pascal ComponentResult WebMImportFile(WebMImportGlobals store, const FSSpec *the
 
 //--------------------------------------------------------------------------------
 // MovieImportDataRef
+//
+// Initial algorithm will iterate through the WebM file: 
+//  - calculate duration of previous video block
+//  - add it to Quicktime movie
+//  - collect audio block references
+// Then loop through audio block references:
+//  - calculate duration of each audio block
+//  Add all audio block references to quicktime movie
+// 
+// A better algorithm is to implement an Idling Importer
+// that can begin playing before parsing the entire file. 
+//
 pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef, OSType dataRefType,
                                          Movie theMovie, Track targetTrack, Track *usedTrack,
                                          TimeValue atTime, TimeValue *durationAdded, 
@@ -203,15 +217,15 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   long long pos = 0;
   MkvReaderQT reader;
   int status = reader.Open(dataRef, dataRefType);
-  if (status == 0)
-    dbg_printf("MkvReaderQT::Open() returned success.\n");
-  else
-    dbg_printf("MkvReaderQT::Open() returned FAIL = %d\n", status);
-
+  if (status != 0) {
+    dbg_printf("[WebM Import] MkvReaderQT::Open() Error, status = %d\n", status);
+    return -1;
+  }
+  
   long long totalLength = 0;
   long long availLength = 0;
   reader.Length(&totalLength, &availLength);
-  dbg_printf("reader.m_length = %lld bytes.\n", totalLength);
+  dbg_printf("MkvReaderQT.m_length = %lld bytes. availableLength = %lld\n", totalLength, availLength);
   
   // Use the libwebm project (libmkvparser.a) to parse the WebM file.
 
@@ -222,17 +236,10 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   EBMLHeader ebmlHeader;
   long long headerstatus = ebmlHeader.Parse(&reader, pos);
   if (headerstatus != 0) {
-    dbg_printf("EBMLHeader.Parse() returned %lld.\n", headerstatus );
+    dbg_printf("[WebM Import] EBMLHeader.Parse() Error, returned %lld.\n", headerstatus );
     return -1;  // or maybe invalidDataRef
   }
-             
-  dbg_printf("EBMLHeader\n");
-  dbg_printf("EBMLHeader Version\t\t: %lld\n", ebmlHeader.m_version);
-  dbg_printf("EBMLHeader MaxIDLength\t: %lld\n", ebmlHeader.m_maxIdLength);
-  dbg_printf("EBMLHeader MaxSizeLength\t: %lld\n", ebmlHeader.m_maxSizeLength);
-  dbg_printf("EBMLHeader DocType\t: %lld\n", ebmlHeader.m_docType);
-  dbg_printf("Pos\t\t\t: %lld\n", pos);
-  
+
   //
   // WebM Segment
   //
@@ -254,65 +261,15 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   //
   const SegmentInfo* const webmSegmentInfo = webmSegment->GetInfo();
   const long long segmentDuration = webmSegmentInfo->GetDuration();
-
-  const long long timeCodeScale = webmSegmentInfo->GetTimeCodeScale();
-  const wchar_t* const title = utf8towcs(webmSegmentInfo->GetTitleAsUTF8());
-  // muxingApp, writingApp  
-  dbg_printf("Segment Info\n");
-  dbg_printf("\t\tTimeCodeScale\t: %lld\n", timeCodeScale);
-  dbg_printf("\t\tDuration\t\t: %lld ns\n", segmentDuration);
-  const double duration_sec = double(segmentDuration) / ns_per_sec;
-  dbg_printf("\t\tDuration\t\t: %7.3f sec\n", duration_sec);
-  dbg_printf("\t\tPosition(Segment)\t: %lld\n", webmSegment->m_start); // position of segment payload
-  dbg_printf("\t\tSize(Segment)\t\t: %lld\n", webmSegment->m_size);  // size of segment payload
-
+  
   //
   // WebM Tracks
   //
   mkvparser::Tracks* const webmTracks = webmSegment->GetTracks();
   enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };    // track types
 
-  unsigned long trackIndex = 0;                 // track index is 0-based
-  const unsigned long numTracks = webmTracks->GetTracksCount();
-  while (trackIndex != numTracks) {
-    const mkvparser::Track* const webmTrack = webmTracks->GetTrackByIndex(trackIndex++);
-    if (webmTrack == NULL)
-      continue;
-    
-    // get track info
-    unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
-    unsigned long trackNum = webmTrack->GetNumber();    // track number is 1-based
-    const wchar_t* const trackName = utf8towcs(webmTrack->GetNameAsUTF8());
-    const char* const codecID = webmTrack->GetCodecId();
-    const wchar_t* const codecName = utf8towcs(webmTrack->GetCodecNameAsUTF8());
-
-    // debug print
-    dbg_printf("Track Type\t\t: %ld\n", trackType);
-    dbg_printf("Track Number\t\t: %ld\n", trackNum);    
-    if (codecID != NULL)
-      dbg_printf("Codec Id\t\t: %ls\n", codecID);
-    if (codecName != NULL)
-      dbg_printf("Codec Name\t\t: '%s'\n", codecName);
-    
-    if (trackType == VIDEO_TRACK) {
-      const mkvparser::VideoTrack* const webmVideoTrack = static_cast<const VideoTrack* const>(webmTrack);
-      long long width = webmVideoTrack->GetWidth();
-      long long height = webmVideoTrack->GetHeight();
-      double rate = webmVideoTrack->GetFrameRate();
-      dbg_printf("\t\twidth = %ld\n", width);
-      dbg_printf("\t\theight = %ld\n", height);
-      dbg_printf("\t\tframerate = %7.3f\n", rate);
-    }
-
-    if (trackType == AUDIO_TRACK) {
-      // TODO: Audio track ****
-      const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const AudioTrack* const>(webmTrack);
-      dbg_printf("\t\tAudio Track Sampling Rate: %7.3f\n", webmAudioTrack->GetSamplingRate());
-      dbg_printf("\t\tAudio Track Channels: %d\n", webmAudioTrack->GetChannels());
-      dbg_printf("\t\tAudio Track BitDepth: %lld\n", webmAudioTrack->GetBitDepth());
-      
-    }    
-  }  // end track loop
+  // Print debug info on the WebM header, segment, and tracks information.
+  DumpWebMDebugInfo(&ebmlHeader, webmSegmentInfo, webmTracks);
   
   const unsigned long clusterCount = webmSegment->GetCount();
   if (clusterCount == 0) {
@@ -321,17 +278,6 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     return -1;
   }
   dbg_printf("Cluster Count\t\t: %ld\n", clusterCount);
-  
-  // Initial algorithm will iterate through the WebM file: 
-  //  - calculate duration of previous video block
-  //  - add it to Quicktime movie
-  //  - collect audio block references
-  // Then loop through audio block references:
-  //  - calculate duration of each audio block
-  //  Add all audio block references to quicktime movie
-  // 
-  // Alternate algorithm is an Idling Importer 
-
   
   // Remember previous block.
   int prevBlock = 0;
@@ -387,7 +333,6 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         //    incr to next frame
         // InsertMediaIntoTrack()
         // GetTrackDuration()
-
 
         // Create image description so QT can find appropriate decoder component (our VP8 decoder)
         if (vp8DescHand == NULL) {
@@ -463,7 +408,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     webmCluster = webmSegment->GetNext(webmCluster);
   } // end cluster loop
  
-  // Add the last block in the file now, using the "prevBlock" fields stored above. 
+  // Add the last video block in the file now, using the "prevBlock" fields stored above. 
   if (prevBlock != 0) {
     // Calculate duration of last block by subtracting time from duration of entire segment
     long long blockDuration_ns = (segmentDuration - prevBlockTime);    // ns, or (nextFrameTime - frameTime)
@@ -584,9 +529,11 @@ bail:
   return err;
 }
 
+
 enum {
   kAudioFormatVorbis = 'XiVs'
 };
+
 
 //--------------------------------------------------------------------------------
 // CreateAudioDescription
@@ -754,3 +701,72 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   return err;  
 }
 
+
+//--------------------------------------------------------------------------------
+void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::SegmentInfo* webmSegmentInfo, const mkvparser::Tracks* webmTracks)
+{
+  // Header
+  dbg_printf("EBMLHeader\n");
+  dbg_printf("\tVersion\t\t: %lld\n", ebmlHeader->m_version);
+  dbg_printf("\tMaxIDLength\t: %lld\n", ebmlHeader->m_maxIdLength);
+  dbg_printf("\tMaxSizeLength\t: %lld\n", ebmlHeader->m_maxSizeLength);
+  dbg_printf("\tDocType\t: %lld\n", ebmlHeader->m_docType);
+
+  // Segment
+  // const wchar_t* const title = utf8towcs(webmSegmentInfo->GetTitleAsUTF8());
+  // muxingApp, writingApp  
+  dbg_printf("Segment Info\n");
+  dbg_printf("\tTimeCodeScale\t\t: %lld\n", webmSegmentInfo->GetTimeCodeScale());
+  const long long segmentDuration = webmSegmentInfo->GetDuration();
+  dbg_printf("\tDuration\t\t: %lld ns\n", segmentDuration);
+  const double duration_sec = double(segmentDuration) / ns_per_sec;
+  dbg_printf("\tDuration\t\t: %7.3f sec\n", duration_sec);
+  //dbg_printf("\tPosition(Segment)\t: %lld\n", webmSegment->m_start); // position of segment payload
+  //dbg_printf("\tSize(Segment)\t\t: %lld\n", webmSegment->m_size);  // size of segment payload
+  
+  // Tracks
+  enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };    // track types
+  dbg_printf("Tracks\n");
+  unsigned long trackIndex = 0;                 // track index is 0-based
+  const unsigned long numTracks = webmTracks->GetTracksCount();
+  while (trackIndex != numTracks) {
+    const mkvparser::Track* const webmTrack = webmTracks->GetTrackByIndex(trackIndex++);
+    if (webmTrack == NULL)
+      continue;
+    
+    // get track info
+    unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
+    unsigned long trackNum = webmTrack->GetNumber();    // track number is 1-based
+    const wchar_t* const trackName = utf8towcs(webmTrack->GetNameAsUTF8());
+    const char* const codecID = webmTrack->GetCodecId();
+    const wchar_t* const codecName = utf8towcs(webmTrack->GetCodecNameAsUTF8());
+    
+    // debug print
+    dbg_printf("\tTrack Type\t\t: %ld\n", trackType);
+    dbg_printf("\tTrack Number\t\t: %ld\n", trackNum);    
+    if (codecID != NULL)
+      dbg_printf("\tCodec Id\t\t: %ls\n", codecID);
+    if (codecName != NULL)
+      dbg_printf("\tCodec Name\t\t: '%s'\n", codecName);
+    
+    if (trackType == VIDEO_TRACK) {
+      const mkvparser::VideoTrack* const webmVideoTrack = static_cast<const mkvparser::VideoTrack* const>(webmTrack);
+      long long width = webmVideoTrack->GetWidth();
+      long long height = webmVideoTrack->GetHeight();
+      double rate = webmVideoTrack->GetFrameRate();
+      dbg_printf("\t\twidth = %ld\n", width);
+      dbg_printf("\t\theight = %ld\n", height);
+      dbg_printf("\t\tframerate = %7.3f\n", rate);
+    }
+    
+    if (trackType == AUDIO_TRACK) {
+      // TODO: Audio track ****
+      const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const mkvparser::AudioTrack* const>(webmTrack);
+      dbg_printf("\t\tAudio Track Sampling Rate: %7.3f\n", webmAudioTrack->GetSamplingRate());
+      dbg_printf("\t\tAudio Track Channels: %d\n", webmAudioTrack->GetChannels());
+      dbg_printf("\t\tAudio Track BitDepth: %lld\n", webmAudioTrack->GetBitDepth());
+      
+    }    
+  }  // end track loop
+  
+}
