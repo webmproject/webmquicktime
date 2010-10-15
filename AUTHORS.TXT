@@ -1,4 +1,6 @@
 # Names should be added to this file like so:
 # Name or Organization <email address>
 
+Ryan Thompson <ryanthompson@google.com>
+Jeff Koppi <jeffkoppi@google.com>
 Google Inc.
