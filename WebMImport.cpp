@@ -204,7 +204,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   ImageDescriptionHandle vp8DescHand = NULL;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
-
+    TimeValue mediaDuration, audioMediaDuration;
   store->audioDescHand = NULL; // leak?
   
   dbg_printf("[WebM Import]  >> [%08lx] :: FromDataRef(dataRef = %08lx, atTime = %ld)\n", (UInt32) store, (UInt32) dataRef, atTime); // targetTrack != NULL
@@ -435,10 +435,10 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   
   // Insert the added media into the track
   // Time value specifying where the segment is to be inserted in the movie's time scale, -1 to add the media data to the end of the track
-  TimeValue mediaDuration = GetMediaDuration(movieVideoMedia);
+  mediaDuration = GetMediaDuration(movieVideoMedia);
   err = InsertMediaIntoTrack(movieVideoTrack, atTime, 0, mediaDuration, fixed1);                // VIDEO
   if (err) goto bail;
-  TimeValue audioMediaDuration = GetMediaDuration(store->movieAudioMedia);
+  audioMediaDuration = GetMediaDuration(store->movieAudioMedia);
   err = InsertMediaIntoTrack(store->movieAudioTrack, atTime, 0, audioMediaDuration, fixed1);    // AUDIO
   if (err) goto bail;
   
