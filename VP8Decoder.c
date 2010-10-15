@@ -345,7 +345,7 @@ pascal ComponentResult VP8_Decoder_BeginBand(VP8DecoderGlobals glob, CodecDecomp
     stream_info.h = glob->height;
     //TODO based on previous comments the data size might not be garenteed
     vpx_err = vpx_codec_peek_stream_info(&vpx_codec_vp8_dx_algo, (unsigned char *)drp->codecData, myDrp->dataSize, &stream_info);
-
+#if 0
     if (vpx_err)
     {
         int i;
@@ -355,7 +355,11 @@ pascal ComponentResult VP8_Decoder_BeginBand(VP8DecoderGlobals glob, CodecDecomp
         //dbg_printf("continueing anyhow !!! \n");
         return paramErr;
     }
-
+#else
+    // Ignore return value, but use is_kf field.  vpx_codec_peek_stream_info() returns error for non-keyframes. 
+    dbg_printf("VP8_Decoder_BeginBand ignoring return value from vpx_codec_peek_stream_info.\n");
+#endif
+  
     keyFrame = stream_info.is_kf;
     storageIndex = 0;
     droppableFrame = 0;
