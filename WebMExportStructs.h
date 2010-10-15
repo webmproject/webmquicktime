@@ -29,39 +29,34 @@
 
 typedef struct
 {
-    StreamSource source;
-    WebMBuffer         outBuf;
-
     ComponentInstance vorbisComponentInstance;
     AudioStreamBasicDescription asbd;
-    UInt64 currentEncodedFrames;
-    UInt64 framesIn;
+    WebMBuffer buf;
 } AudioStream, *AudioStreamPtr;
 
 
 
 typedef struct
 {
-    StreamSource source;
-    WebMBuffer         outBuf;
-
     ICMDecompressionSessionRef decompressionSession;
     ICMCompressionSessionRef compressionSession;
-
-    ICMFrameType        frame_type;
-    unsigned int        currentFrame;   //the current frame being encoded.
     Boolean             bTwoPass;
 } VideoStream, *VideoStreamPtr;
 
 typedef struct
 {
-    OSType trackType;
+    OSType           trackType;
+    StreamSource     source;
+    WebMQueuedFrames frameQueue;
+    UInt64 framesIn;
+    UInt64 framesOut;
+    Boolean complete;
     union
     {
         VideoStream vid;
         AudioStream aud;
     } ;
-} GenericStream;
+} GenericStream, *GenericStreamPtr;
 
 typedef struct
 {

@@ -498,6 +498,7 @@ ComponentResult initAudioStream(GenericStreamPtr as)
     memset(&as->aud.asbd, 0, sizeof(AudioStreamBasicDescription));
     as->framesOut = 0;
     as->framesIn =0;
+    as->complete = false;
     as->aud.buf.size =0;
     as->aud.buf.offset=0;
     as->aud.buf.data = NULL;

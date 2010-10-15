@@ -48,11 +48,7 @@ static double getMaxDuration(WebMExportGlobalsPtr globals)
     {
         GenericStream *gs = &(*globals->streams)[i];
         StreamSource *source;
-
-        if (gs->trackType == VideoMediaType)
-            source = &gs->vid.source;
-        else
-            source = &gs->aud.source;
+        source = &gs->source;
 
         // get the track duration if it is available
         if (InvokeMovieExportGetPropertyUPP(source->refCon, source->trackID,
@@ -93,16 +89,16 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
                 if (fps == 0)
                 {
                     //framerate estime should be replaced with more accurate
-                    fps = vs->source.timeScale / 100.0;
+                    fps = gs->source.timeScale / 100.0;
                 }
-                //TODO this seems wrong, it seems like this is the input rather than the output
-                err = InvokeMovieExportGetDataUPP(vs->source.refCon, &vs->source.params,
-                                                  vs->source.dataProc);
-                ImageDescription *id = *(ImageDescriptionHandle) vs->source.params.desc;
+                //TODO verify this is the output
+                err = InvokeMovieExportGetDataUPP(gs->source.refCon, &gs->source.params,
+                                                  gs->source.dataProc);
+                ImageDescription *id = *(ImageDescriptionHandle) gs->source.params.desc;
 
                 dbg_printf("[webM] write vid track #%d : %dx%d  %f fps\n",
-                           vs->source.trackID, id->width, id->height, fps);
-                writeVideoTrack(ebml, vs->source.trackID,
+                           gs->source.trackID, id->width, id->height, fps);
+                writeVideoTrack(ebml, gs->source.trackID,
                                 0, /*flag lacing*/
                                 "V_VP8", id->width, id->height, fps);
             }
@@ -116,7 +112,7 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
                 if (as->vorbisComponentInstance == NULL)
                 {
                     //Here I am setting the input properties for this component
-                    err = initVorbisComponent(globals, as);
+                    err = initVorbisComponent(globals, gs);
 
                     if (err) return err;
 
@@ -126,10 +122,10 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
 
                 UInt8 *privateData = NULL;
                 UInt32 privateDataSize = 0;
-                write_vorbisPrivateData(as, &privateData, &privateDataSize);
+                write_vorbisPrivateData(gs, &privateData, &privateDataSize);
                 dbg_printf("[WebM] Writing audio track %d with %d bytes private data, %d channels, %d sampleRate\n",
-                           as->source.trackID, privateDataSize, channels, sampleRate);
-                writeAudioTrack(ebml, as->source.trackID, 0 /*no lacing*/, "A_VORBIS" /*fixed for now*/,
+                           gs->source.trackID, privateDataSize, channels, sampleRate);
+                writeAudioTrack(ebml, gs->source.trackID, 0 /*no lacing*/, "A_VORBIS" /*fixed for now*/,
                                 sampleRate, channels, privateData, privateDataSize);
                 dbg_printf("[WebM] finished audio write \n");
 
@@ -286,27 +282,6 @@ void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time,
                globals->cueCount, newCue->timeVal, newCue->loc, newCue->track, newCue->blockNumber);
     dbg_printf("[WebM] globals->cueHandle Size %d\n", GetHandleSize(globals->cueHandle));
 }
-static ComponentResult _compressVideo(WebMExportGlobalsPtr globals, VideoStreamPtr vs)
-{
-    ComponentResult err = noErr;
-
-    if (vs->source.bQdFrame || vs->source.eos)
-        return err; //paranoid check
-
-    dbg_printf("[webM] call Compress Next frame %d\n", vs->currentFrame);
-    // get next frame as vp8 frame
-    err = compressNextFrame(globals, vs);
-
-    if (err != noErr)
-    {
-        dbg_printf("[webM] compressNextFrame error %d\n", err);
-    }
-
-    if (!vs->source.eos)
-        vs->source.bQdFrame = true;
-
-    return err;
-}
 
 static void _startNewCluster(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
 {
@@ -317,7 +292,8 @@ static void _startNewCluster(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
     Ebml_StartSubElement(ebml, &globals->clusterStart, Cluster);
     Ebml_SerializeUnsigned(ebml, Timecode, globals->clusterTime);
 }
-static void _advanceVideoTime(WebMExportGlobalsPtr globals, VideoStreamPtr vs)
+
+/*static void _advanceVideoTime(WebMExportGlobalsPtr globals, VideoStreamPtr vs)
 {
     StreamSource *source =  &vs->source;
     //this now represents the next frame we want to encode
@@ -326,22 +302,22 @@ static void _advanceVideoTime(WebMExportGlobalsPtr globals, VideoStreamPtr vs)
         fps = source->params.sourceTimeScale * 1.0/ source->params.durationPerSample * 1.0; 
     vs->currentFrame += 1;  
     source->time = (SInt32)((vs->currentFrame * 1.0) / fps * source->timeScale); //TODO  -- I am assuming that each frame has a similar fps
-    /*source->time += source->params.durationPerSample * source->timeScale
-     / source->params.sourceTimeScale;  //TODO precision loss??*/
+    //source->time += source->params.durationPerSample * source->timeScale
+    //   / source->params.sourceTimeScale;  //TODO precision loss??
     
     source->blockTimeMs = getTimeAsSeconds(source) * 1000;
     dbg_printf("[WebM] Next frame calculated %f from %f fps, durationPerSample %ld * timeScale %d / sourceTimeScale %d to %d \n"
                , getTimeAsSeconds(source),fps,  source->params.durationPerSample ,source->timeScale
                , source->params.sourceTimeScale, source->time);
     
-}
+}*/
 
-static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, VideoStreamPtr vs, EbmlGlobal *ebml)
+static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, GenericStreamPtr gs, EbmlGlobal *ebml)
 {
     ComponentResult err = noErr;
-    StreamSource *source =  &vs->source;
+    StreamSource *source =  &gs->source;
     unsigned long lastTime = source->blockTimeMs;
-    int isKeyFrame = vs->frame_type == kICMFrameType_I;
+    int isKeyFrame = gs->frame_type == kICMFrameType_I;
     dbg_printf("[webM] video write simple block track %d keyframe %d frame #%ld time %d data size %ld\n",
                source->trackID, isKeyFrame,
                vs->currentFrame, lastTime, vs->outBuf.size);
@@ -357,7 +333,7 @@ static ComponentResult _writeVideo(WebMExportGlobalsPtr globals, VideoStreamPtr 
     return err;
 }
 
-static ComponentResult _compressAudio(AudioStreamPtr as)
+/*static ComponentResult _compressAudio(GenericStreamPtr gs)
 {
     ComponentResult err = noErr;
 
@@ -368,12 +344,11 @@ static ComponentResult _compressAudio(AudioStreamPtr as)
 
     if (err) return err;
 
-
     if (!as->source.eos)
         as->source.bQdFrame = true;
 
     return err;
-}
+}*/
 
 static ComponentResult _writeAudio(WebMExportGlobalsPtr globals, AudioStreamPtr as, EbmlGlobal *ebml)
 {
@@ -429,9 +404,7 @@ Boolean isTwoPass(WebMExportGlobalsPtr globals)
     else 
     {
         dbg_printf("[WebM] getVideoComponentInstace handleSize = %d\n",GetHandleSize(globals->videoSettingsCustom) );
-    }
-
-    
+    }    
     
 bail:
     if (videoCI != NULL)
@@ -474,7 +447,6 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     Boolean bExportVideo = globals->bMovieHasVideo && globals->bExportVideo;
     Boolean bExportAudio = globals->bMovieHasAudio && globals->bExportAudio;
     
-
     HLock((Handle)globals->streams);
     err = _updateProgressBar(globals, 0.0);
     if (err) goto bail;
@@ -493,7 +465,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     for (iStream = 0; iStream < globals->streamCount; iStream++)
     {
         GenericStream *gs = &(*globals->streams)[iStream];
-        gs->vid.bTwoPass = bTwoPass;
+        if (gs->trackType == VideoMediaType)
+            gs->vid.bTwoPass = bTwoPass;
     }
     //start first pass in a two pass
     if (bTwoPass)
@@ -511,11 +484,11 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
             
                 if (gs->trackType == VideoMediaType)
                 {
-                    source =  &gs->vid.source;
+                    source =  &gs->source;
                 
                     if (!source->bQdFrame && globals->bExportVideo)
                     {
-                        err = _compressVideo(globals, &gs->vid);
+                        err = compressNextFrame(globals, &gs);
                         _advanceVideoTime(globals, &gs->vid);
                     }
                     if (source->bQdFrame)
@@ -543,11 +516,10 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
             {
                 endPass(&gs->vid);
                 //reset the stream to the start
-                gs->vid.source.eos = false;
-                gs->vid.source.bQdFrame = false;
-                gs->vid.source.blockTimeMs = 0;
-                gs->vid.source.time = 0;
-                gs->vid.currentFrame = 0;
+                gs->source.eos = false;
+                gs->source.bQdFrame = false;
+                gs->source.blockTimeMs = 0;
+                gs->source.time = 0;
             }
         }
         
@@ -569,53 +541,63 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         minTimeMs = ULONG_MAX;
         minTimeStream = NULL;
         allStreamsDone = true;
+        Boolean bWaitingForBuffer = false;
         
 
-        //find the stream with the earliest time
+        //compress streams that are empty
         for (iStream = 0; iStream < globals->streamCount; iStream++)
         {
             GenericStream *gs = &(*globals->streams)[iStream];
-            StreamSource *source;
-
-            if (gs->trackType == VideoMediaType)
+            if (gs->trackType == VideoMediaType && globals->bExportVideo)
             {
-                source =  &gs->vid.source;
-
-                if (!source->bQdFrame && globals->bExportVideo)
-                {
-                    err = _compressVideo(globals, &gs->vid);
-                    //I need to know if there's a video keyframe in the Queue
-                    if (!startNewCluster)
-                        startNewCluster = gs->vid.frame_type == kICMFrameType_I;
-                }
+                if (gs->frameQueue.size == 0)
+                    err = compressNextFrame(globals, gs);
             }
-
-            if (gs->trackType == SoundMediaType)
+            if (gs->trackType == SoundMediaType && globals->bExportAudio)
             {
-                source = &gs->aud.source;
-
-                if (!source->bQdFrame && globals->bExportAudio)
-                    err = _compressAudio(&gs->aud);
+                if (gs->frameQueue.size == 0)
+                    err = compressAudio(gs);
             }
-
             if (err)
             {
-                dbg_printf("[webm] _compress error = %d\n", err);
+                dbg_printf("[webm] compress error = %d\n", err);
                 goto bail;
             }
-			
+        }
+        //if all frames that should be available find the earliest time:
+        for (iStream = 0; iStream < globals->streamCount; iStream++)
+        {
+            GenericStream *gs = &(*globals->streams)[iStream];
+            if (gs->frameQueue.size == 0 && !gs->complete)
+            {
+                bWaitingForBuffer = true;
+                allStreamsDone = false;
+                break;
+            }
+            
+            else if (minTimeMs > gs->frameQueue.queue[0]->timeMs)
+            {
+                minTimeMs = gs->frameQueue.queue[0]->timeMs;
+                minTimeStream = gs;
+            }
             Boolean smallerTime = false;
             if (gs->trackType == VideoMediaType)
                 smallerTime = source->blockTimeMs < minTimeMs;
             else if (gs->trackType == SoundMediaType)
                 smallerTime = source->blockTimeMs <= minTimeMs; //similar time audio first (see webm specs)									
 			
-            if (smallerTime && source->bQdFrame && !err)
+            if (smallerTime)
             {
                 minTimeMs = source->blockTimeMs;
                 minTimeStream = gs;
                 allStreamsDone = false;
             }
+        }
+        if (bWaitingForBuffer)
+            continue;
+            
+        
+        
         }  //end for loop
 
         

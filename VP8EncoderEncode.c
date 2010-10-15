@@ -78,24 +78,12 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
     memcpy(&(dataPtr[dataSize]), pkt->data.frame.buf, pkt->data.frame.sz);
     dataSize = pkt->data.frame.sz;
     
-    
-    if (dataSize == 0)
-        dbg_printf("[vp8e - %08lx] Warning: No data generated for this frame\n", (UInt32)glob);
-    else
-    {
-        dbg_printf("[vp8e - %08lx]  Encoded frame %d with %d bytes of data\n", (UInt32)glob, glob->frameCount, dataSize);
-    }
-    
+    dbg_printf("[vp8e - %08lx]  Encoded frame %d with %d bytes of data\n", (UInt32)glob, glob->frameCount, dataSize);
     
     keyFrame = pkt->kind ==  (pkt->data.frame.flags & VPX_FRAME_IS_KEY);
     dbg_printf(keyFrame ? "Key Packet\n" : "Non Key Packet\n");
     droppableFrame = pkt->data.frame.flags & VPX_FRAME_IS_DROPPABLE;
     dbg_printf(droppableFrame ? "Droppable frame\n" : "Not droppable frame\n");
-    if (encodedFrame == NULL)
-    {
-        ICMCompressorSessionDropFrame(glob->session,sourceFrame);
-        return err;          
-    }
     
     // Update the encoded frame to reflect the actual frame size, sample flags and frame type.
     err = ICMEncodedFrameSetDataSize(encodedFrame, dataSize);
