@@ -49,6 +49,8 @@ typedef struct {
   //SampleRefVec videoSamples;
   SampleRefVec audioSamples;
   SampleTimeVec audioTimes;
+  long audioCount;                            // total audio blocks added to Media
+  long trackCount;                            // number of tracks added to Movie
 } WebMImportGlobalsRec, *WebMImportGlobals;
 
 static const long long ns_per_sec = 1000000000;
@@ -340,12 +342,14 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
           err = CreateVP8ImageDescription(width, height, &vp8DescHand);
           if (err) goto bail;
         }
-        // Create QT movie track and media (not WebM file track)
+
+        // If this is the first video block, then create a QT movie track (not WebM file track), a QT media object, and enable the track.
         if (movieVideoTrack == NULL) {
 
           // Create a new QT video track
           movieVideoTrack = NewMovieTrack(theMovie, (**vp8DescHand).width << 16, (**vp8DescHand).height << 16, kNoVolume);
-          
+          store->trackCount++;
+
           // Create a new QT media for the track
           // (The media refers to the actual data samples used by the track.)
           TimeScale timeScale = GetMovieTimeScale(theMovie);  // QT uses 600 units per second
@@ -431,16 +435,19 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   //
   // Add audio samples to media
   //
-  FinishAddingAudioBlocks(store, segmentDuration);   // duration = webmSegmentInfo->GetDuration();
+  err = FinishAddingAudioBlocks(store, segmentDuration);   // webmSegmentInfo->GetDuration();
   
   // Insert the added media into the track
   // Time value specifying where the segment is to be inserted in the movie's time scale, -1 to add the media data to the end of the track
   mediaDuration = GetMediaDuration(movieVideoMedia);
   err = InsertMediaIntoTrack(movieVideoTrack, atTime, 0, mediaDuration, fixed1);                // VIDEO
   if (err) goto bail;
+
   audioMediaDuration = GetMediaDuration(store->movieAudioMedia);
-  err = InsertMediaIntoTrack(store->movieAudioTrack, atTime, 0, audioMediaDuration, fixed1);    // AUDIO
-  if (err) goto bail;
+  if (store->audioCount > 0) {
+    err = InsertMediaIntoTrack(store->movieAudioTrack, atTime, 0, audioMediaDuration, fixed1);    // AUDIO
+    if (err) goto bail;
+  }
   
   // Return the duration added 
   if (movieVideoTrack != NULL)
@@ -470,7 +477,8 @@ bail:
 	// Return the track identifier of the track that received the imported data in the usedTrack pointer. Your component
 	// needs to set this parameter only if you operate on a single track or if you create a new track. If you modify more
 	// than one track, leave the field referred to by this parameter unchanged. 
-	//if (usedTrack) *usedTrack = movieVideoTrack;
+	if (usedTrack && store->trackCount < 2)
+		*usedTrack = movieVideoTrack ? movieVideoTrack : store->movieAudioTrack;
 
   dbg_printf("[WebM Import]  << [%08lx] :: FromDataRef(%d, %ld)\n", (UInt32) store, targetTrack != NULL, atTime);
 
@@ -600,12 +608,13 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
     }
   }
   
-  // Create a QT audio track object, a QT media object, and then enable the track.
+  // If this is the first audio block, then create a QT movie track object, a QT media object, and enable the track.
   if (store->movieAudioTrack == NULL) {
-    // Create a new QT video track
+    // Create a new QT audio track
     store->movieAudioTrack = NewMovieTrack(store->movie, 0, 0, kFullVolume); // pass 0 for width and height of audio track.
     if (store->movieAudioTrack == NULL) goto bail;
-  
+    store->trackCount++;
+    
     // Create a new QT media for the track    
     long sampleRate = 0;
     //sampleRate = GetMovieTimeScale(store->movie);
@@ -618,7 +627,7 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
   }
 
 #if USE_SAMPLE_MAP
-  // **** Collect sample references first, and then call AddMediaSampleReferences() once at the end.
+  // Collect sample references first, and then call AddMediaSampleReferences() once at the end.
   SampleReferencePtr srp;
   srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
   srp->dataOffset = webmBlock->GetOffset();
@@ -631,7 +640,7 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
   
   //store->audioSamples.insert(make_pair(t, srp));  // alternatively, use stl multimap to ensure sort order by time.  Not contiguous though, so can't add all samples at once.
   store->audioSamples.push_back(*srp);
-  store->audioTimes.push_back(blockTime_ns);  // **** needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+  store->audioTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
   
   dbg_printf("Audio Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
   
@@ -697,10 +706,13 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   //
   // Add array of samples all at once (better performance than adding each one separately). 
   //
-  SampleReferencePtr sampleRefs = &store->audioSamples.front(); // &store->audioSamples[0];
-  err = AddMediaSampleReferences(store->movieAudioMedia, (SampleDescriptionHandle)store->audioDescHand, numSamples, sampleRefs, NULL);  // SampleReferencePtr
-  if (err) {
-    dbg_printf("WebM Import - FinishAddingAudioBlocks - AddMediaSampleRefereces() FAILED with err = %d\n", err);
+  if (numSamples > 0) {
+    SampleReferencePtr sampleRefs = &store->audioSamples.front(); // &store->audioSamples[0];
+    err = AddMediaSampleReferences(store->movieAudioMedia, (SampleDescriptionHandle)store->audioDescHand, numSamples, sampleRefs, NULL);  // SampleReferencePtr
+    if (err) {
+      dbg_printf("WebM Import - FinishAddingAudioBlocks - AddMediaSampleRefereces() FAILED with err = %d\n", err);
+    }
+    store->audioCount += numSamples;  // increment count when samples are actually added to qt
   }
   
   // delete sample refs and times after they have been added to quicktime?
