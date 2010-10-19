@@ -251,7 +251,9 @@ static void _initAudioBufferList(GenericStreamPtr as, AudioBufferList **audioBuf
     
     if (as->aud.buf.data == NULL || as->aud.buf.size != wantedSize)
     {
-        allocBuffer(&as->aud.buf, wantedSize);
+      as->aud.buf.data = realloc(as->aud.buf.data, wantedSize);
+      as->aud.buf.size = wantedSize;
+      as->aud.buf.offset = 0;
     }
 
     for (i = 0; i < ioPackets; i++)

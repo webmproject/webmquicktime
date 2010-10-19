@@ -113,8 +113,6 @@ ComponentResult initStreamSource(StreamSource *source, TimeScale scale,
     source->params.trackID = source->trackID;
     source->params.sourceTimeScale = scale;
     source->eos = false;
-    source->bQdFrame = false;
-    source->blockTimeMs =0;
     source->time = 0;
 
     return err;
