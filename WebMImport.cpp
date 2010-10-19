@@ -82,6 +82,7 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
 OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack);
 OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns);
 void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::SegmentInfo* webmSegmentInfo, const mkvparser::Tracks* webmTracks);
+OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, Handle* cookie);
 
 
 //--------------------------------------------------------------------------------
@@ -206,7 +207,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   ImageDescriptionHandle vp8DescHand = NULL;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
-    TimeValue mediaDuration, audioMediaDuration;
+  TimeValue mediaDuration, audioMediaDuration;
   store->audioDescHand = NULL; // leak?
   
   dbg_printf("[WebM Import]  >> [%08lx] :: FromDataRef(dataRef = %08lx, atTime = %ld)\n", (UInt32) store, (UInt32) dataRef, atTime); // targetTrack != NULL
@@ -551,12 +552,21 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
 {
   OSErr err = noErr;
   SoundDescriptionHandle descHand = NULL;
-
+  unsigned long cookieSize = 0;
+  Handle cookieHand = NULL;
+  Ptr cookie = NULL;
+  
+  err = CreateCookieFromCodecPrivate(webmAudioTrack, &cookieHand);
+  if ((err == noErr) && (cookieHand)) {
+    cookie = *cookieHand;
+		cookieSize = GetHandleSize(cookieHand);
+  }
+  
   // In all fields, a value of 0 indicates that the field is either unknown, not applicable or otherwise is inapproprate for the format and should be ignored.    
 	AudioStreamBasicDescription asbd;
   asbd.mFormatID = kAudioFormatVorbis;  // kAudioFormatLinearPCM;
   asbd.mSampleRate = webmAudioTrack->GetSamplingRate();       // 48000.0 or whatever your sample rate is.  AudioStreamBasicDescription.mSampleRate is of type Float64.
-  //asbd.mFormatFlags = // kAudioFormatFlagIsBigEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // or leave off big endian if it's LittleEndian
+  asbd.mFormatFlags = kAudioFormatFlagIsBigEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // or leave off big endian if it's LittleEndian
   asbd.mChannelsPerFrame = webmAudioTrack->GetChannels();     // 1;
   asbd.mBitsPerChannel = 0;       // 24; // or webmAudioTrack->GetBitDepth() ? ****
   asbd.mFramesPerPacket = 0;      // 1;      // ****
@@ -567,8 +577,8 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
   err = QTSoundDescriptionCreate(&asbd,     // description of the format
                                  NULL,      // AudioChannelLayout, NULL if there isn't one
                                  0,         // ByteCount, size of audio channel layout, (0 if above is NULL)
-                                 NULL,      // magic cookie?
-                                 0,         // magic cookie size?
+                                 (void*)cookie,      // magic cookie?
+                                 cookieSize,         // magic cookie size?
                                  kQTSoundDescriptionKind_Movie_LowestPossibleVersion,   // QTSoundDescriptionKind
                                  &descHand);     // out, sound description
   if (err == noErr) {
@@ -578,6 +588,73 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
   long convertedSR = (*descHand)->sampleRate >> 16; // convert unsigned fixed to long (whole part)
   dbg_printf("WebMImport CreateAudioDescription() - descHand.sampleRate = %ld\n", convertedSR); // Note: SoundDescription.sampleRate is of type UnsignedFixed
   return err;
+}
+
+enum
+{
+  kCookieTypeVorbisHeader = 'vCtH',
+  kCookieTypeVorbisComments = 'vCt#',
+  kCookieTypeVorbisCodebooks = 'vCtC',
+  kCookieTypeVorbisFirstPageNo = 'vCtN'
+};
+
+struct CookieAtomHeader
+{
+  long           size;
+  long           type;
+  unsigned char  data[1];
+};
+typedef struct CookieAtomHeader CookieAtomHeader;
+
+//--------------------------------------------------------------------------------
+//  CreateCookieFromCodecPrivate
+//
+// The Matroska spec <http://www.matroska.org/technical/specs/codecid/index.html> describes the Vorbis codec private data as:
+// The private data contains the first three Vorbis packet in order. The lengths of the packets precedes them. The actual layout is:
+// Byte 1: number of distinct packets '#p' minus one inside the CodecPrivate block. This should be '2' for current Vorbis headers.
+// Bytes 2..n: lengths of the first '#p' packets, coded in Xiph-style lacing. The length of the last packet is the length of the CodecPrivate block minus the lengths coded in these bytes minus one.
+// Bytes n+1..: The Vorbis identification header, followed by the Vorbis comment header followed by the codec setup header.
+//
+OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, Handle* cookie)
+{
+  OSErr err = noErr;
+  Handle cookieHand = NULL;
+  
+  size_t vorbisCodecPrivateSize;
+  const unsigned char* vorbisCodecPrivateData = webmAudioTrack->GetCodecPrivate(vorbisCodecPrivateSize);
+  dbg_printf("Vorbis Codec Private Data = %x, Vorbis Codec Private Size = %d\n", vorbisCodecPrivateData, vorbisCodecPrivateSize);
+  
+  int numPackets = vorbisCodecPrivateData[0] + 1; 
+  const unsigned long idHeaderSize = vorbisCodecPrivateData[1];
+  const unsigned long commentHeaderSize = vorbisCodecPrivateData[2];
+  const unsigned char* idHeader = &vorbisCodecPrivateData[3];
+  const unsigned char* commentHeader = idHeader + idHeaderSize;
+  const unsigned char* setupHeader =  commentHeader + commentHeaderSize;
+  const unsigned long setupHeaderSize = vorbisCodecPrivateSize - idHeaderSize - commentHeaderSize - 2 - 1;
+  if ((3 + idHeaderSize + commentHeaderSize + setupHeaderSize) != vorbisCodecPrivateSize) {
+    dbg_printf("Error. Codec Private header sizes don't add up. 3 + id (%ld) + comment (%ld) + setup (%ld) != total (%ld)\n", idHeaderSize, commentHeaderSize, setupHeaderSize, vorbisCodecPrivateSize);
+    return -1;
+  }
+  
+  // Note: CookieAtomHeader is {long size; long type; unsigned char data[1]; } see WebMAudioStream.c
+  
+  // first packet - id header
+  uint32_t atomhead1[2] = { EndianU32_NtoB(idHeaderSize + 2*4), EndianU32_NtoB(kCookieTypeVorbisHeader) };
+  PtrToHand(atomhead1, &cookieHand, sizeof(atomhead1));
+  PtrAndHand(idHeader, cookieHand, idHeaderSize);
+             
+  // second packet - comment header
+  uint32_t atomhead2[2] = { EndianU32_NtoB(commentHeaderSize + sizeof(atomhead2)), EndianU32_NtoB(kCookieTypeVorbisComments) };
+  PtrAndHand(atomhead2, cookieHand, sizeof(atomhead2));
+  PtrAndHand(commentHeader, cookieHand, commentHeaderSize);  
+  
+  // third packet - setup header
+  uint32_t atomhead3[2] = { EndianU32_NtoB(setupHeaderSize + sizeof(atomhead3)), EndianU32_NtoB(kCookieTypeVorbisCodebooks) };
+  PtrAndHand(atomhead3, cookieHand, sizeof(atomhead3));
+  PtrAndHand(setupHeader, cookieHand, setupHeaderSize);
+
+  *cookie = cookieHand;
+  return noErr;
 }
 
 
@@ -680,7 +757,7 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
     dbg_printf("WebM Import - FinishAddingAudioBlocks - ERROR - parallel vectors with different sizes. numSamples=%d, numTimes=%d\n", numSamples, numTimes);
     // try to recover ****
   }
-  dbg_printf("WebM Import - FinishAddingAudioBlocks - numSamples = %d, numTimes = %d\n", numSamples, numTimes);
+  dbg_printf("WebM Import - FinishAddingAudioBlocks - numSamples = %d, numTimes = %d, lastTime_ns = %lld\n", numSamples, numTimes, lastTime_ns);
 
   //SampleRefVec::iterator iter;
   //SampleTimeVec::iterator timeIter;
