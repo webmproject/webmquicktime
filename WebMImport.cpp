@@ -209,13 +209,13 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
   TimeValue mediaDuration, audioMediaDuration;
   store->audioDescHand = NULL; // leak?
-  
+
   dbg_printf("[WebM Import]  >> [%08lx] :: FromDataRef(dataRef = %08lx, atTime = %ld)\n", (UInt32) store, (UInt32) dataRef, atTime); // targetTrack != NULL
-  
+
   // The movieImportMustUseTrack flag indicates that we must use an existing track.
-	// We don't support this and always create a new track, so return paramErr.
-	if (inFlags & movieImportMustUseTrack)
-		return paramErr;
+  // We don't support this and always create a new track, so return paramErr.
+  if (inFlags & movieImportMustUseTrack)
+    return paramErr;
 
   // Use IMkvReader subclass that knows about quicktime dataRef and dataHandler objects, rather than plain file io.
   long long pos = 0;
@@ -555,15 +555,15 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
   unsigned long cookieSize = 0;
   Handle cookieHand = NULL;
   Ptr cookie = NULL;
-  
+
   err = CreateCookieFromCodecPrivate(webmAudioTrack, &cookieHand);
   if ((err == noErr) && (cookieHand)) {
     cookie = *cookieHand;
-		cookieSize = GetHandleSize(cookieHand);
+    cookieSize = GetHandleSize(cookieHand);
   }
-  
-  // In all fields, a value of 0 indicates that the field is either unknown, not applicable or otherwise is inapproprate for the format and should be ignored.    
-	AudioStreamBasicDescription asbd;
+
+  // In all fields, a value of 0 indicates that the field is either unknown, not applicable or otherwise is inapproprate for the format and should be ignored.
+  AudioStreamBasicDescription asbd;
   asbd.mFormatID = kAudioFormatVorbis;  // kAudioFormatLinearPCM;
   asbd.mSampleRate = webmAudioTrack->GetSamplingRate();       // 48000.0 or whatever your sample rate is.  AudioStreamBasicDescription.mSampleRate is of type Float64.
   asbd.mFormatFlags = kAudioFormatFlagIsBigEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // or leave off big endian if it's LittleEndian
@@ -619,35 +619,36 @@ OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, 
 {
   OSErr err = noErr;
   Handle cookieHand = NULL;
-  
+
   size_t vorbisCodecPrivateSize;
   const unsigned char* vorbisCodecPrivateData = webmAudioTrack->GetCodecPrivate(vorbisCodecPrivateSize);
   dbg_printf("Vorbis Codec Private Data = %x, Vorbis Codec Private Size = %d\n", vorbisCodecPrivateData, vorbisCodecPrivateSize);
-  
-  int numPackets = vorbisCodecPrivateData[0] + 1; 
+
+  int numPackets = vorbisCodecPrivateData[0] + 1;
   const unsigned long idHeaderSize = vorbisCodecPrivateData[1];
   const unsigned long commentHeaderSize = vorbisCodecPrivateData[2];
   const unsigned char* idHeader = &vorbisCodecPrivateData[3];
   const unsigned char* commentHeader = idHeader + idHeaderSize;
   const unsigned char* setupHeader =  commentHeader + commentHeaderSize;
-  const unsigned long setupHeaderSize = vorbisCodecPrivateSize - idHeaderSize - commentHeaderSize - 2 - 1;
+  const unsigned long setupHeaderSize = vorbisCodecPrivateSize - idHeaderSize - commentHeaderSize - 2 - 1;  // calculate size of third packet
+  // size of third packet = total size minus length of other two packets, minus the two length bytes, minus 1 for the "numPackets" byte.
   if ((3 + idHeaderSize + commentHeaderSize + setupHeaderSize) != vorbisCodecPrivateSize) {
     dbg_printf("Error. Codec Private header sizes don't add up. 3 + id (%ld) + comment (%ld) + setup (%ld) != total (%ld)\n", idHeaderSize, commentHeaderSize, setupHeaderSize, vorbisCodecPrivateSize);
     return -1;
   }
-  
+
   // Note: CookieAtomHeader is {long size; long type; unsigned char data[1]; } see WebMAudioStream.c
-  
+
   // first packet - id header
   uint32_t atomhead1[2] = { EndianU32_NtoB(idHeaderSize + 2*4), EndianU32_NtoB(kCookieTypeVorbisHeader) };
   PtrToHand(atomhead1, &cookieHand, sizeof(atomhead1));
   PtrAndHand(idHeader, cookieHand, idHeaderSize);
-             
+
   // second packet - comment header
   uint32_t atomhead2[2] = { EndianU32_NtoB(commentHeaderSize + sizeof(atomhead2)), EndianU32_NtoB(kCookieTypeVorbisComments) };
   PtrAndHand(atomhead2, cookieHand, sizeof(atomhead2));
-  PtrAndHand(commentHeader, cookieHand, commentHeaderSize);  
-  
+  PtrAndHand(commentHeader, cookieHand, commentHeaderSize);
+
   // third packet - setup header
   uint32_t atomhead3[2] = { EndianU32_NtoB(setupHeaderSize + sizeof(atomhead3)), EndianU32_NtoB(kCookieTypeVorbisCodebooks) };
   PtrAndHand(atomhead3, cookieHand, sizeof(atomhead3));
