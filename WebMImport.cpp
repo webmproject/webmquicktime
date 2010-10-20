@@ -441,19 +441,23 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // Insert the added media into the track
   // Time value specifying where the segment is to be inserted in the movie's time scale, -1 to add the media data to the end of the track
   mediaDuration = GetMediaDuration(movieVideoMedia);
-  err = InsertMediaIntoTrack(movieVideoTrack, atTime, 0, mediaDuration, fixed1);                // VIDEO
-  if (err) goto bail;
+  if (mediaDuration > 0) {
+    err = InsertMediaIntoTrack(movieVideoTrack, atTime, 0, mediaDuration, fixed1);                // VIDEO
+    if (err) goto bail;
+  }
 
   audioMediaDuration = GetMediaDuration(store->movieAudioMedia);
   if (store->audioCount > 0) {
     err = InsertMediaIntoTrack(store->movieAudioTrack, atTime, 0, audioMediaDuration, fixed1);    // AUDIO
     if (err) goto bail;
   }
-  
-  // Return the duration added 
+
+  // Return the duration added
   if (movieVideoTrack != NULL)
     *durationAdded = GetTrackDuration(movieVideoTrack) - atTime;
-  
+  else
+    *durationAdded = GetTrackDuration(store->movieAudioTrack) - atTime;
+
 bail:
   if (err)
     dbg_printf("[WebM Import] - BAIL FAIL !!! ", err);
@@ -766,12 +770,17 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   long long blockDuration_ns = 0;
   for (long i = 0; i < numSamples; ++i) {
     if (i+1 < numSamples)
-      blockDuration_ns = (store->audioTimes[i+1] - store->audioTimes[i]); 
-    else
+      blockDuration_ns = (store->audioTimes[i+1] - store->audioTimes[i]);
+    else {
       blockDuration_ns = (lastTime_ns - store->audioTimes[i]);
-    SoundDescriptionHandle sdh = store->audioDescHand;
-    //double sampleRate = (*sdh)->sampleRate; // Note: store->audioDescHand is of type UnsignedFixed (not long, not float or double)
-    //sampleRate = 48000.0; // hardcode sampling rate here to test.  
+      if (blockDuration_ns < 0)
+        blockDuration_ns = 0; // catch invalid duration
+    }
+    if (store->audioTimes[i] > lastTime_ns) {
+      dbg_printf("WebM Import - Bogus webm file: Audio Block with timestamp > segment duration.\n");
+    }
+    //SoundDescriptionHandle sdh = store->audioDescHand;
+    //double sampleRate = (*sdh)->sampleRate; // Note: (*store->audioDescHand)->sampleRate is of type UnsignedFixed (not long, not float or double)
     double sampleRate = store->audioSampleRate;
     TimeValue blockDuration_qt = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * sampleRate);  // GetMovieTimeScale(store->movie));  ****
     store->audioSamples[i].durationPerSample = blockDuration_qt;  // TimeValue, count of units
