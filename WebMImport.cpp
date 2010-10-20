@@ -373,6 +373,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
           TimeValue frameDuration = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * GetMovieTimeScale(theMovie));
           dbg_printf("TIME - block duration (ns)\t: %ld\n", blockDuration_ns);
           dbg_printf("TIME - QT frame duration\t: %ld\n", frameDuration);
+          // Fix seeking (scrubbing) in QT Player by setting sample flag.
+          // If frame is not a keyframe, then sample is not a sync sample (eg. is frame differenced) so set mediaSampleNotSync flag.
           short sampleFlags = 0;
           if (!prevBlockIsKey)
             sampleFlags |= mediaSampleNotSync;
@@ -427,13 +429,16 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     TimeValue frameDuration = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * GetMovieTimeScale(theMovie));
     dbg_printf("TIME - block duration: %ld\n", blockDuration_ns);
     dbg_printf("TIME - QT frame duration: %ld\n", frameDuration);
-    err = AddMediaSampleReference(movieVideoMedia, 
+    short sampleFlags = 0;
+    if (!prevBlockIsKey)
+      sampleFlags |= mediaSampleNotSync;
+    err = AddMediaSampleReference(movieVideoMedia,
                                   prevBlockOffset,                          // offset into the data file
                                   prevBlockSize,                            // number of bytes of sample data to be identified by ref
                                   frameDuration,                            // duration of each sample in the reference (calculated duration of prevBlock)
                                   (SampleDescriptionHandle)vp8DescHand,     // Handle to a sample description
                                   1,                                        // number of samples contained in the reference
-                                  0,                                        // flags
+                                  sampleFlags,                              // flags
                                   NULL);                                    // returns time where reference was inserted, NULL to ignore
     if (err) goto bail;
   }
