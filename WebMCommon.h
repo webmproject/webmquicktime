@@ -25,49 +25,49 @@
 
 typedef struct
 {
-    void *data;
-    UInt32 size;
-    UInt32 offset;
+  void *data;
+  UInt32 size;
+  UInt32 offset;
 }WebMBuffer;
 
 enum{
-    KEY_FRAME = 0x01,
-    VIDEO_FRAME = 0x02,
-    AUDIO_FRAME = 0x04,
-    ALT_REF_FRAME = 0x08
+  KEY_FRAME = 0x01,
+  VIDEO_FRAME = 0x02,
+  AUDIO_FRAME = 0x04,
+  ALT_REF_FRAME = 0x08
 };
 
 typedef struct
 {
-    void *data;
-    UInt32 size;
-    UInt32 offset; //pointer to the end of output buffers data.
-    UInt64 timeMs; //time in milliseconds
-    UInt32 frameType;  //corresponds to above frame types
-    UInt32 indx;
+  void *data;
+  UInt32 size;
+  UInt32 offset; //pointer to the end of output buffers data.
+  UInt64 timeMs; //time in milliseconds
+  UInt32 frameType;  //corresponds to above frame types
+  UInt32 indx;
 } WebMBufferedFrame;
 
 
 //these frames should be queued chronologically
 typedef struct
 {
-    WebMBufferedFrame** queue;
-    int queueSize;  //the maximum allocated memory
-    int size;
+  WebMBufferedFrame** queue;
+  int maxSize;  //the maximum allocated memory
+  int size;
 } WebMQueuedFrames;
 
 
 typedef struct
 {
-    MovieExportGetPropertyUPP propertyProc;
-    MovieExportGetDataUPP dataProc;
-    void *refCon;
-    MovieExportGetDataParams params;
-    Boolean eos;
-    SInt32 time;                    //This time must be based on the source Time scale
-    TimeScale timeScale;
-    long trackID;
-    UInt32 frameInIndx;  //last frame sent in
+  MovieExportGetPropertyUPP propertyProc;
+  MovieExportGetDataUPP dataProc;
+  void *refCon;
+  MovieExportGetDataParams params;
+  Boolean eos;
+  SInt32 time;                    //This time must be based on the source Time scale
+  TimeScale timeScale;
+  long trackID;
+  UInt32 frameInIndx;  //last frame sent in
 } StreamSource;
 
 
