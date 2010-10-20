@@ -266,6 +266,7 @@ extern OSStatus CopyChunkyYUV422ToPlanarYV12(
         topYref += rowBytes_y * 2;
         botYref += rowBytes_y * 2;
     }
+  return 0;
 }
 
 /*extern OSStatus CopyChunkyYUV422ToPlanarYV12(
