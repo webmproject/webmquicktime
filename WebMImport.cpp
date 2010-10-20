@@ -288,7 +288,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   long long prevBlockOffset = 0;
   long long prevBlockSize = 0;
   long long prevBlockTime = 0;
-  
+  bool prevBlockIsKey = false;
+
   //
   //  WebM Cluster
   //
@@ -372,7 +373,10 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
           TimeValue frameDuration = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * GetMovieTimeScale(theMovie));
           dbg_printf("TIME - block duration (ns)\t: %ld\n", blockDuration_ns);
           dbg_printf("TIME - QT frame duration\t: %ld\n", frameDuration);
-          
+          short sampleFlags = 0;
+          if (!prevBlockIsKey)
+            sampleFlags |= mediaSampleNotSync;
+
           // Add the media sample
           // AddMediaSampleReference does not add sample data to the file or device that contains a media.
           // Rather, it defines references to sample data contained elswhere. Note that one reference may refer to more
@@ -384,7 +388,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
                                         frameDuration,                            // duration of each sample in the reference (calculated duration of prevBlock)
                                         (SampleDescriptionHandle)vp8DescHand,     // Handle to a sample description
                                         1,                                        // number of samples contained in the reference
-                                        0,                                        // flags
+                                        sampleFlags,                              // flags
                                         NULL);                                    // returns time where reference was inserted, NULL to ignore
           if (err) goto bail;
           dbg_printf("AddMediaSampleReference(offset=%lld, size=%lld, duration=%ld)\n", prevBlockOffset, prevBlockSize, frameDuration);
@@ -395,7 +399,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         prevBlockOffset = webmBlock->GetOffset();   // Block::GetOffset() is offset to vp8 frame data, Block::m_start is offset to MKV Block.
         prevBlockSize = webmBlock->GetSize();       // note: webmBlock->m_size is 4 bytes less than webmBlock->GetSize()
         prevBlockTime = blockTime_ns;
-        
+        prevBlockIsKey = webmBlock->IsKey();
+
       } // end video track
       else if (trackType == AUDIO_TRACK) {
         //
