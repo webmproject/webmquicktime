@@ -193,6 +193,16 @@ pascal ComponentResult WebMImportFile(WebMImportGlobals store, const FSSpec *the
 // A better algorithm is to implement an Idling Importer
 // that can begin playing before parsing the entire file. 
 //
+// QuickTime calls:
+// NewMovieTrack()
+// NewTrackMedia()
+// SetTrackEnabled()
+// while {
+//    AddMediaSampleReference()
+//    incr to next frame
+// InsertMediaIntoTrack()
+// GetTrackDuration()
+//
 pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef, OSType dataRefType,
                                          Movie theMovie, Track targetTrack, Track *usedTrack,
                                          TimeValue atTime, TimeValue *durationAdded, 
@@ -202,8 +212,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   store->movie = theMovie;
   store->dataRef = dataRef;
   store->dataRefType = dataRefType;
-  ::Track movieVideoTrack = NULL;
-  Media movieVideoMedia;
+  //::Track movieVideoTrack = NULL;
+  //Media movieVideoMedia;
   ImageDescriptionHandle vp8DescHand = NULL;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
@@ -259,22 +269,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     dbg_printf("Segment::Load() failed.\n");
     return -1;
   }
-  
-  //
-  // WebM SegmentInfo
-  //
-  const SegmentInfo* const webmSegmentInfo = webmSegment->GetInfo();
-  const long long segmentDuration = webmSegmentInfo->GetDuration();
-  
-  //
-  // WebM Tracks
-  //
-  mkvparser::Tracks* const webmTracks = webmSegment->GetTracks();
-  enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };    // track types
 
-  // Print debug info on the WebM header, segment, and tracks information.
-  DumpWebMDebugInfo(&ebmlHeader, webmSegmentInfo, webmTracks);
-  
   const unsigned long clusterCount = webmSegment->GetCount();
   if (clusterCount == 0) {
     dbg_printf("Segment has no Clusters!\n");
@@ -283,7 +278,114 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   }
   dbg_printf("Cluster Count\t\t: %ld\n", clusterCount);
   
-  // Remember previous block.
+  
+  //
+  // WebM SegmentInfo
+  //
+  const SegmentInfo* const webmSegmentInfo = webmSegment->GetInfo();
+  const long long segmentDuration = webmSegmentInfo->GetDuration();
+  
+  
+  //
+  // WebM Tracks
+  //
+  mkvparser::Tracks* const webmTracks = webmSegment->GetTracks();
+  enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };    // track types
+
+  // Use the WebM Tracks info to create QT Track and QT Media up front.  Don't wait for first video Block object, for example.
+  unsigned long trackIndex = 0;                 // track index is 0-based
+  const unsigned long numTracks = webmTracks->GetTracksCount();
+  while (trackIndex < numTracks) {
+    const mkvparser::Track* const webmTrack = webmTracks->GetTrackByIndex(trackIndex++);
+    if (webmTrack == NULL)
+      continue;
+    unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
+    if (trackType == VIDEO_TRACK) {
+      const mkvparser::VideoTrack* const webmVideoTrack = static_cast<const mkvparser::VideoTrack* const>(webmTrack);
+      long long width = webmVideoTrack->GetWidth();
+      long long height = webmVideoTrack->GetHeight();
+      
+      // Create image description so QT can find appropriate decoder component (our VP8 decoder)
+      if (vp8DescHand == NULL) {
+        err = CreateVP8ImageDescription(width, height, &vp8DescHand);
+        if (err) return -1; //goto bail;
+      }
+      
+      // Create a QT movie track (not WebM file track), a QT media object, and enable the track.
+      if (store->movieVideoTrack == NULL) {
+        // Create a new QT video track
+        store->movieVideoTrack = NewMovieTrack(theMovie, (**vp8DescHand).width << 16, (**vp8DescHand).height << 16, kNoVolume);
+        store->trackCount++;
+
+        // Create a new QT media for the track
+        // (The media refers to the actual data samples used by the track.)
+        TimeScale timeScale = GetMovieTimeScale(theMovie);  // QT uses 600 units per second
+        store->movieVideoMedia = NewTrackMedia(store->movieVideoTrack, VideoMediaType, timeScale, dataRef, dataRefType);
+        if (err = GetMoviesError()) return -1; //goto bail;
+        dbg_printf("timeScale passed to NewTrackMedia is: %ld\n", timeScale);
+
+        // Enable the track.
+        SetTrackEnabled(store->movieVideoTrack, true);
+      } // end quicktime movie track
+    }
+    
+    if (trackType == AUDIO_TRACK) {
+      const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const mkvparser::AudioTrack* const>(webmTrack);
+
+      // Store sampling rate in component global for use by FinishAddingAudioBlocks().
+      if (store->audioSampleRate == 0) {
+        store->audioSampleRate = webmAudioTrack->GetSamplingRate();
+      }
+
+      // Create sound description so QT can find appropriate codec component for decoding the audio data.
+      if (store->audioDescHand == NULL) {
+        err = CreateAudioDescription(&store->audioDescHand, webmAudioTrack);
+        if (err) {
+          dbg_printf("WebM Import - CreateAudioDescription() Failed with %d.\n", err);
+          return -1;
+        }
+      }
+      
+      // Create a QT movie track object, a QT media object, and enable the track.
+      if (store->movieAudioTrack == NULL) {
+        // Create a new QT audio track
+        store->movieAudioTrack = NewMovieTrack(store->movie, 0, 0, kFullVolume); // pass 0 for width and height of audio track.
+        if (store->movieAudioTrack == NULL)
+          return -1;
+        
+        store->trackCount++;
+        
+        // Create a new QT media for the track    
+        long sampleRate = 0;
+        //sampleRate = GetMovieTimeScale(store->movie);
+        sampleRate = webmAudioTrack->GetSamplingRate();
+        store->movieAudioMedia = NewTrackMedia(store->movieAudioTrack, SoundMediaType, sampleRate, store->dataRef, store->dataRefType);
+        if (err = GetMoviesError())
+          return -1;
+        
+        // Enable the track.
+        SetTrackEnabled(store->movieAudioTrack, true);    
+      }
+      
+    }
+  }
+  
+
+  // other level one elements in webm:
+  // WebM Chapters ****
+  // WebM Attachments ****
+  // WebM MetaSeek ****
+  
+  // Print debug info on the WebM header, segment, and tracks information.
+  DumpWebMDebugInfo(&ebmlHeader, webmSegmentInfo, webmTracks);
+
+  
+  
+  
+  
+  
+  
+  // Remember previous block. **** move to store?
   int prevBlock = 0;
   long long prevBlockOffset = 0;
   long long prevBlockSize = 0;
@@ -323,45 +425,12 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
         // WebM Video Data
         //
         const mkvparser::VideoTrack* const webmVideoTrack = static_cast<const VideoTrack* const>(webmTrack);
-        long long width = webmVideoTrack->GetWidth();
-        long long height = webmVideoTrack->GetHeight();
-        
-#pragma mark QTStuff
-        //
-        // QuickTime movie stuff begins here...
-        //
-        // NewMovieTrack()
-        // NewTrackMedia()
-        // SetTrackEnabled()
-        // while {
-        //    AddMediaSampleReference()
-        //    incr to next frame
-        // InsertMediaIntoTrack()
-        // GetTrackDuration()
 
-        // Create image description so QT can find appropriate decoder component (our VP8 decoder)
-        if (vp8DescHand == NULL) {
-          err = CreateVP8ImageDescription(width, height, &vp8DescHand);
-          if (err) goto bail;
+        // Verify that QT Video Track has already been setup after reading mkvparser::Tracks object from level one of webm file.
+        if (store->movieVideoTrack == NULL) {
+          dbg_printf("WebM Import - Error - movieVideoTrack is null, and should have already been setup.");
         }
 
-        // If this is the first video block, then create a QT movie track (not WebM file track), a QT media object, and enable the track.
-        if (movieVideoTrack == NULL) {
-
-          // Create a new QT video track
-          movieVideoTrack = NewMovieTrack(theMovie, (**vp8DescHand).width << 16, (**vp8DescHand).height << 16, kNoVolume);
-          store->trackCount++;
-
-          // Create a new QT media for the track
-          // (The media refers to the actual data samples used by the track.)
-          TimeScale timeScale = GetMovieTimeScale(theMovie);  // QT uses 600 units per second
-          movieVideoMedia = NewTrackMedia(movieVideoTrack, VideoMediaType, timeScale, dataRef, dataRefType);
-          if (err = GetMoviesError()) goto bail;
-          dbg_printf("timeScale passed to NewTrackMedia is: %ld\n", timeScale);
-          
-          // Enable the track.
-          SetTrackEnabled(movieVideoTrack, true);
-        } // end quicktime movie track
  
         // If we have a previous block (i.e. this is not the first block in the file), 
         // then calculate duration and add the previous block.
@@ -384,7 +453,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
           // Rather, it defines references to sample data contained elswhere. Note that one reference may refer to more
           // than one sample--all the samples described by a reference must be the same size. This function does not update the movie data
           // as part of the add operation therefore you do not have to call BeginMediaEdits before calling AddMediaSampleReference.          
-          err = AddMediaSampleReference(movieVideoMedia, 
+          err = AddMediaSampleReference(store->movieVideoMedia, 
                                         prevBlockOffset,                          // offset into the data file
                                         prevBlockSize,                            // number of bytes of sample data to be identified by ref
                                         frameDuration,                            // duration of each sample in the reference (calculated duration of prevBlock)
@@ -432,7 +501,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     short sampleFlags = 0;
     if (!prevBlockIsKey)
       sampleFlags |= mediaSampleNotSync;
-    err = AddMediaSampleReference(movieVideoMedia,
+    err = AddMediaSampleReference(store->movieVideoMedia,
                                   prevBlockOffset,                          // offset into the data file
                                   prevBlockSize,                            // number of bytes of sample data to be identified by ref
                                   frameDuration,                            // duration of each sample in the reference (calculated duration of prevBlock)
@@ -450,9 +519,9 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   
   // Insert the added media into the track
   // Time value specifying where the segment is to be inserted in the movie's time scale, -1 to add the media data to the end of the track
-  mediaDuration = GetMediaDuration(movieVideoMedia);
+  mediaDuration = GetMediaDuration(store->movieVideoMedia);
   if (mediaDuration > 0) {
-    err = InsertMediaIntoTrack(movieVideoTrack, atTime, 0, mediaDuration, fixed1);                // VIDEO
+    err = InsertMediaIntoTrack(store->movieVideoTrack, atTime, 0, mediaDuration, fixed1);                // VIDEO
     if (err) goto bail;
   }
 
@@ -463,18 +532,18 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   }
 
   // Return the duration added
-  if (movieVideoTrack != NULL)
-    *durationAdded = GetTrackDuration(movieVideoTrack) - atTime;
+  if (store->movieVideoTrack != NULL)
+    *durationAdded = GetTrackDuration(store->movieVideoTrack) - atTime;
   else
     *durationAdded = GetTrackDuration(store->movieAudioTrack) - atTime;
 
 bail:
   if (err)
     dbg_printf("[WebM Import] - BAIL FAIL !!! ", err);
-	if (movieVideoTrack) { // QT videoTrack
+	if (store->movieVideoTrack) { // QT videoTrack
 		if (err) {
-			DisposeMovieTrack(movieVideoTrack);
-			movieVideoTrack = NULL;
+			DisposeMovieTrack(store->movieVideoTrack);
+			store->movieVideoTrack = NULL;
 		} else {
 			// Set the outFlags to reflect what was done.
 			*outFlags |= movieImportCreateTrack;
@@ -493,7 +562,7 @@ bail:
 	// needs to set this parameter only if you operate on a single track or if you create a new track. If you modify more
 	// than one track, leave the field referred to by this parameter unchanged. 
 	if (usedTrack && store->trackCount < 2)
-		*usedTrack = movieVideoTrack ? movieVideoTrack : store->movieAudioTrack;
+		*usedTrack = store->movieVideoTrack ? store->movieVideoTrack : store->movieAudioTrack;
 
   dbg_printf("[WebM Import]  << [%08lx] :: FromDataRef(%d, %ld)\n", (UInt32) store, targetTrack != NULL, atTime);
 
@@ -680,42 +749,9 @@ OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, 
 OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack)
 {
   OSErr err = noErr;
-
-  if (store->audioSampleRate == 0) {
-    // Store sampling rate in component global for use by FinishAddingAudioBlocks().
-    store->audioSampleRate = webmAudioTrack->GetSamplingRate();
-  }
   
-  //const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const mkvparser::AudioTrack* const>(webmTrack);
-  //dbg_printf("\t\tAudio Track Sampling Rate: %7.3f\n", webmAudioTrack->GetSamplingRate());
-  //dbg_printf("\t\tAudio Track Channels: %d\n", webmAudioTrack->GetChannels());
-  //dbg_printf("\t\tAudio Track BitDepth: %lld\n", webmAudioTrack->GetBitDepth());
-
-  // Create sound description so QT can find appropriate codec component for decoding the audio data.
-  if (store->audioDescHand == NULL) {
-    err = CreateAudioDescription(&store->audioDescHand, webmAudioTrack);
-    if (err) {
-      dbg_printf("WebM Import - CreateAudioDescription() Failed with %d.\n", err);
-      goto bail;
-    }
-  }
-  
-  // If this is the first audio block, then create a QT movie track object, a QT media object, and enable the track.
   if (store->movieAudioTrack == NULL) {
-    // Create a new QT audio track
-    store->movieAudioTrack = NewMovieTrack(store->movie, 0, 0, kFullVolume); // pass 0 for width and height of audio track.
-    if (store->movieAudioTrack == NULL) goto bail;
-    store->trackCount++;
-    
-    // Create a new QT media for the track    
-    long sampleRate = 0;
-    //sampleRate = GetMovieTimeScale(store->movie);
-    sampleRate = webmAudioTrack->GetSamplingRate();
-    store->movieAudioMedia = NewTrackMedia(store->movieAudioTrack, SoundMediaType, sampleRate, store->dataRef, store->dataRefType);
-    if (err = GetMoviesError()) goto bail;
-
-    // Enable the track.
-    SetTrackEnabled(store->movieAudioTrack, true);    
+    dbg_printf("Error - movieAudioTrack should have already been created.\n");
   }
 
 #if USE_SAMPLE_MAP
