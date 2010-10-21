@@ -50,6 +50,7 @@ typedef struct {
   SampleTimeVec videoTimes;
   SampleRefVec audioSamples;
   SampleTimeVec audioTimes;
+  long videoCount;                            // total video blocks added to Media
   long audioCount;                            // total audio blocks added to Media
   long trackCount;                            // number of tracks added to Movie
 } WebMImportGlobalsRec, *WebMImportGlobals;
@@ -711,7 +712,6 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   //
   // Calculate duration value for each sample
   //
-
   long numSamples = store->audioSamples.size();
   long numTimes = store->audioTimes.size();
   if (numSamples != numTimes) {  
@@ -720,29 +720,23 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   }
   dbg_printf("WebM Import - FinishAddingAudioBlocks - numSamples = %d, numTimes = %d, lastTime_ns = %lld\n", numSamples, numTimes, lastTime_ns);
 
-  //SampleRefVec::iterator iter;
-  //SampleTimeVec::iterator timeIter;
-  //for (iter = store->samples.begin(); iter != store->samples.end(); ++iter) {
   long long blockDuration_ns = 0;
   for (long i = 0; i < numSamples; ++i) {
     if (i+1 < numSamples)
       blockDuration_ns = (store->audioTimes[i+1] - store->audioTimes[i]);
-    else {
+    else
       blockDuration_ns = (lastTime_ns - store->audioTimes[i]);
-      if (blockDuration_ns < 0)
-        blockDuration_ns = 0; // catch invalid duration
-    }
+    if (blockDuration_ns < 0)
+      blockDuration_ns = 0; // catch invalid duration
+
     if (store->audioTimes[i] > lastTime_ns) {
       dbg_printf("WebM Import - Bogus webm file: Audio Block with timestamp > segment duration.\n");
     }
     TimeValue blockDuration_qt = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * mediaTimeScale);
     store->audioSamples[i].durationPerSample = blockDuration_qt;  // TimeValue, count of units
-
-    // accumulate duration of section in media time scale
-    accSectionDuration_qt += blockDuration_qt;
+    accSectionDuration_qt += blockDuration_qt;    // accumulate duration of section in media time scale
     
-    dbg_printf("WebM Import - FinishAddingAudioBlocks - i = %d, Time = %lld, Duration = %ld\n", i, store->audioTimes[i], store->audioSamples[i].durationPerSample);
-    dbg_printf("WebM Import - FinishAddingAudioBlocks - (blockDuration_ns = %lld, sampleRate = %7.3f\n", blockDuration_ns, store->audioSampleRate);
+    dbg_printf("\t\t\t i=%d, Time=%lld, Duration_ns=%lld, Duration_qt=%ld, mediaTimeScale=%ld\n", i, store->audioTimes[i], blockDuration_ns, store->audioSamples[i].durationPerSample, mediaTimeScale);
     // Alternatively, we can call AddMediaSampleReference() here inside loop, for each block. Supposedly more efficient to call it once after loop, specifying all blocks.
   }
 
@@ -759,7 +753,7 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   }
 
   // Insert Media into Track
-  // A "section" belows is the collection of sample references corresponding to the blocks of one cluster.
+  // A "section" below is the collection of sample references corresponding to the blocks of one cluster.
  
   long long sectionStart_ns, sectionEnd_ns, sectionDuration_ns = 0;
   TimeValue sectionStart_qt, sectionDuration_qt = 0;
@@ -777,8 +771,10 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   err = InsertMediaIntoTrack(store->movieAudioTrack, trackStart, mediaTime, mediaDuration, fixed1);
   dbg_printf("InsertMediaIntoTrack(audioTrack, trackStart=%d, mediaTime=%d, mediaDuration=%d,)\n", trackStart, mediaTime, mediaDuration);
 
-  // Clean up cache of sample referencs
-  // delete sample refs and times after they have been added to quicktime (or maintain ptr into vector)
+  //
+  // Clean up cache
+  // Delete sample refs and times after they have been added to quicktime (or maintain ptr into vector)
+  //
   store->audioSamples.erase(store->audioSamples.begin(), store->audioSamples.end());
   store->audioTimes.erase(store->audioTimes.begin(), store->audioTimes.end());
   
@@ -813,9 +809,86 @@ OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
 
 
 //--------------------------------------------------------------------------------
+//  FinishAddingVideoBlocks
+//  Add a section of video sample references to the quicktime media.
+//  The section may be all blocks in one cluser, or all blocks within some arbitrary time duration (like every 5 seconds).
+//
 OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
 {
+  OSErr err = noErr;
+  TimeValue accSectionDuration_qt = 0;
+  TimeScale mediaTimeScale = GetMovieTimeScale(store->movie); // video
   
+  //
+  // Calculate duration value for each sample in section
+  //
+  long numSamples = store->videoSamples.size();
+  long numTimes = store->videoTimes.size();
+  if (numSamples != numTimes) {
+    dbg_printf("WebM Import - FinishAddingVideoBlocks - ERROR - parallel vectors with different sizes. numSamples=%d, numTimes=%d\n", numSamples, numTimes);
+    // try to recover ****
+  }
+  dbg_printf("WebM Import - FinishAddingVideoBlocks - numSamples = %d, numTimes = %d, lastTime_ns = %lld\n", numSamples, numTimes, lastTime_ns);
+  
+  long long blockDuration_ns = 0;
+  for (long i = 0; i < numSamples; ++i) {
+  if (i+1 < numSamples)
+    blockDuration_ns = (store->videoTimes[i+1] - store->videoTimes[i]);
+  else 
+    blockDuration_ns = (lastTime_ns - store->videoTimes[i]);
+  if (blockDuration_ns < 0)
+    blockDuration_ns = 0; // catch invalid duration
+
+    if (store->videoTimes[i] > lastTime_ns) {
+      dbg_printf("WebM Import - Bogus webm file: Video Block with timestamp > segment duration.\n");
+    }
+    TimeValue blockDuration_qt = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * mediaTimeScale);
+    store->videoSamples[i].durationPerSample = blockDuration_qt;  // TimeValue, count of units, in media's time scale.
+    accSectionDuration_qt += blockDuration_qt;    // accumulate duration of section in media time scale
+
+    dbg_printf("\t\t\t i=%d, Time=%lld, Duration_ns=%lld, Duration_qt=%ld, mediaTimeScale=%ld\n", i, store->audioTimes[i], blockDuration_ns, store->audioSamples[i].durationPerSample, mediaTimeScale);
+    // Alternatively, we can call AddMediaSampleReference() here inside loop, for each block. Supposedly more efficient to call it once after loop, specifying all blocks.    
+  }
+
+  //
+  // Add array of sample references to Media all at once
+  //
+  if (numSamples > 0) {
+    SampleReferencePtr sampleRefs = &store->videoSamples.front(); // &store->videoSamples[0];
+    err = AddMediaSampleReferences(store->movieVideoMedia, (SampleDescriptionHandle)store->vp8DescHand, numSamples, sampleRefs, NULL);
+    if (err) {
+      dbg_printf("WebM Import - FinishAddingVideoBlocks - AddMediaSampleReferencs() FAILED with err = %d\n", err);
+    }
+    store->videoCount += numSamples;
+  }
+
+  //
+  // Insert Media into Track
+  //
+  long long sectionStart_ns, sectionEnd_ns, sectionDuration_ns = 0;
+  TimeValue sectionStart_qt, sectionDuration_qt = 0;
+
+  sectionStart_ns = store->videoTimes[0]; // or if we dont delete the refs, use store->audioTimes[sectionStartIndex];
+  sectionStart_qt = static_cast<TimeValue>(double(sectionStart_ns) / ns_per_sec * mediaTimeScale);
+  sectionEnd_ns = lastTime_ns;  // arg passed in
+  sectionDuration_ns = sectionEnd_ns - sectionStart_ns;
+  sectionDuration_qt = static_cast<TimeValue>(double(sectionDuration_ns) / ns_per_sec * mediaTimeScale);
+  if (sectionDuration_qt != accSectionDuration_qt)
+    dbg_printf("FinishAddingVideoBlocks duration mismatch.  accSecDur_qt=%ld != secDur_qt=%ld\n", accSectionDuration_qt, sectionDuration_qt);
+  TimeValue trackStart = -1;  // -1 means insert the media at the END of the track
+  TimeValue mediaTime = sectionStart_qt; // starting point of media section to insert, expressed in media's time scale.
+  TimeValue mediaDuration = sectionDuration_qt;  // duration of media section, expressed in media's time scale. 
+  err = InsertMediaIntoTrack(store->movieVideoTrack, trackStart, mediaTime, mediaDuration, fixed1);
+  dbg_printf("InsertMediaIntoTrack(videoTrack, trackStart=%d, mediaTime=%d, mediaDuration=%d,)\n", trackStart, mediaTime, mediaDuration);
+  
+  //
+  // Clean up cache
+  // Delete sample refs and times after they have been added to quicktime (or maintain ptr into vector)
+  //
+  store->videoSamples.erase(store->videoSamples.begin(), store->videoSamples.end());
+  store->videoTimes.erase(store->videoTimes.begin(), store->videoTimes.end());
+  
+  return err;
 }
 
 
