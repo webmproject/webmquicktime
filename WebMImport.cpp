@@ -38,7 +38,7 @@ typedef struct {
   ::Track movieVideoTrack, movieAudioTrack;
   ::Media movieVideoMedia, movieAudioMedia;
   ::Movie movie;
-  ImageDescriptionHandle videoDescHand;
+  ImageDescriptionHandle vp8DescHand; //videoDescHand;
   SoundDescriptionHandle audioDescHand;
   long audioSampleRate;
   Handle dataRef;
@@ -46,7 +46,8 @@ typedef struct {
   long  dataHOffset;
   long  fileSize;
   ComponentInstance dataHandler;
-  //SampleRefVec videoSamples;
+  SampleRefVec videoSamples;
+  SampleTimeVec videoTimes;
   SampleRefVec audioSamples;
   SampleTimeVec audioTimes;
   long audioCount;                            // total audio blocks added to Media
@@ -54,6 +55,7 @@ typedef struct {
 } WebMImportGlobalsRec, *WebMImportGlobals;
 
 static const long long ns_per_sec = 1000000000;
+enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };    // track types
 
 #define MOVIEIMPORT_BASENAME() WebMImport
 #define MOVIEIMPORT_GLOBALS() WebMImportGlobals storage
@@ -79,10 +81,13 @@ extern "C" {
 
 OSErr CreateVP8ImageDescription(long width, long height, ImageDescriptionHandle *descOut);
 OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::AudioTrack* webmAudioTrack);
+OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, Handle* cookie);
+OSErr AddCluster(WebMImportGlobals store, mkvparser::Cluster* webmCluster, mkvparser::Tracks* webmTracks, long long lastTime_ns);
 OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack);
 OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns);
+OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::VideoTrack* webmVideoTrack);
+OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns);
 void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::SegmentInfo* webmSegmentInfo, const mkvparser::Tracks* webmTracks);
-OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, Handle* cookie);
 
 
 //--------------------------------------------------------------------------------
@@ -212,14 +217,14 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   store->movie = theMovie;
   store->dataRef = dataRef;
   store->dataRefType = dataRefType;
-  //::Track movieVideoTrack = NULL;
-  //Media movieVideoMedia;
-  ImageDescriptionHandle vp8DescHand = NULL;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
   TimeValue mediaDuration, audioMediaDuration;
-  store->audioDescHand = NULL; // leak?
-
+  store->audioDescHand = NULL;
+  store->vp8DescHand = NULL;
+  mkvparser::Cluster* webmCluster = NULL;
+  mkvparser::Cluster* nextCluster = NULL;
+  
   dbg_printf("[WebM Import]  >> [%08lx] :: FromDataRef(dataRef = %08lx, atTime = %ld)\n", (UInt32) store, (UInt32) dataRef, atTime); // targetTrack != NULL
 
   // The movieImportMustUseTrack flag indicates that we must use an existing track.
@@ -233,7 +238,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   int status = reader.Open(dataRef, dataRefType);
   if (status != 0) {
     dbg_printf("[WebM Import] MkvReaderQT::Open() Error, status = %d\n", status);
-    return -1;
+    return invalidDataRef;
   }
   
   long long totalLength = 0;
@@ -270,13 +275,13 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     return -1;
   }
 
-  const unsigned long clusterCount = webmSegment->GetCount();
-  if (clusterCount == 0) {
-    dbg_printf("Segment has no Clusters!\n");
+  const unsigned long numClusters = webmSegment->GetCount();
+  if (numClusters == 0) {
+    dbg_printf("WebM Import - Segment has no Clusters!\n");
     delete webmSegment;
     return -1;
   }
-  dbg_printf("Cluster Count\t\t: %ld\n", clusterCount);
+  dbg_printf("Number of Clusters: %ld\n", numClusters);
   
   
   //
@@ -290,7 +295,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // WebM Tracks
   //
   mkvparser::Tracks* const webmTracks = webmSegment->GetTracks();
-  enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };    // track types
+//  enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };    // track types
 
   // Use the WebM Tracks info to create QT Track and QT Media up front.  Don't wait for first video Block object, for example.
   unsigned long trackIndex = 0;                 // track index is 0-based
@@ -306,15 +311,15 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
       long long height = webmVideoTrack->GetHeight();
       
       // Create image description so QT can find appropriate decoder component (our VP8 decoder)
-      if (vp8DescHand == NULL) {
-        err = CreateVP8ImageDescription(width, height, &vp8DescHand);
+      if (store->vp8DescHand == NULL) {
+        err = CreateVP8ImageDescription(width, height, &store->vp8DescHand);
         if (err) return -1; //goto bail;
       }
       
       // Create a QT movie track (not WebM file track), a QT media object, and enable the track.
       if (store->movieVideoTrack == NULL) {
         // Create a new QT video track
-        store->movieVideoTrack = NewMovieTrack(theMovie, (**vp8DescHand).width << 16, (**vp8DescHand).height << 16, kNoVolume);
+        store->movieVideoTrack = NewMovieTrack(theMovie, (**store->vp8DescHand).width << 16, (**store->vp8DescHand).height << 16, kNoVolume);
         store->trackCount++;
 
         // Create a new QT media for the track
@@ -370,7 +375,6 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     }
   }
   
-
   // other level one elements in webm:
   // WebM Chapters ****
   // WebM Attachments ****
@@ -379,190 +383,57 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // Print debug info on the WebM header, segment, and tracks information.
   DumpWebMDebugInfo(&ebmlHeader, webmSegmentInfo, webmTracks);
 
-  
-  
-  
-  
-  
-  
-  // Remember previous block. **** move to store?
-  int prevBlock = 0;
-  long long prevBlockOffset = 0;
-  long long prevBlockSize = 0;
-  long long prevBlockTime = 0;
-  bool prevBlockIsKey = false;
+  // if no tracks, then nothing to do here...
+  if (store->trackCount == 0)
+    return noErr;
 
-  //
-  //  WebM Cluster
-  //
-  mkvparser::Cluster* webmCluster = webmSegment->GetFirst();
-  while ((webmCluster != NULL) && !webmCluster->EOS()) 
-  {
-    const long long timeCode = webmCluster->GetTimeCode();
-    const long long time_ns = webmCluster->GetTime();
-    dbg_printf("TIME - Cluster Time: %lld\n", time_ns); // ****
+  
+  if (inFlags & movieImportWithIdle) {
+    // IDLING IMPORTER
+    dbg_printf("IDLING IMPORTER\n");
+
+    // create placeholder track
+    // ****
+
+    // 
+    // WebM Cluster - add one cluster
+    //
+    webmCluster = webmSegment->GetFirst();
+    err = AddCluster(store, webmCluster, webmTracks, 999999);  // need tracks object to get track for each block
+    
+    if (numClusters == 1) {
+      *outFlags |= movieImportResultComplete;
+      // AddSamplesToTrack() already done inside AddCluster() ? 
+    }
+    else
+      *outFlags |= movieImportResultNeedIdles;
+    
+    return noErr;
+  }
+  else {
+    // NON-IDLING IMPORTER
+    dbg_printf("NON-IDLING IMPORTER\n");
     
     //
-    //  WebM Block
+    //  WebM Cluster - Loop for each cluster in the file
     //
-    const BlockEntry* webmBlockEntry = webmCluster->GetFirst();
-    while ((webmBlockEntry != NULL) && (!webmBlockEntry->EOS()))
-    {
-      const mkvparser::Block* const webmBlock = webmBlockEntry->GetBlock();
+    long long lastTime_ns = 0;
+    webmCluster = webmSegment->GetFirst();
+    while ((webmCluster != NULL) && !webmCluster->EOS()) {        // or for (i = 0; i < numClusters; i++) {
+      // calculate timestamp of end of last block in this cluster, as timestamp of first block in next cluster (or end of file).
+      nextCluster = webmSegment->GetNext(webmCluster); // fetch next cluster to get its timestamp
+      if ((nextCluster != NULL) && !nextCluster->EOS())
+        lastTime_ns = nextCluster->GetTime();
+      else
+        lastTime_ns = segmentDuration;  // webmCluster is last cluster in segment, so pass in duration of whole segment.
 
-      const unsigned long trackNum = webmBlock->GetTrackNumber(); // block's track number (see 
-      const mkvparser::Track* webmTrack = webmTracks->GetTrackByNumber(trackNum);
-      const unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
-      const long blockSize = webmBlock->GetSize();  // webmBlock->m_size;
-      const long long blockTime_ns = webmBlock->GetTime(webmCluster);
-      // dbg_printf("libwebm block->GetSize=%ld, block->m_size=%lld\n", webmBlock->GetSize(), webmBlock->m_size);   // GetSize() is size of video data, m_size is size of WebM block (includes some header)
-      // dbg_printf("libwebm block->GetOffset=%ld, block->m_start=%lld\n", webmBlock->GetOffset(), webmBlock->m_start);
-      // dbg_printf("TIME - Block Time: %lld\n", blockTime_ns);
-      dbg_printf("BLOCK\t\t:%s,%15ld,%s,%15lld\n", (trackType == VIDEO_TRACK) ? "V" : "A", blockSize, webmBlock->IsKey() ? "I" : "P", blockTime_ns);
+      // Add Cluster to quicktime movie.
+      AddCluster(store, webmCluster, webmTracks, lastTime_ns);
       
-      if (trackType == VIDEO_TRACK) {
-        //
-        // WebM Video Data
-        //
-        const mkvparser::VideoTrack* const webmVideoTrack = static_cast<const VideoTrack* const>(webmTrack);
-
-        // Verify that QT Video Track has already been setup after reading mkvparser::Tracks object from level one of webm file.
-        if (store->movieVideoTrack == NULL) {
-          dbg_printf("WebM Import - Error - movieVideoTrack is null, and should have already been setup.");
-        }
-
- 
-        // If we have a previous block (i.e. this is not the first block in the file), 
-        // then calculate duration and add the previous block.
-        // (We can't look ahead to next block because it may be in a different cluster.)
-        if (prevBlock != 0) {
-          // Calculate duration of previous block
-          long long blockDuration_ns = (blockTime_ns - prevBlockTime);    // ns, or (nextFrameTime - frameTime)
-          // Convert from ns to QT time base units
-          TimeValue frameDuration = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * GetMovieTimeScale(theMovie));
-          dbg_printf("TIME - block duration (ns)\t: %ld\n", blockDuration_ns);
-          dbg_printf("TIME - QT frame duration\t: %ld\n", frameDuration);
-          // Fix seeking (scrubbing) in QT Player by setting sample flag.
-          // If frame is not a keyframe, then sample is not a sync sample (eg. is frame differenced) so set mediaSampleNotSync flag.
-          short sampleFlags = 0;
-          if (!prevBlockIsKey)
-            sampleFlags |= mediaSampleNotSync;
-
-          // Add the media sample
-          // AddMediaSampleReference does not add sample data to the file or device that contains a media.
-          // Rather, it defines references to sample data contained elswhere. Note that one reference may refer to more
-          // than one sample--all the samples described by a reference must be the same size. This function does not update the movie data
-          // as part of the add operation therefore you do not have to call BeginMediaEdits before calling AddMediaSampleReference.          
-          err = AddMediaSampleReference(store->movieVideoMedia, 
-                                        prevBlockOffset,                          // offset into the data file
-                                        prevBlockSize,                            // number of bytes of sample data to be identified by ref
-                                        frameDuration,                            // duration of each sample in the reference (calculated duration of prevBlock)
-                                        (SampleDescriptionHandle)vp8DescHand,     // Handle to a sample description
-                                        1,                                        // number of samples contained in the reference
-                                        sampleFlags,                              // flags
-                                        NULL);                                    // returns time where reference was inserted, NULL to ignore
-          if (err) goto bail;
-          dbg_printf("AddMediaSampleReference(offset=%lld, size=%lld, duration=%ld)\n", prevBlockOffset, prevBlockSize, frameDuration);
-        }
-
-        // save current block info for next iteration
-        prevBlock = 1;
-        prevBlockOffset = webmBlock->GetOffset();   // Block::GetOffset() is offset to vp8 frame data, Block::m_start is offset to MKV Block.
-        prevBlockSize = webmBlock->GetSize();       // note: webmBlock->m_size is 4 bytes less than webmBlock->GetSize()
-        prevBlockTime = blockTime_ns;
-        prevBlockIsKey = webmBlock->IsKey();
-
-      } // end video track
-      else if (trackType == AUDIO_TRACK) {
-        //
-        // WebM Audio Data
-        //
-        const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const mkvparser::AudioTrack* const>(webmTrack);
-        err = AddAudioBlock(store, webmBlock, blockTime_ns, webmAudioTrack);
-        if (err) goto bail;
-      }
-      
-      // Advance to next webm Block within this Cluster.
-      webmBlockEntry = webmCluster->GetNext(webmBlockEntry);
-    } // end block loop
-    
-    // Advance to next webm Cluster
-    webmCluster = webmSegment->GetNext(webmCluster);
-  } // end cluster loop
- 
-  // Add the last video block in the file now, using the "prevBlock" fields stored above. 
-  if (prevBlock != 0) {
-    // Calculate duration of last block by subtracting time from duration of entire segment
-    long long blockDuration_ns = (segmentDuration - prevBlockTime);    // ns, or (nextFrameTime - frameTime)
-    // Convert from ns to QT time base units
-    TimeValue frameDuration = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * GetMovieTimeScale(theMovie));
-    dbg_printf("TIME - block duration: %ld\n", blockDuration_ns);
-    dbg_printf("TIME - QT frame duration: %ld\n", frameDuration);
-    short sampleFlags = 0;
-    if (!prevBlockIsKey)
-      sampleFlags |= mediaSampleNotSync;
-    err = AddMediaSampleReference(store->movieVideoMedia,
-                                  prevBlockOffset,                          // offset into the data file
-                                  prevBlockSize,                            // number of bytes of sample data to be identified by ref
-                                  frameDuration,                            // duration of each sample in the reference (calculated duration of prevBlock)
-                                  (SampleDescriptionHandle)vp8DescHand,     // Handle to a sample description
-                                  1,                                        // number of samples contained in the reference
-                                  sampleFlags,                              // flags
-                                  NULL);                                    // returns time where reference was inserted, NULL to ignore
-    if (err) goto bail;
+      // Advance to next webm Cluster
+      webmCluster = nextCluster;  // webmSegment->GetNext(webmCluster);
+    }
   }
-  
-  //
-  // Add audio samples to media
-  //
-  err = FinishAddingAudioBlocks(store, segmentDuration);   // webmSegmentInfo->GetDuration();
-  
-  // Insert the added media into the track
-  // Time value specifying where the segment is to be inserted in the movie's time scale, -1 to add the media data to the end of the track
-  mediaDuration = GetMediaDuration(store->movieVideoMedia);
-  if (mediaDuration > 0) {
-    err = InsertMediaIntoTrack(store->movieVideoTrack, atTime, 0, mediaDuration, fixed1);                // VIDEO
-    if (err) goto bail;
-  }
-
-  audioMediaDuration = GetMediaDuration(store->movieAudioMedia);
-  if (store->audioCount > 0) {
-    err = InsertMediaIntoTrack(store->movieAudioTrack, atTime, 0, audioMediaDuration, fixed1);    // AUDIO
-    if (err) goto bail;
-  }
-
-  // Return the duration added
-  if (store->movieVideoTrack != NULL)
-    *durationAdded = GetTrackDuration(store->movieVideoTrack) - atTime;
-  else
-    *durationAdded = GetTrackDuration(store->movieAudioTrack) - atTime;
-
-bail:
-  if (err)
-    dbg_printf("[WebM Import] - BAIL FAIL !!! ", err);
-	if (store->movieVideoTrack) { // QT videoTrack
-		if (err) {
-			DisposeMovieTrack(store->movieVideoTrack);
-			store->movieVideoTrack = NULL;
-		} else {
-			// Set the outFlags to reflect what was done.
-			*outFlags |= movieImportCreateTrack;
-		}
-	}
-  if (vp8DescHand) {
-    DisposeHandle((Handle)vp8DescHand);
-    vp8DescHand = NULL;
-  }
-  
-	// Remember to close what you open.
-	if (dataHandler)
-		CloseComponent(dataHandler);
-  
-	// Return the track identifier of the track that received the imported data in the usedTrack pointer. Your component
-	// needs to set this parameter only if you operate on a single track or if you create a new track. If you modify more
-	// than one track, leave the field referred to by this parameter unchanged. 
-	if (usedTrack && store->trackCount < 2)
-		*usedTrack = store->movieVideoTrack ? store->movieVideoTrack : store->movieAudioTrack;
 
   dbg_printf("[WebM Import]  << [%08lx] :: FromDataRef(%d, %ld)\n", (UInt32) store, targetTrack != NULL, atTime);
 
@@ -583,6 +454,58 @@ pascal ComponentResult WebMImportGetMIMETypeList(WebMImportGlobals store, QTAtom
 // MovieImportValidate
 // MovieImportValidateDataRef
 // MovieImportRegister
+
+
+//--------------------------------------------------------------------------------
+OSErr AddCluster(WebMImportGlobals store, mkvparser::Cluster* webmCluster, mkvparser::Tracks* webmTracks, long long lastTime_ns)
+{
+  OSErr err = noErr;
+
+  const long long timeCode = webmCluster->GetTimeCode();
+  const long long time_ns = webmCluster->GetTime();
+  dbg_printf("WebM Import - AddCluster() \n");
+  dbg_printf("TIME - Cluster Time: %lld\n", time_ns); // ****
+  
+  // Loop for each Block in Cluster
+  const mkvparser::BlockEntry* webmBlockEntry = webmCluster->GetFirst();
+  while ((webmBlockEntry != NULL) && (!webmBlockEntry->EOS()))
+  {
+    //
+    //  WebM Block
+    //
+    
+    const mkvparser::Block* const webmBlock = webmBlockEntry->GetBlock();
+    const long long blockTime_ns = webmBlock->GetTime(webmCluster);
+
+    const unsigned long trackNum = webmBlock->GetTrackNumber(); // block's track number (see 
+    const mkvparser::Track* webmTrack = webmTracks->GetTrackByNumber(trackNum);
+    const unsigned long trackType = static_cast<unsigned long>(webmTrack->GetType());
+    if (trackType == VIDEO_TRACK) {
+      //
+      // WebM Video Data
+      //
+      const mkvparser::VideoTrack* const webmVideoTrack = static_cast<const mkvparser::VideoTrack* const>(webmTrack);
+      err = AddVideoBlock(store, webmBlock, blockTime_ns, webmVideoTrack);
+    } // end video track
+    else if (trackType == AUDIO_TRACK) {
+      //
+      // WebM Audio Data
+      //
+      const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const mkvparser::AudioTrack* const>(webmTrack);
+      err = AddAudioBlock(store, webmBlock, blockTime_ns, webmAudioTrack);
+    }
+
+    // Advance to next webm Block within this Cluster.
+    webmBlockEntry = webmCluster->GetNext(webmBlockEntry);
+  } // end block loop
+  
+  FinishAddingAudioBlocks(store, lastTime_ns);
+  FinishAddingVideoBlocks(store, lastTime_ns);    // or AddSamplesToTrack() for video, or make it general and pass in audio or video media, etc.
+
+  // loadState = kMovieLoadStatePlayable;
+
+  return err;
+}
 
 
 //--------------------------------------------------------------------------------
@@ -660,8 +583,8 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
   err = QTSoundDescriptionCreate(&asbd,     // description of the format
                                  NULL,      // AudioChannelLayout, NULL if there isn't one
                                  0,         // ByteCount, size of audio channel layout, (0 if above is NULL)
-                                 (void*)cookie,      // magic cookie?
-                                 cookieSize,         // magic cookie size?
+                                 (void*)cookie,      // magic cookie - ptr to qt atoms containing Vorbis codec private data, or NULL.
+                                 cookieSize,         // magic cookie size - size of data pointed to by cookie arg, or 0 if NULL.
                                  kQTSoundDescriptionKind_Movie_LowestPossibleVersion,   // QTSoundDescriptionKind
                                  &descHand);     // out, sound description
   if (err == noErr) {
@@ -744,18 +667,14 @@ OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, 
 
 //--------------------------------------------------------------------------------
 //  AddAudioBlock()
-//  Add an audio block reference to list. 
+//  Add one video block to cache of sample references. 
+//  Call this for each block in a section (maybe a cluster) to collect sample references first, 
+//  and then call AddMediaSampleReferences() later for the section, or once at the end of file.
 //
 OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack)
 {
   OSErr err = noErr;
-  
-  if (store->movieAudioTrack == NULL) {
-    dbg_printf("Error - movieAudioTrack should have already been created.\n");
-  }
 
-#if USE_SAMPLE_MAP
-  // Collect sample references first, and then call AddMediaSampleReferences() once at the end.
   SampleReferencePtr srp;
   srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
   srp->dataOffset = webmBlock->GetOffset();
@@ -763,40 +682,31 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
   srp->durationPerSample = 0;               // need to calculate this later for all samples.
   srp->numberOfSamples = 1;
   srp->sampleFlags = 0; // ?
-  // calculate duration of previous sample (tail of list), set duration, add new sample
-  // Or just add it now, then later loop through and calc duration of each one on the fly (next->time - this->time)
   
-  //store->audioSamples.insert(make_pair(t, srp));  // alternatively, use stl multimap to ensure sort order by time.  Not contiguous though, so can't add all samples at once.
   store->audioSamples.push_back(*srp);
   store->audioTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
   
   dbg_printf("Audio Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
-  
-#else  
-  // Add the media sample
-  err = AddMediaSampleReference(store->movieAudioMedia, webmBlock->GetOffset(), webmBlock->GetSize(), 0, (SampleDescriptionHandle)store->audioDescHand, 1, 0, NULL);
-  if (err) goto bail;
-  dbg_printf("AUDIO AddMediaSampleReference(offset=%lld, size=%lld, duration=%ld)\n", webmBlock->GetOffset(), webmBlock->GetSize(), 0);
-#endif
-  
-  return noErr;
-
-bail:
-  dbg_printf("WebM Import - AddAudioBlock() Failed. \n");
   return err;
 }
 
 
 //--------------------------------------------------------------------------------
 //  FinishAddingAudioBlocks
-// Add the sample references to the quicktime media.  
+// Add some audio sample references to the quicktime media.  
 // The argument lastTime_ns will be timestamp of next sample that is not in store->audioSamples, or it will be set to duration of entire movie.
-// Assume that sample references for all audio blocks have already been added to samples list store->audioSamples.
+// Assume that sample references for a section of audio blocks have already been added to samples list store->audioSamples.
+// This "section" may be all blocks in one cluser, or all blocks within some arbitrary time duration (like every 5 seconds). 
 //
 OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
 {
   OSErr err = noErr;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
+  TimeValue accSectionDuration_qt = 0;
+
+  // Note: (*store->audioDescHand)->sampleRate is of type UnsignedFixed (not long, not float or double)
+  TimeScale mediaTimeScale = store->audioSampleRate;  // audio
+  // TimeScale mediaTimeScale = GetMovieTimeScale(store->movie)); // video
 
   //
   // Calculate duration value for each sample
@@ -825,19 +735,19 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
     if (store->audioTimes[i] > lastTime_ns) {
       dbg_printf("WebM Import - Bogus webm file: Audio Block with timestamp > segment duration.\n");
     }
-    //SoundDescriptionHandle sdh = store->audioDescHand;
-    //double sampleRate = (*sdh)->sampleRate; // Note: (*store->audioDescHand)->sampleRate is of type UnsignedFixed (not long, not float or double)
-    double sampleRate = store->audioSampleRate;
-    TimeValue blockDuration_qt = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * sampleRate);  // GetMovieTimeScale(store->movie));  ****
+    TimeValue blockDuration_qt = static_cast<TimeValue>(double(blockDuration_ns) / ns_per_sec * mediaTimeScale);
     store->audioSamples[i].durationPerSample = blockDuration_qt;  // TimeValue, count of units
 
+    // accumulate duration of section in media time scale
+    accSectionDuration_qt += blockDuration_qt;
+    
     dbg_printf("WebM Import - FinishAddingAudioBlocks - i = %d, Time = %lld, Duration = %ld\n", i, store->audioTimes[i], store->audioSamples[i].durationPerSample);
-    dbg_printf("WebM Import - FinishAddingAudioBlocks - (blockDuration_ns = %lld, sampleRate = %7.3f\n", blockDuration_ns, sampleRate);
+    dbg_printf("WebM Import - FinishAddingAudioBlocks - (blockDuration_ns = %lld, sampleRate = %7.3f\n", blockDuration_ns, store->audioSampleRate);
     // Alternatively, we can call AddMediaSampleReference() here inside loop, for each block. Supposedly more efficient to call it once after loop, specifying all blocks.
   }
 
   //
-  // Add array of samples all at once (better performance than adding each one separately). 
+  // Add array of sample references to Media all at once (better performance than adding each one separately). 
   //
   if (numSamples > 0) {
     SampleReferencePtr sampleRefs = &store->audioSamples.front(); // &store->audioSamples[0];
@@ -847,10 +757,65 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
     }
     store->audioCount += numSamples;  // increment count when samples are actually added to qt
   }
-  
-  // delete sample refs and times after they have been added to quicktime?
 
+  // Insert Media into Track
+  // A "section" belows is the collection of sample references corresponding to the blocks of one cluster.
+ 
+  long long sectionStart_ns, sectionEnd_ns, sectionDuration_ns = 0;
+  TimeValue sectionStart_qt, sectionDuration_qt = 0;
+  
+  sectionStart_ns = store->audioTimes[0]; // or if we dont delete the refs, use store->audioTimes[sectionStartIndex];
+  sectionStart_qt = static_cast<TimeValue>(double(sectionStart_ns) / ns_per_sec * mediaTimeScale);
+  sectionEnd_ns = lastTime_ns;  // arg passed in
+  sectionDuration_ns = sectionEnd_ns - sectionStart_ns;
+  sectionDuration_qt = static_cast<TimeValue>(double(sectionDuration_ns) / ns_per_sec * mediaTimeScale);
+  if (sectionDuration_qt != accSectionDuration_qt)
+    dbg_printf("FinishAddingAudioBlocks duration mismatch.  accSecDur_qt=%ld != secDur_qt=%ld\n", accSectionDuration_qt, sectionDuration_qt);
+  TimeValue trackStart = -1;  // -1 means insert the media at the END of the track
+  TimeValue mediaTime = sectionStart_qt; // starting point of media section to insert, expressed in media's time scale.
+  TimeValue mediaDuration = sectionDuration_qt;  // duration of media section, expressed in media's time scale. 
+  err = InsertMediaIntoTrack(store->movieAudioTrack, trackStart, mediaTime, mediaDuration, fixed1);
+  dbg_printf("InsertMediaIntoTrack(audioTrack, trackStart=%d, mediaTime=%d, mediaDuration=%d,)\n", trackStart, mediaTime, mediaDuration);
+
+  // Clean up cache of sample referencs
+  // delete sample refs and times after they have been added to quicktime (or maintain ptr into vector)
+  store->audioSamples.erase(store->audioSamples.begin(), store->audioSamples.end());
+  store->audioTimes.erase(store->audioTimes.begin(), store->audioTimes.end());
+  
   return err;  
+}
+
+
+//--------------------------------------------------------------------------------
+//  AddVideoBlock
+//  Add one video block to cache of sample references. 
+//  Call this for each block in a section (maybe a cluster) to collect sample references first, 
+//  and then call AddMediaSampleReferences() later for the section, or once at the end of file.
+//
+OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::VideoTrack* webmVideoTrack)
+{
+  OSErr err = noErr;
+
+  SampleReferencePtr srp;
+  srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
+  srp->dataOffset = webmBlock->GetOffset();
+  srp->dataSize = webmBlock->GetSize();
+  srp->durationPerSample = 0;               // need to calculate this later for all samples.
+  srp->numberOfSamples = 1;
+  srp->sampleFlags = 0; // ?
+
+  store->videoSamples.push_back(*srp);
+  store->videoTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+
+  dbg_printf("Video Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
+  return err;
+}
+
+
+//--------------------------------------------------------------------------------
+OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
+{
+  
 }
 
 
