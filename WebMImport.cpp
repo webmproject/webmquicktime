@@ -53,6 +53,7 @@ typedef struct {
   long videoCount;                            // total video blocks added to Media
   long audioCount;                            // total audio blocks added to Media
   long trackCount;                            // number of tracks added to Movie
+  long loadState;                             // kMovieLoadStateLoading, ... kMovieLoadStateComplete
 } WebMImportGlobalsRec, *WebMImportGlobals;
 
 static const long long ns_per_sec = 1000000000;
@@ -218,11 +219,12 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   store->movie = theMovie;
   store->dataRef = dataRef;
   store->dataRefType = dataRefType;
+  store->audioDescHand = NULL;
+  store->vp8DescHand = NULL;
+  store->loadState = kMovieLoadStateLoading;  // ****
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
   TimeValue mediaDuration, audioMediaDuration;
-  store->audioDescHand = NULL;
-  store->vp8DescHand = NULL;
   mkvparser::Cluster* webmCluster = NULL;
   mkvparser::Cluster* nextCluster = NULL;
   
@@ -376,10 +378,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     }
   }
   
-  // other level one elements in webm:
-  // WebM Chapters ****
-  // WebM Attachments ****
-  // WebM MetaSeek ****
+  // Any other level one elements in webm: Chapters, Attachments, MetaSeek, ?
   
   // Print debug info on the WebM header, segment, and tracks information.
   DumpWebMDebugInfo(&ebmlHeader, webmSegmentInfo, webmTracks);
@@ -387,10 +386,11 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // if no tracks, then nothing to do here...
   if (store->trackCount == 0)
     return noErr;
-
   
   if (inFlags & movieImportWithIdle) {
+    //
     // IDLING IMPORTER
+    //
     dbg_printf("IDLING IMPORTER\n");
 
     // create placeholder track
@@ -412,7 +412,9 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     return noErr;
   }
   else {
+    //
     // NON-IDLING IMPORTER
+    //
     dbg_printf("NON-IDLING IMPORTER\n");
     
     //
@@ -434,6 +436,23 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
       // Advance to next webm Cluster
       webmCluster = nextCluster;  // webmSegment->GetNext(webmCluster);
     }
+    
+    // Return the duration added
+    if (store->movieVideoTrack != NULL) {
+      *durationAdded = GetTrackDuration(store->movieVideoTrack) - atTime;
+      *outFlags |= movieImportCreateTrack;
+    }
+    else if (store->movieAudioTrack != NULL) {
+      *durationAdded = GetTrackDuration(store->movieAudioTrack) - atTime;
+      *outFlags |= movieImportCreateTrack;
+    }
+    // Return the track identifier of the track that received the imported data in the usedTrack pointer. Your component
+    // needs to set this parameter only if you operate on a single track or if you create a new track. If you modify more
+    // than one track, leave the field referred to by this parameter unchanged. 
+    if (usedTrack && store->trackCount < 2)
+      *usedTrack = store->movieVideoTrack ? store->movieVideoTrack : store->movieAudioTrack;
+
+    store->loadState = kMovieLoadStateComplete;
   }
 
   dbg_printf("[WebM Import]  << [%08lx] :: FromDataRef(%d, %ld)\n", (UInt32) store, targetTrack != NULL, atTime);
@@ -503,8 +522,7 @@ OSErr AddCluster(WebMImportGlobals store, mkvparser::Cluster* webmCluster, mkvpa
   FinishAddingAudioBlocks(store, lastTime_ns);
   FinishAddingVideoBlocks(store, lastTime_ns);    // or AddSamplesToTrack() for video, or make it general and pass in audio or video media, etc.
 
-  // loadState = kMovieLoadStatePlayable;
-
+  store->loadState = kMovieLoadStatePlayable;
   return err;
 }
 
@@ -877,7 +895,7 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
     dbg_printf("FinishAddingVideoBlocks duration mismatch.  accSecDur_qt=%ld != secDur_qt=%ld\n", accSectionDuration_qt, sectionDuration_qt);
   TimeValue trackStart = -1;  // -1 means insert the media at the END of the track
   TimeValue mediaTime = sectionStart_qt; // starting point of media section to insert, expressed in media's time scale.
-  TimeValue mediaDuration = sectionDuration_qt;  // duration of media section, expressed in media's time scale. 
+  TimeValue mediaDuration = accSectionDuration_qt;  // duration of media section, expressed in media's time scale. 
   err = InsertMediaIntoTrack(store->movieVideoTrack, trackStart, mediaTime, mediaDuration, fixed1);
   dbg_printf("InsertMediaIntoTrack(videoTrack, trackStart=%d, mediaTime=%d, mediaDuration=%d,)\n", trackStart, mediaTime, mediaDuration);
   
