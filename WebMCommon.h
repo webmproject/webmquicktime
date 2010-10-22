@@ -67,7 +67,6 @@ typedef struct
   SInt32 time;                    //This time must be based on the source Time scale
   TimeScale timeScale;
   long trackID;
-  UInt32 frameInIndx;  //last frame sent in
 } StreamSource;
 
 
