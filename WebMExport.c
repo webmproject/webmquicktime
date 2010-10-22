@@ -515,8 +515,7 @@ pascal ComponentResult WebMExportAddDataSource(WebMExportGlobalsPtr store, OSTyp
         }
         else if (trackType == SoundMediaType)
         {
-            AudioStreamPtr p = &gs->aud;
-            initAudioStream(p);
+            initAudioStream(gs);
         }
         initFrameQueue(&gs->frameQueue);
         
@@ -929,6 +928,8 @@ static ComponentResult _getFrameRate(Movie theMovie, double *fps)
     long sampleCount = GetMediaSampleCount(media);
     TimeValue64 duration = GetMediaDisplayDuration(media);
     TimeValue64 timeScale = GetMediaTimeScale(media);
+  dbg_printf("[WebM] computing framerate %ld * %lld / %lld \n",
+             sampleCount, timeScale, duration);
     *fps = sampleCount * 1.0 *  timeScale /  duration;
     return noErr;
 }
