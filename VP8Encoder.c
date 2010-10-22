@@ -489,6 +489,7 @@ VP8_Encoder_EncodeFrame(
     ComponentResult err = noErr;
     ICMCompressionFrameOptionsRef frameOptions;
     dbg_printf("[vp8e - %08lx] flags are %x\n", (UInt32)glob, flags);
+    
     err = encodeThisSourceFrame(glob, sourceFrame);
 }
 
@@ -510,9 +511,10 @@ VP8_Encoder_CompleteFrame(
     dbg_printf("[vp8e - %08lx] VP8Encoder_CompleteFrame\n", (UInt32)glob);
     ICMCompressionFrameOptionsRef frameOptions;
     dbg_printf("[vp8e - %08lx] flags are %x\n", (UInt32)glob, flags);
-
-    err = encodeThisSourceFrame(glob, sourceFrame);
-
+  //todo, this should verify that the source frame is complete
+  completeThisSourceFrame(glob, sourceFrame);
+    
+  
 bail:
     return err;
 }
