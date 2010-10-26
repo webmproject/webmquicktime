@@ -180,7 +180,6 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
   
   //long dispNumber = ICMCompressorSourceFrameGetDisplayNumber(sourceFrame);
   
-  
   // Initialize codec if needed
   initializeCodec(glob, sourceFrame);
   

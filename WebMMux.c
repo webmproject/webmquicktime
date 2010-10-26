@@ -596,8 +596,11 @@ void _startClusterIfNeeded(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, UInt3
     if (gs->frameQueue.size ==0 || gs->trackType != VideoMediaType)
       continue;
     WebMBufferedFrame* frame = gs->frameQueue.queue[0];
-    if ((frame->frameType & KEY_FRAME != 0) && globals->clusterTime != minTimeMs)
+    if ((frame->frameType & KEY_FRAME != 0) && frame->timeMs != globals->clusterKeyFrameTime)
+    {
+      globals->clusterKeyFrameTime = frame->timeMs;
       globals->startNewCluster = true;
+    }
   }
   
   //TODO make clusters star with video keyframes
@@ -695,6 +698,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
   globals->startNewCluster = true;  //cluster should start very first
   globals->blocksInCluster =1;
   globals->clusterOffset = *(SInt64 *)& ebml.offset;
+  globals->clusterKeyFrameTime = UINT_MAX;
   
   Boolean bTwoPass = isTwoPass(globals);
   dbg_printf("[WebM] Is Two Pass %d\n",bTwoPass);

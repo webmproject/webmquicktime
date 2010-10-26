@@ -96,6 +96,7 @@ typedef struct
   
   //Ebml writing
   unsigned long clusterTime;
+  unsigned long clusterKeyFrameTime;
   EbmlLoc clusterStart;
   unsigned int blocksInCluster;  //this increments any time a block added
   SInt64 clusterOffset;
