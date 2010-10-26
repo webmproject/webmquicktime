@@ -316,7 +316,7 @@ ComponentResult compressAudio(GenericStreamPtr as)
       UInt8* buf = malloc(as->aud.buf.offset);
       UInt32 timeMs = as->framesOut * 1000 / as->aud.asbd.mSampleRate;
       memcpy(buf, as->aud.buf.data, as->aud.buf.offset);
-      UInt32 frameType = KEY_FRAME + AUDIO_FRAME;
+      UInt16 frameType = KEY_FRAME + AUDIO_FRAME;
       dbg_printf("[WebM] Output audio packet size %ld, time %lu\n", as->aud.buf.offset, timeMs);
       addFrameToQueue(&as->frameQueue, buf,as->aud.buf.offset, timeMs, frameType, as->framesOut);
       as->aud.buf.offset =0; //reset the buffer for writing

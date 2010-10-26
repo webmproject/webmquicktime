@@ -37,7 +37,7 @@ void releaseFrame(WebMQueuedFrames *queue)
 }
 
 int addFrameToQueue(WebMQueuedFrames *queue, void * data, UInt32 dataSize, 
-                    UInt64 timeMs, UInt32 frameType, UInt32 indx)
+                    UInt64 timeMs, UInt16 frameType, UInt32 indx)
 {
   if (queue->size +1 > queue->maxSize)
   {

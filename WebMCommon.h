@@ -43,7 +43,7 @@ typedef struct
   UInt32 size;
   UInt32 offset; //pointer to the end of output buffers data.
   UInt64 timeMs; //time in milliseconds
-  UInt32 frameType;  //corresponds to above frame types
+  UInt16 frameType;  //corresponds to above frame types
   UInt32 indx;
 } WebMBufferedFrame;
 
@@ -75,7 +75,7 @@ void initFrameQueue(WebMQueuedFrames *queue);
 WebMBufferedFrame* getFrame(WebMQueuedFrames *queue);
 void releaseFrame(WebMQueuedFrames *queue);
 // returns -1 on memory error
-int addFrameToQueue(WebMQueuedFrames *queue, void * data,UInt32 size, UInt64 timeMs, UInt32 frameType, UInt32 indx);
+int addFrameToQueue(WebMQueuedFrames *queue, void * data,UInt32 size, UInt64 timeMs, UInt16 frameType, UInt32 indx);
 int frameQueueSize(WebMQueuedFrames *queue);
 int freeFrameQueue(WebMQueuedFrames *queue);
 

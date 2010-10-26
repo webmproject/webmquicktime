@@ -97,7 +97,9 @@ typedef struct
   //Ebml writing
   unsigned long clusterTime;
   EbmlLoc clusterStart;
-  
+  unsigned int blocksInCluster;  //this increments any time a block added
+  SInt64 clusterOffset;
+
   /////////////////
   QTAtomContainer     audioSettingsAtom;      //hold on to any audio settings the user changes
   QTAtomContainer     videoSettingsAtom;
@@ -109,6 +111,7 @@ typedef struct
   Boolean            bMovieHasVideo;
   Movie              setdlg_movie;
   Track              setdlg_track;
+  
 } WebMExportGlobals, *WebMExportGlobalsPtr;
 
 #endif /* __exporter_types_h__ */
