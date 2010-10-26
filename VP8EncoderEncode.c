@@ -92,7 +92,7 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   
   dbg_printf("[vp8e - %08lx]  Encoded frame %d with %d bytes of data\n", (UInt32)glob, glob->frameCount, dataSize);
   
-  keyFrame = pkt->kind ==  (pkt->data.frame.flags & VPX_FRAME_IS_KEY);
+  keyFrame = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
   dbg_printf(keyFrame ? "Key Packet\n" : "Non Key Packet\n");
   droppableFrame = pkt->data.frame.flags & VPX_FRAME_IS_DROPPABLE;
   dbg_printf(droppableFrame ? "Droppable frame\n" : "Not droppable frame\n");
@@ -114,7 +114,7 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   
   //TODO here is where we should add alt-ref
   ICMFrameType frameType = keyFrame ? kICMFrameType_I : kICMFrameType_P;    
-  dbg_printf("[vp8e - %08lx] frame type set to %c", (UInt32)glob, keyFrame ? 'I' : 'P');
+  dbg_printf("[vp8e - %08lx] frame type set to %c\n", (UInt32)glob, keyFrame ? 'I' : 'P');
   
   if (kICMFrameType_I == frameType)
     mediaSampleFlags |= mediaSampleDoesNotDependOnOthers;
@@ -191,6 +191,7 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
     if (err) goto bail;
     int flags = 0 ; //TODO - find out what I may need in these flags
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d  flags %x\n", (UInt32)glob, glob->codec, glob->raw, glob->frameCount,  flags);
+    //TODO seems like quality should be an option.  Right now hardcoded to GOOD_QUALITY
     codecError = vpx_codec_encode(glob->codec, glob->raw, glob->frameCount,
                                   1, flags, VPX_DL_GOOD_QUALITY);
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec exit\n", (UInt32)glob);
@@ -277,6 +278,7 @@ static void initializeCodec(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef 
 {
   if (glob->codec != NULL)
     return;
+  dbg_printf("[vp8e - %08lx] initializeCodec\n", (UInt32)glob);
   glob->codec = calloc(1, sizeof(vpx_codec_ctx_t));
   setBitrate(glob, sourceFrame); //because we don't know framerate untile we have a source image.. this is done here
   setMaxKeyDist(glob);
@@ -436,6 +438,7 @@ static void setUInt(unsigned int * i, UInt32 val)
 {
   if (val == UINT_MAX)
     return;
+  dbg_printf("[VP8e] setting custom setting to %lu\n",  val);
   *i= val;
 }
 
