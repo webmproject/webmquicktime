@@ -195,9 +195,11 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
   
   //pass appropriate flags for frame type
   ICMFrameType frame_type = ICMEncodedFrameGetFrameType(ef);
-  UInt32 frameFlags = VIDEO_FRAME;
-  frameFlags += frame_type == kICMFrameType_I ? KEY_FRAME:0;
-  frameFlags += frame_type == kICMFrameType_Unknown ? ALT_REF_FRAME:0; // currently using the unknown to indicat alt-ref
+  UInt16 frameFlags = VIDEO_FRAME;
+  if (frame_type == kICMFrameType_I)
+    frameFlags += KEY_FRAME;
+  else if(frame_type == kICMFrameType_Unknown)
+    frameFlags += ALT_REF_FRAME; // currently using the unknown to indicat alt-ref
   
   UInt64 displayTime = ICMEncodedFrameGetDisplayTimeStamp(ef);
   UInt64 timeScale = ICMEncodedFrameGetTimeScale(ef);
@@ -394,7 +396,7 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, GenericStreamPtr
   if (err == eofErr)
   {
     vs->source.eos = true;
-    return noErr;
+    err= noErr;
   }
   else {
     vs->framesIn += 1;
