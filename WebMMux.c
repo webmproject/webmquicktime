@@ -257,10 +257,10 @@ static void _writeCues(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, EbmlLoc *
 }
 
 void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time, 
-             unsigned int track, unsigned int blockNum)
+             unsigned int track)
 {
   dbg_printf("[webm] _addCue %d time %ld loc %llu track %d blockNum %d\n",
-             globals->cueCount, time, dataLoc, track, blockNum);
+             globals->cueCount, time, dataLoc, track, globals->blocksInCluster);
   globals->cueCount ++;
   long handleSize = sizeof(WebMCuePoint) * globals->cueCount;
   
@@ -277,7 +277,7 @@ void _addCue(WebMExportGlobalsPtr globals, UInt64 dataLoc, unsigned long time,
   newCue->loc = dataLoc;
   newCue->timeVal = time;
   newCue->track = track;
-  newCue->blockNumber = blockNum;
+  newCue->blockNumber = globals->blocksInCluster;
   dbg_printf("[webm] _addCue exit %d time %ld loc %llu track %d blockNum %d\n",
              globals->cueCount, newCue->timeVal, newCue->loc, newCue->track, newCue->blockNumber);
   dbg_printf("[WebM] globals->cueHandle Size %d\n", GetHandleSize(globals->cueHandle));
@@ -291,6 +291,7 @@ static void _startNewCluster(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
   
   Ebml_StartSubElement(ebml, &globals->clusterStart, Cluster);
   Ebml_SerializeUnsigned(ebml, Timecode, globals->clusterTime);
+  globals->blocksInCluster =1;
 }
 
 /*static void _advanceVideoTime(WebMExportGlobalsPtr globals, VideoStreamPtr vs)
@@ -519,6 +520,22 @@ bail:
   return err;
 }
 
+
+Boolean _checkAllStreamsComplete(WebMExportGlobalsPtr globals)
+{
+  UInt32 iStream;
+  Boolean allStreamsDone = true;
+  for (iStream = 0; iStream < globals->streamCount; iStream++)
+  {
+    GenericStream *gs = &(*globals->streams)[iStream];
+    if (!gs->complete || gs->frameQueue.size > 0)
+    {
+      allStreamsDone = false; 
+    }
+  }
+  return allStreamsDone;
+}
+
 //If waiting for data, minTimeStream should be null
 ComponentResult _getStreamWithMinTime(WebMExportGlobalsPtr globals, GenericStream **minTimeStream, UInt64* minTimeMs)
 {
@@ -526,22 +543,24 @@ ComponentResult _getStreamWithMinTime(WebMExportGlobalsPtr globals, GenericStrea
   UInt32 iStream;
   *minTimeMs = ULONG_MAX;
   *minTimeStream = NULL;
-  Boolean allStreamsDone = true;
 
+  //first check if everything is complete
+  //TODO break this off into its own function
+
+  //see if there's an empty queue
   for (iStream = 0; iStream < globals->streamCount; iStream++)
   {
     GenericStream *gs = &(*globals->streams)[iStream];
-    if (!gs->complete)
-      allStreamsDone = false;      
-    if (gs->frameQueue.size == 0)
-      continue; //there may be empty completed streams    
     if (gs->frameQueue.size == 0  && !gs->complete)
     {
-      dbg_printf("[WebM] %s stream 0 frames in queue not yet complete\n",
-                 gs->trackType == VideoMediaType ? "video" : "audio");
-      *minTimeStream = NULL;
-      break;
+      dbg_printf("REMOVE -- need to fill stream %d\n", iStream);
+      return noErr;
     }
+  }
+  
+  for (iStream = 0; iStream < globals->streamCount; iStream++)
+  {
+    GenericStream *gs = &(*globals->streams)[iStream];
     
     WebMBufferedFrame* frame = gs->frameQueue.queue[0];
     dbg_printf("[WebM] %lu Frame Time = %ld\n",iStream, frame->timeMs);
@@ -560,11 +579,39 @@ ComponentResult _getStreamWithMinTime(WebMExportGlobalsPtr globals, GenericStrea
   }  
   dbg_printf("[Webm] Stream with smallest time %d(ms) %s\n",
              *minTimeMs,  ((*minTimeStream)->trackType == VideoMediaType) ?"video":"audio");
-  if (allStreamsDone)
-    return eofErr;
 bail:
   return err;
 }
+
+void _startClusterIfNeeded(WebMExportGlobalsPtr globals, EbmlGlobal *ebml, UInt32 minTimeMs)
+{
+  UInt32 iStream;
+  if (minTimeMs - globals->clusterTime > 32767)
+    globals->startNewCluster = true; //keep in mind the block time offset to the cluster is SInt16
+  
+  //see if there is a video key frame
+  for (iStream = 0; iStream < globals->streamCount; iStream++)
+  {
+    GenericStream *gs = &(*globals->streams)[iStream];
+    if (gs->frameQueue.size ==0 || gs->trackType != VideoMediaType)
+      continue;
+    WebMBufferedFrame* frame = gs->frameQueue.queue[0];
+    if ((frame->frameType & KEY_FRAME != 0) && globals->clusterTime != minTimeMs)
+      globals->startNewCluster = true;
+  }
+  
+  //TODO make clusters star with video keyframes
+  if (globals->startNewCluster)
+  {
+    globals->clusterTime = minTimeMs;
+    globals->blocksInCluster =1;
+    globals->clusterOffset = *(SInt64 *)& ebml->offset;
+    dbg_printf("[WebM] Start new cluster offset %lld time %ld\n", globals->clusterOffset, minTimeMs);
+    _startNewCluster(globals, ebml);
+    globals->startNewCluster = false;
+  }
+}
+
 
 ComponentResult _writeBlock(WebMExportGlobalsPtr globals, GenericStreamPtr gs, EbmlGlobal* ebml)
 {
@@ -573,14 +620,19 @@ ComponentResult _writeBlock(WebMExportGlobalsPtr globals, GenericStreamPtr gs, E
   
   int isKeyFrame = frame->frameType & KEY_FRAME != 0;
   short relativeTime = frame->timeMs - globals->clusterTime;
-  dbg_printf("[webM] write simple block track %d keyframe %d frame #%ld time %lld data size %ld, Relative Time %d\n",
+  dbg_printf("[webM] write simple block track %d keyframe %d frame #%llu time %llu data size %lu, Relative Time %d\n",
              gs->source.trackID, isKeyFrame,
              gs->framesOut, frame->timeMs, frame->size, relativeTime);
   
   writeSimpleBlock(ebml, gs->source.trackID, relativeTime,
                    isKeyFrame, 0 , 0,
                    frame->data, frame->size);
+  dbg_printf("[webM] Queue Size %d", gs->frameQueue.size);
   releaseFrame(&gs->frameQueue);
+  //TODO this if statement needs to come out later, audio video have different
+  //framesOut meanings
+  if(gs->trackType == VideoMediaType)
+      gs->framesOut ++;  
   
   return err;
 }
@@ -641,8 +693,8 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
   
   globals->clusterTime = 0;  //assuming 0 start time
   globals->startNewCluster = true;  //cluster should start very first
-  unsigned int blocksInCluster=1;  //this increments any time a block added
-  SInt64 clusterOffset = *(SInt64 *)& ebml.offset;
+  globals->blocksInCluster =1;
+  globals->clusterOffset = *(SInt64 *)& ebml.offset;
   
   Boolean bTwoPass = isTwoPass(globals);
   dbg_printf("[WebM] Is Two Pass %d\n",bTwoPass);
@@ -659,43 +711,30 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     err = _compressEmptyStreams(globals);
     if (err) goto bail;
     
-    err = _getStreamWithMinTime(globals, &minTimeStream, &minTimeMs);
-    if (err == eofErr)
-    {
-      //this indicates that all streams are complete
-      err == noErr;
-      allStreamsDone = true;
+    allStreamsDone = _checkAllStreamsComplete(globals);
+    if (allStreamsDone)
       break;
-    }
+
+    err = _getStreamWithMinTime(globals, &minTimeStream, &minTimeMs);
     if (err) goto bail;
     //if all frames that should be available find the earliest time:
     if (minTimeStream == NULL)  //some streams are waiting for compressed data
       continue;
     //write the stream with the earliest time    
     
-    if (minTimeMs - globals->clusterTime > 32767)
-      globals->startNewCluster = true; //keep in mind the block time offset to the cluster is SInt16
-    
-    if (globals->startNewCluster)
-    {
-      globals->clusterTime = minTimeMs;
-      blocksInCluster =1;
-      clusterOffset = *(SInt64 *)& ebml.offset;
-      dbg_printf("[WebM] Start new cluster offset %lld time %ld\n", clusterOffset, minTimeMs);
-      _startNewCluster(globals, &ebml);
-      globals->startNewCluster = false;
-    }
+    _startClusterIfNeeded(globals, &ebml, minTimeMs);
+
     
     minFrame = minTimeStream->frameQueue.queue[0];
     
-    if (minTimeStream->trackType == VideoMediaType && minFrame->frameType & KEY_FRAME)
+    if (minTimeStream->trackType == VideoMediaType && (minFrame->frameType & KEY_FRAME) != 0)
     {
-        UInt64 tmpU = clusterOffset - firstL1Offset;  
-        _addCue(globals, tmpU , minFrame->timeMs, minTimeStream->source.trackID, blocksInCluster);
+        UInt64 tmpU = globals->clusterOffset - firstL1Offset;  
+        _addCue(globals, tmpU , minFrame->timeMs, minTimeStream->source.trackID);
     }  //end if VideoMediaType
     _writeBlock(globals, minTimeStream, &ebml);
 
-    blocksInCluster ++;            
+    globals->blocksInCluster ++;            
     
     Ebml_EndSubElement(&ebml, &globals->clusterStart);   //this writes cluster size multiple times, but works
     
@@ -709,10 +748,10 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
     if (err ) goto bail;
   }
   
+  dbg_printf("[webm] done writing streams\n");
   if (bTwoPass)
     _endSecondPass(globals);
   
-  dbg_printf("[webm] done writing streams\n");
   //cues written at the end
   _writeCues(globals, &ebml, &cuesLoc);
   Ebml_EndSubElement(&ebml, &startSegment);
