@@ -13,7 +13,7 @@
 
 #include "WebMImport.hpp"
 
-#include <Carbon/Carbon.h> 
+#include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
 #include <vector>
 
@@ -29,7 +29,7 @@ extern "C" {
 typedef std::vector<SampleReferenceRecord> SampleRefVec;
 typedef std::vector<long long> SampleTimeVec;
 
-  
+
 // WebM Import Component Globals structure
 typedef struct {
   ComponentInstance self;
