@@ -248,8 +248,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
 
   // Use IMkvReader subclass that knows about quicktime dataRef and dataHandler objects, rather than plain file io.
   long long pos = 0;
-  MkvReaderQT reader;
-  int status = reader.Open(dataRef, dataRefType);
+  MkvReaderQT* reader = (MkvReaderQT*) new MkvReaderQT;   // allocate reader on heap so it doesn't go out of scape at end of ImportDataRef().
+  int status = reader->Open(dataRef, dataRefType);
   if (status != 0) {
     dbg_printf("[WebM Import] MkvReaderQT::Open() Error, status = %d\n", status);
     return invalidDataRef;
@@ -257,8 +257,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   
   long long totalLength = 0;
   long long availLength = 0;
-  reader.Length(&totalLength, &availLength);
-  dbg_printf("MkvReaderQT.m_length = %lld bytes. availableLength = %lld\n", totalLength, availLength);
+  reader->Length(&totalLength, &availLength);
+  dbg_printf("MkvReaderQT::m_length = %lld bytes. availableLength = %lld\n", totalLength, availLength);
   
   // Use the libwebm project (libmkvparser.a) to parse the WebM file.
 
@@ -267,7 +267,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   //
   using namespace mkvparser;
   EBMLHeader ebmlHeader;
-  long long headerstatus = ebmlHeader.Parse(&reader, pos);
+  long long headerstatus = ebmlHeader.Parse(reader, pos);
   if (headerstatus != 0) {
     dbg_printf("[WebM Import] EBMLHeader.Parse() Error, returned %lld.\n", headerstatus );
     return -1;  // or maybe invalidDataRef
@@ -277,7 +277,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // WebM Segment
   //
   mkvparser::Segment* webmSegment;
-  long long ret = mkvparser::Segment::CreateInstance(&reader, pos, webmSegment);
+  long long ret = mkvparser::Segment::CreateInstance(reader, pos, webmSegment);   // pass ownership of reader object to Segment
   if (ret) {
     dbg_printf("Segment::CreateInstance() failed.\n");
     return -1;
@@ -503,11 +503,10 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
   DumpWebMGlobals(store);
 
   // get next cluster
-// mkvparser::Cluster* webmCluster = store->webmSegment->GetNext(store->webmCluster);
-//  store->webmCluster = webmCluster;
-  store->webmCluster = store->webmSegment->GetNext(store->webmCluster);
-  
-  DumpWebMGlobals(store);
+  mkvparser::Cluster* webmCluster = store->webmSegment->GetNext(store->webmCluster);
+  delete store->webmCluster;
+  store->webmCluster = webmCluster;
+  //store->webmCluster = store->webmSegment->GetNext(store->webmCluster);
   
   // import the cluster
   if ((store->webmCluster != NULL) && !store->webmCluster->EOS()) {
@@ -518,7 +517,6 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
     *outFlags |= movieImportResultComplete;
     store->loadState = kMovieLoadStateComplete;
   }
-  
 
   return noErr;
 }
