@@ -9,7 +9,9 @@
 	<key>IBOldestOS</key>
 	<integer>5</integer>
 	<key>IBOpenObjects</key>
-	<array/>
+	<array>
+		<integer>264</integer>
+	</array>
 	<key>IBSystem Version</key>
 	<string>10D2063a</string>
 	<key>targetFramework</key>

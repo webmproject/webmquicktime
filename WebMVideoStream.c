@@ -381,7 +381,7 @@ static void initFrameTimeRecord(GenericStreamPtr vs, ICMFrameTimeRecord *frameTi
   frameTimeRecord->duration = vs->source.params.durationPerSample;
   frameTimeRecord->flags = icmFrameTimeDecodeImmediately;
   frameTimeRecord->frameNumber = vs->framesIn;
-  dbg_printf("[webM] init Frame Time %lld scale = %ld", frameTimeRecord->value, frameTimeRecord->scale);
+  dbg_printf("[webM] init Frame Time %lld scale = %ld\n", frameTimeRecord->value, frameTimeRecord->scale);
 }
 
 //buffer is null when there are no more frames

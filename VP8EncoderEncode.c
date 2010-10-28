@@ -60,8 +60,34 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   
   //get the source frame off the queue
   //for an alt-ref frame this won't work.
-  ICMCompressorSourceFrameRef sourceFrame = popSourceFrame(glob);
-  
+  ICMCompressorSourceFrameRef sourceFrame = NULL;
+  while (glob->sourceQueue.size > 0)
+  {
+    if (glob->sourceQueue.frames_out < pkt->data.frame.pts)
+    {
+      //This indicates an alt -ref frame, instead of popping the frame I'm just going to keep it.
+      sourceFrame = glob->sourceQueue.queue[0];
+      break;      
+    }
+    else if (glob->sourceQueue.frames_out == pkt->data.frame.pts)
+    {
+      sourceFrame = popSourceFrame(glob);
+      break;
+    }
+    else //frames_out > pts
+    {
+      dbg_printf("[VP8E] Dropping frame %ld\n", glob->sourceQueue.frames_out);
+      sourceFrame = popSourceFrame(glob);
+      ICMCompressorSessionDropFrame(glob->session, sourceFrame);
+    }
+    sourceFrame = NULL;
+  }
+  if (sourceFrame == NULL)
+  {
+    dbg_printf("[VP8e] Error: asked to output a frame at time %ld but last frame in was %ld\n",
+               pkt->data.frame.pts, glob->sourceQueue.frames_in);
+    return qErr;
+  }
   TimeValue64 frameDisplayDuration = 0;
   TimeScale timescale = 0;
   ICMValidTimeFlags validTimeFlags = 0;
@@ -514,6 +540,7 @@ static void addSourceFrame(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef s
   }
   glob->sourceQueue.queue[glob->sourceQueue.size] = sourceFrame;
   glob->sourceQueue.size += 1;
+  glob->sourceQueue.frames_in += 1;
 }
 
 static ICMCompressorSourceFrameRef popSourceFrame(VP8EncoderGlobals glob)
@@ -530,6 +557,7 @@ static ICMCompressorSourceFrameRef popSourceFrame(VP8EncoderGlobals glob)
     glob->sourceQueue.queue[i-1] = glob->sourceQueue.queue[i];
   }
   glob->sourceQueue.size -=1;
+  glob->sourceQueue.frames_out += 1;
   return rval;
 }
 
