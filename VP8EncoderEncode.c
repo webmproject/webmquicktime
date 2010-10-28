@@ -45,8 +45,6 @@ static ICMCompressorSourceFrameRef popSourceFrame(VP8EncoderGlobals glob);
 static Boolean isInQueue(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame);
 
 
-
-
 static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_cx_pkt_t *pkt)
 {
   ICMMutableEncodedFrameRef encodedFrame = NULL;
@@ -61,10 +59,14 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   //get the source frame off the queue
   //for an alt-ref frame this won't work.
   ICMCompressorSourceFrameRef sourceFrame = NULL;
+  dbg_printf("[VP8E] emitEncodedFrame frames out %ld, pts %ld, \n",
+             glob->sourceQueue.frames_out, pkt->data.frame.pts);
   while (glob->sourceQueue.size > 0)
   {
-    if (glob->sourceQueue.frames_out < pkt->data.frame.pts)
+    if (glob->sourceQueue.frames_out - 1 == pkt->data.frame.pts 
+        && (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE))
     {
+      dbg_printf("[VP8E] Altref Frame\n");
       //This indicates an alt -ref frame, instead of popping the frame I'm just going to keep it.
       sourceFrame = glob->sourceQueue.queue[0];
       break;      
@@ -74,7 +76,7 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
       sourceFrame = popSourceFrame(glob);
       break;
     }
-    else //frames_out > pts
+    else //frames_out < pts
     {
       dbg_printf("[VP8E] Dropping frame %ld\n", glob->sourceQueue.frames_out);
       sourceFrame = popSourceFrame(glob);
