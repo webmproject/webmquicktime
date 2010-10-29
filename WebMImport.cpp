@@ -232,7 +232,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   store->dataRefType = dataRefType;
   store->audioDescHand = NULL;
   store->vp8DescHand = NULL;
-  store->loadState = kMovieLoadStateLoading;  // ****
+  store->loadState = kMovieLoadStateLoading;
+  store->videoMaxLoaded = 0;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
   TimeValue mediaDuration, audioMediaDuration;
@@ -283,6 +284,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     return -1;
   }
 
+  // Load the WebM Segment.
   ret = webmSegment->Load();
   if (ret) {
     dbg_printf("Segment::Load() failed.\n");
@@ -513,7 +515,14 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
     AddCluster(store, store->webmCluster, store->webmTracks, store->segmentDuration);
   }
   else {  
-    // if no more clusters, return flags
+    // If no more clusters
+    // Add any remaining samples from cache.
+    if (store->videoSamples.size() > 0)
+      FinishAddingVideoBlocks(store, store->segmentDuration);
+    if (store->audioSamples.size() > 0)
+      FinishAddingAudioBlocks(store, store->segmentDuration);
+
+    // set flags to indicate we are done.
     *outFlags |= movieImportResultComplete;
     store->loadState = kMovieLoadStateComplete;
   }
@@ -555,12 +564,10 @@ pascal ComponentResult WebMImportGetLoadState(WebMImportGlobals store, long* imp
 OSErr AddCluster(WebMImportGlobals store, mkvparser::Cluster* webmCluster, mkvparser::Tracks* webmTracks, long long lastTime_ns)
 {
   OSErr err = noErr;
-  dbg_printf("WebM Import - AddCluster() \n");
-  DumpWebMGlobals(store);
 
   const long long timeCode = webmCluster->GetTimeCode();
   const long long time_ns = webmCluster->GetTime();
-//  dbg_printf("TIME - Cluster Time: %lld\n", time_ns); // ****
+  // dbg_printf("TIME - Cluster Time: %lld\n", time_ns);
 
   // Loop for each Block in Cluster
   const mkvparser::BlockEntry* webmBlockEntry = webmCluster->GetFirst();
@@ -597,7 +604,7 @@ OSErr AddCluster(WebMImportGlobals store, mkvparser::Cluster* webmCluster, mkvpa
 
   FinishAddingVideoBlocks(store, lastTime_ns);    // or AddSamplesToTrack() for video, or make it general and pass in audio or video media, etc.
   FinishAddingAudioBlocks(store, lastTime_ns);
-  // ***** store->loadState = kMovieLoadStatePlayable;
+  store->loadState = kMovieLoadStatePlayable;
 
   return err;
 }
