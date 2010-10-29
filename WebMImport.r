@@ -24,7 +24,7 @@
 // canMovieImportPartial | canMovieImportInPlace | hasMovieImportMIMEList | \
 // canMovieImportValidateDataReferences | \
 
-#define kImporterFlags canMovieImportFiles | canMovieImportInPlace | canMovieImportDataReferences | cmpThreadSafe | hasMovieImportMIMEList //| canMovieImportWithIdle
+#define kImporterFlags canMovieImportFiles | canMovieImportInPlace | canMovieImportDataReferences | cmpThreadSafe | hasMovieImportMIMEList | canMovieImportWithIdle
 
 resource 'STR ' (263) {
   "WebM" "0.0.1" " see http://webmproject.org"
