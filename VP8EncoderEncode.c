@@ -63,8 +63,7 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
              glob->sourceQueue.frames_out, pkt->data.frame.pts);
   while (glob->sourceQueue.size > 0)
   {
-    if (glob->sourceQueue.frames_out - 1 == pkt->data.frame.pts 
-        && (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE))
+    if (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE)
     {
       dbg_printf("[VP8E] Altref Frame\n");
       //This indicates an alt -ref frame, instead of popping the frame I'm just going to keep it.
@@ -78,7 +77,8 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
     }
     else //frames_out < pts
     {
-      dbg_printf("[VP8E] Dropping frame %ld\n", glob->sourceQueue.frames_out);
+      dbg_printf("[VP8E] Dropping frame %ld, Queue size  %ld\n", 
+                 glob->sourceQueue.frames_out, glob->sourceQueue.size);
       sourceFrame = popSourceFrame(glob);
       ICMCompressorSessionDropFrame(glob->session, sourceFrame);
     }
@@ -184,13 +184,25 @@ ComponentResult completeThisSourceFrame(VP8EncoderGlobals glob,
                                       ICMCompressorSourceFrameRef sourceFrame)
 {
   ComponentResult err = noErr;
+
   if (!isInQueue(glob, sourceFrame))
     err = encodeThisSourceFrame(glob, sourceFrame);
   if (err) return err;
   while (isInQueue(glob, sourceFrame))
   {
+    UInt32 framesInQueue = glob->sourceQueue.size;
     err = encodeThisSourceFrame(glob, NULL);
     if (err) break;
+
+    //handles the case where terminating source frames are dropped
+    if (glob->sourceQueue.size == framesInQueue)
+    {
+        dbg_printf("[VP8E] Dropping frame %ld\n", glob->sourceQueue.frames_out);
+        sourceFrame = popSourceFrame(glob);
+        err = ICMCompressorSessionDropFrame(glob->session, sourceFrame);
+      if (err) 
+        return err;
+    }
   }
   return err;
 }
@@ -204,7 +216,6 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
   int storageIndex = 0;
   
   dbg_printf("[vp8e - %08lx] encode this frame %08lx\n", (UInt32)glob, (UInt32)sourceFrame);
-  addSourceFrame(glob,sourceFrame);
   
   //long dispNumber = ICMCompressorSourceFrameGetDisplayNumber(sourceFrame);
   
@@ -214,6 +225,8 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
   ///////         Transfer the current frame to glob->raw
   if (sourceFrame != NULL)
   {
+    if (glob->currentPass != VPX_RC_FIRST_PASS)
+      addSourceFrame(glob,sourceFrame);
     err = convertColorSpace(glob, sourceFrame);
     if (err) goto bail;
     int flags = 0 ; //TODO - find out what I may need in these flags

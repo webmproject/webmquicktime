@@ -347,7 +347,7 @@ ComponentResult _doFirstPass(WebMExportGlobalsPtr globals)
   UInt32 iStream;
   Boolean allStreamsDone = false;
   double duration = getMaxDuration(globals);
-  UInt64 minTimeMs = ULONG_MAX;
+  UInt64 timeMs = ULONG_MAX;
 
   dbg_printf("[WebM] Itterating first pass on all videos\n");    
   allStreamsDone = false;
@@ -356,12 +356,14 @@ ComponentResult _doFirstPass(WebMExportGlobalsPtr globals)
   {
     GenericStream *gs = &(*globals->streams)[iStream];
     if (gs->trackType == VideoMediaType)
+    {
       gs->vid.bTwoPass = true;
+    }
   }
   
   while (!allStreamsDone)
   {
-    minTimeMs = ULONG_MAX;
+    timeMs = 0;
     allStreamsDone = true;
     for (iStream = 0; iStream < globals->streamCount; iStream++)
     {
@@ -373,15 +375,12 @@ ComponentResult _doFirstPass(WebMExportGlobalsPtr globals)
         err = compressNextFrame(globals, gs);
         if (!gs->complete)
           allStreamsDone = false;
+        timeMs = gs->source.time * 1000 / gs->source.timeScale;
       }
-      minTimeMs = gs->frameQueue.queue[0]->timeMs;
     }
-    
     if (duration != 0.0)  //if duration is 0, can't show anything
     {
-      double percentComplete = minTimeMs / 1000.0 / duration /2.0;
-      /*if (bTwoPass)
-       percentComplete = 50.0 + percentComplete/2.0;*/
+      double percentComplete = timeMs / 1000.0 / duration /2.0;
       err = _updateProgressBar(globals, percentComplete);
     }
   }
@@ -391,7 +390,7 @@ ComponentResult _doFirstPass(WebMExportGlobalsPtr globals)
     GenericStream *gs = &(*globals->streams)[iStream];
     if (gs->trackType == VideoMediaType)
     {
-      endPass(&gs->vid);
+      endPass(gs);
       //reset the stream to the start
       gs->source.eos = false;
       gs->source.time = 0;
@@ -407,7 +406,7 @@ ComponentResult _doFirstPass(WebMExportGlobalsPtr globals)
     GenericStream *gs = &(*globals->streams)[iStream];
     if (gs->trackType == VideoMediaType)
     {
-      startPass(&gs->vid, 2);
+      startPass(gs, 2);
     }
   }
   
@@ -569,9 +568,7 @@ static void _endSecondPass(WebMExportGlobalsPtr globals)
   {
     GenericStream *gs = &(*globals->streams)[iStream];
     if (gs->trackType == VideoMediaType)
-    {
-      endPass(&gs->vid, 1);
-    }
+      endPass(gs);
   }
 }
 

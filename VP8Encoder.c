@@ -758,11 +758,13 @@ pascal ComponentResult VP8_Encoder_EndPass(VP8EncoderGlobals globals)
     while (globals->stats.sz != prevStatsSize)
     {
       prevStatsSize = globals->stats.sz;
+      //send a null frame to encode frame, this ends off the encoder stats
       encodeThisSourceFrame(globals, NULL);
     }
-    //send a null frame to encode frame, this ends off the encoder stats
+    //reset all my stats
+    globals->frameCount =0;
   }
-  //I don't need to do anything here currently
+  //I don't need to do anything here currently for the second pass
   return err;
 }
 

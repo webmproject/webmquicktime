@@ -468,6 +468,7 @@ ComponentResult startPass(GenericStreamPtr vs,int pass)
 {
   ComponentResult err = noErr;
   ICMCompressionPassModeFlags cpFlag =0;
+  dbg_printf("[WEBM] Start pass %d session %ld\n", pass, (UInt32) vs->vid.compressionSession);
   if (pass == 1)
   {
     ICMCompressionPassModeFlags readFlags;
@@ -490,10 +491,12 @@ ComponentResult startPass(GenericStreamPtr vs,int pass)
   return err;
 }
 
-ComponentResult endPass(GenericStreamPtr vs)
+OSStatus endPass(GenericStreamPtr vs)
 {
-  ComponentResult err = noErr;
+  dbg_printf("[WEBM] End pass session %ld\n", (UInt32) vs->vid.compressionSession);
   OSStatus os = ICMCompressionSessionEndPass(vs->vid.compressionSession);         
-  //TODO return error if it exists
-  return err;    
+  if (os != 0)
+    dbg_printf("[WEBM] Error: endPass got error %d\n", os);
+  
+  return os;
 }
