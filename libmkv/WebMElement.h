@@ -26,8 +26,8 @@ void writeAudioTrack(EbmlGlobal *glob, unsigned int trackNumber, int flagLacing,
                      char *codecId, double samplingFrequency, unsigned int channels,
                      unsigned char *private, unsigned long privateSize);
 
-void writeSimpleBlock(EbmlGlobal *ebml, unsigned char trackNumber, short timeCode,
-                      int isKeyframe, unsigned char lacingFlag, int discardable,
+void writeSimpleBlock(EbmlGlobal *glob, unsigned char trackNumber, short timeCode,
+                      int isKeyframe, int invisible, unsigned char lacingFlag, int discardable,
                       unsigned char *data, unsigned long dataLength);
 
 

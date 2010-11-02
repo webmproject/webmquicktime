@@ -292,24 +292,19 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
       default:
         break;
     }
-    
   }
   
-  glob->frameCount++ ;
-  
+  glob->frameCount++ ;  //framecount gets reset on a new pass
   if (glob->currentPass == VPX_RC_FIRST_PASS)
   {
     //in the first pass no need to export any frames
     return err;  
   }
   
-  
 bail:
-  
   if (err)
     dbg_printf("[vp8e - %08lx]  bailed with err %d\n", (UInt32)glob, err);
-  
-  
+ 
   return err;
 }
 

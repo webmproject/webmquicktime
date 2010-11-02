@@ -205,16 +205,10 @@ _fillBuffer_callBack(ComponentInstance ci, UInt32 *ioNumberDataPackets, AudioBuf
         *ioNumberDataPackets = params->actualSampleCount;
         params->actualSampleCount = 0;
     }
-    if (as->framesIn ==0)
-    {
-        //dbg_printf("TODO REMOVE -- mDataByteSize = %ld, num Packets = %ld",
-        //           ioData->mBuffers[0].mDataByteSize, *ioNumberDataPackets);
-    }
     as->framesIn += *ioNumberDataPackets;
 
     return err;
 }
-
 
 
 static void _initAudioBufferList(GenericStreamPtr as, AudioBufferList **audioBufferList, UInt32 ioPackets)
@@ -300,13 +294,6 @@ ComponentResult compressAudio(GenericStreamPtr as)
     for (i = 0; i < ioPackets; i++)
     {
       dbg_printf("[WebM] packet is %ld bytes, %ld frames\n", packetDesc[i].mDataByteSize,  packetDesc[i].mVariableFramesInPacket);
-/*      if (packetDesc[i].mVariableFramesInPacket ==0)
-      {
-        //TODO I think I had this number here earlier to account for a bug, which is now fixed...
-        as->framesOut += 3092; //0 indicates fixed frames, TODO this number just works for now( it seems wrong)
-      }
-      else*/
-      
       as->framesOut += packetDesc[i].mVariableFramesInPacket;
       as->aud.buf.offset += packetDesc[i].mDataByteSize;
     }
