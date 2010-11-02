@@ -542,14 +542,15 @@ ComponentResult _writeBlock(WebMExportGlobalsPtr globals, GenericStreamPtr gs, E
   ComponentResult err = noErr;
   WebMBufferedFrame *frame = gs->frameQueue.queue[0];
   
-  int isKeyFrame = frame->frameType & KEY_FRAME != 0;
+  int isKeyFrame = (frame->frameType & KEY_FRAME) != 0;
+  int invisible = (frame->frameType & ALT_REF_FRAME) !=0;
   short relativeTime = frame->timeMs - globals->clusterTime;
   dbg_printf("[webM] write simple block track %d keyframe %d frame #%llu time %llu data size %lu, Relative Time %d\n",
              gs->source.trackID, isKeyFrame,
              gs->framesOut, frame->timeMs, frame->size, relativeTime);
   
   writeSimpleBlock(ebml, gs->source.trackID, relativeTime,
-                   isKeyFrame, 0 , 0,
+                   isKeyFrame, invisible, 0 , 0,
                    frame->data, frame->size);
   dbg_printf("[webM] Queue Size %d", gs->frameQueue.size);
   releaseFrame(&gs->frameQueue);

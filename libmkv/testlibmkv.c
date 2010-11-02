@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
             Ebml_SerializeUnsigned(&ebml, Timecode, 0);
 
             unsigned char someData[4] = {1, 2, 3, 4};
-            writeSimpleBlock(&ebml, 1, 0, 1, 0, 0, someData, 4);
+            writeSimpleBlock(&ebml, 1, 0,0, 1, 0, 0, someData, 4);
             Ebml_EndSubElement(&ebml, &clusterStart);
         }    //end cluster
         Ebml_EndSubElement(&ebml, &startSegment);

@@ -47,6 +47,7 @@ static Boolean isInQueue(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sou
 
 static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_cx_pkt_t *pkt)
 {
+  const UInt32 timeThreshold = 2;
   ICMMutableEncodedFrameRef encodedFrame = NULL;
   unsigned char *dataPtr;
   size_t dataSize = 0;
@@ -55,12 +56,13 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   
   Boolean keyFrame = false;
   Boolean droppableFrame = false;
+  Boolean invisibleFrame = false;
   
   //get the source frame off the queue
   //for an alt-ref frame this won't work.
   ICMCompressorSourceFrameRef sourceFrame = NULL;
-  dbg_printf("[VP8E] emitEncodedFrame frames out %ld, pts %ld, \n",
-             glob->sourceQueue.frames_out, pkt->data.frame.pts);
+  dbg_printf("[VP8E] emitEncodedFrame frames out %ld, pts %ld,  frames in queue %d\n",
+             glob->sourceQueue.frames_out, pkt->data.frame.pts, glob->sourceQueue.size);
   while (glob->sourceQueue.size > 0)
   {
     if (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE)
@@ -70,16 +72,17 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
       sourceFrame = glob->sourceQueue.queue[0];
       break;      
     }
-    else if (glob->sourceQueue.frames_out == pkt->data.frame.pts)
+    UInt32 expectedTime = glob->sourceQueue.frames_out  * glob->cfg.g_timebase.num * 1000 / glob->cfg.g_timebase.den;
+    dbg_printf("Expected time = %lu\n", expectedTime);
+    sourceFrame = popSourceFrame(glob);
+    if (expectedTime > pkt->data.frame.pts - timeThreshold)
     {
-      sourceFrame = popSourceFrame(glob);
       break;
     }
     else //frames_out < pts
     {
       dbg_printf("[VP8E] Dropping frame %ld, Queue size  %ld\n", 
                  glob->sourceQueue.frames_out, glob->sourceQueue.size);
-      sourceFrame = popSourceFrame(glob);
       ICMCompressorSessionDropFrame(glob->session, sourceFrame);
     }
     sourceFrame = NULL;
@@ -124,7 +127,7 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   dbg_printf(keyFrame ? "Key Packet\n" : "Non Key Packet\n");
   droppableFrame = pkt->data.frame.flags & VPX_FRAME_IS_DROPPABLE;
   dbg_printf(droppableFrame ? "Droppable frame\n" : "Not droppable frame\n");
-  
+  invisibleFrame = pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE;
   // Update the encoded frame to reflect the actual frame size, sample flags and frame type.
   err = ICMEncodedFrameSetDataSize(encodedFrame, dataSize);
   
@@ -140,8 +143,9 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
       mediaSampleFlags |= mediaSampleDroppable;
   }
   
-  //TODO here is where we should add alt-ref
   ICMFrameType frameType = keyFrame ? kICMFrameType_I : kICMFrameType_P;    
+  if (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE)
+    frameType = kICMFrameType_Unknown;
   dbg_printf("[vp8e - %08lx] frame type set to %c\n", (UInt32)glob, keyFrame ? 'I' : 'P');
   
   if (kICMFrameType_I == frameType)
@@ -159,7 +163,7 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   if (timeStamp == 0)
   {
     //TODO make sure time scale is the same
-    timeStamp = pkt->data.frame.pts * glob->cfg.g_timebase.num * timeScale / glob->cfg.g_timebase.den;
+    timeStamp = pkt->data.frame.pts * timeScale / 1000;
   }
   dbg_printf("[vp8e]setting ICMEncodedFrameSetDisplayTimeStamp %lld\n", timeStamp);
   err= ICMEncodedFrameSetDisplayTimeStamp(encodedFrame, timeStamp);
@@ -174,8 +178,10 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
 bail:
   // Since we created this, we must also release it.
   if (encodedFrame)
+  {
+    dbg_printf("REMOVE ICMEncodedFrameRelease\n");
     ICMEncodedFrameRelease(encodedFrame);
-  
+  }
   return err;
 }
 
@@ -215,7 +221,8 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
   const UInt8 *decoderDataPtr;
   int storageIndex = 0;
   
-  dbg_printf("[vp8e - %08lx] encode this frame %08lx\n", (UInt32)glob, (UInt32)sourceFrame);
+  UInt32 timeMs = glob->frameCount * glob->cfg.g_timebase.num * 1000 / glob->cfg.g_timebase.den;
+  dbg_printf("[vp8e - %08lx] encode this frame %08lx %lu\n", (UInt32)glob, (UInt32)sourceFrame, timeMs);
   
   //long dispNumber = ICMCompressorSourceFrameGetDisplayNumber(sourceFrame);
   
@@ -232,7 +239,7 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
     int flags = 0 ; //TODO - find out what I may need in these flags
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d  flags %x\n", (UInt32)glob, glob->codec, glob->raw, glob->frameCount,  flags);
     //TODO seems like quality should be an option.  Right now hardcoded to GOOD_QUALITY
-    codecError = vpx_codec_encode(glob->codec, glob->raw, glob->frameCount,
+    codecError = vpx_codec_encode(glob->codec, glob->raw, timeMs,
                                   1, flags, VPX_DL_GOOD_QUALITY);
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec exit\n", (UInt32)glob);
   }
@@ -240,7 +247,7 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
   {
     int flags = 0 ; //TODO - find out what I may need in these flags
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d ----NULL TERMINATION\n", (UInt32)glob, glob->codec, NULL, glob->frameCount,  flags);
-    codecError = vpx_codec_encode(glob->codec, NULL, glob->frameCount,
+    codecError = vpx_codec_encode(glob->codec, NULL, timeMs,
                                   1, flags, VPX_DL_GOOD_QUALITY);
   }
   
@@ -487,6 +494,10 @@ static void setCustom(VP8EncoderGlobals glob)
   else if (glob->settings[5] ==2)
     glob->cfg.rc_end_usage = VPX_VBR;
   setUInt(&glob->cfg.g_lag_in_frames, glob->settings[6]);
+  if (glob->settings[6] != UINT_MAX)
+  {
+    dbg_printf("[WebM] setting g_lag_in_frames to %d\n", glob->settings[6]);
+  }
   
   setUInt(&glob->cfg.rc_min_quantizer, glob->settings[8]);
   setUInt(&glob->cfg.rc_max_quantizer, glob->settings[9]);
@@ -528,7 +539,10 @@ void setCustomPostInit(VP8EncoderGlobals glob)
   
   //TODO verify this when enabling alt - ref
   if (glob->settings[25] != UINT_MAX)
+  {
     vpx_codec_control(glob->codec, VP8E_SET_ENABLEAUTOALTREF, glob->settings[25]);
+    dbg_printf("[VP8e] Setting enable Altref %d\n", glob->settings[25]);
+  }
   if (glob->settings[26] != UINT_MAX)
     vpx_codec_control(glob->codec, VP8E_SET_ARNR_MAXFRAMES, glob->settings[26]);
   if (glob->settings[27] != UINT_MAX)
