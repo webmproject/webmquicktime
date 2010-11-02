@@ -865,14 +865,16 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
 
   sectionStart_ns = store->audioTimes[0]; // or if we dont delete the refs, use store->audioTimes[sectionStartIndex];
   sectionStart_qt = static_cast<TimeValue>(double(sectionStart_ns) / ns_per_sec * mediaTimeScale);
-  sectionEnd_ns = lastTime_ns;  // arg passed in
-  sectionDuration_ns = sectionEnd_ns - sectionStart_ns;
-  sectionDuration_qt = static_cast<TimeValue>(double(sectionDuration_ns) / ns_per_sec * mediaTimeScale);
-  if (sectionDuration_qt != accSectionDuration_qt)
-    dbg_printf("FinishAddingAudioBlocks duration mismatch.  accSecDur_qt=%ld != secDur_qt=%ld\n", accSectionDuration_qt, sectionDuration_qt);
+  //sectionEnd_ns = lastTime_ns;  // arg passed in
+  //sectionDuration_ns = sectionEnd_ns - sectionStart_ns;
+  //sectionDuration_qt = static_cast<TimeValue>(double(sectionDuration_ns) / ns_per_sec * mediaTimeScale);
+  //if (sectionDuration_qt != accSectionDuration_qt)
+  //  dbg_printf("FinishAddingAudioBlocks duration mismatch.  accSecDur_qt=%ld != secDur_qt=%ld\n", accSectionDuration_qt, sectionDuration_qt);
   TimeValue trackStart = -1;  // -1 means insert the media at the END of the track
   TimeValue mediaTime = sectionStart_qt; // starting point of media section to insert, expressed in media's time scale.
   TimeValue mediaDuration = accSectionDuration_qt;  // duration of media section, expressed in media's time scale. 
+  dbg_printf("audioMaxLoaded=%ld, sectionStart_qt=%ld\n", store->audioMaxLoaded, sectionStart_qt); // test, use maxLoaded in call to Insert instead of calculated value here.
+  mediaTime = store->audioMaxLoaded;  // use actual duration value for frames already loaded, rather than calculating it now. Avoid -2014 error from Insert call below.
   err = InsertMediaIntoTrack(store->movieAudioTrack, trackStart, mediaTime, mediaDuration, fixed1);
   if (err)
     dbg_printf("InsertMediaIntoTrack FAIL with err = %d\n", err);
