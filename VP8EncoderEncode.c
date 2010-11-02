@@ -179,9 +179,10 @@ bail:
   // Since we created this, we must also release it.
   if (encodedFrame)
   {
-    dbg_printf("REMOVE ICMEncodedFrameRelease\n");
     ICMEncodedFrameRelease(encodedFrame);
   }
+  if (err)
+    dbg_printf("[VP8e] EmitEncodedFrame Error = %d\n", err);
   return err;
 }
 
@@ -222,7 +223,8 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
   int storageIndex = 0;
   
   UInt32 timeMs = glob->frameCount * glob->cfg.g_timebase.num * 1000 / glob->cfg.g_timebase.den;
-  dbg_printf("[vp8e - %08lx] encode this frame %08lx %lu\n", (UInt32)glob, (UInt32)sourceFrame, timeMs);
+  dbg_printf("[vp8e - %08lx] encode this frame %08lx %ld * %ld / %ld time %lu\n",
+             (UInt32)glob, (UInt32)sourceFrame, glob->frameCount, glob->cfg.g_timebase.num, glob->cfg.g_timebase.den,timeMs);
   
   //long dispNumber = ICMCompressorSourceFrameGetDisplayNumber(sourceFrame);
   
@@ -250,6 +252,7 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
     codecError = vpx_codec_encode(glob->codec, NULL, timeMs,
                                   1, flags, VPX_DL_GOOD_QUALITY);
   }
+  glob->frameCount++ ;  //framecount gets reset on a new pass
   
   if (codecError)
   {
@@ -301,7 +304,6 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
     }
   }
   
-  glob->frameCount++ ;  //framecount gets reset on a new pass
   if (glob->currentPass == VPX_RC_FIRST_PASS)
   {
     //in the first pass no need to export any frames

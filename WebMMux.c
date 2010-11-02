@@ -545,8 +545,8 @@ ComponentResult _writeBlock(WebMExportGlobalsPtr globals, GenericStreamPtr gs, E
   int isKeyFrame = (frame->frameType & KEY_FRAME) != 0;
   int invisible = (frame->frameType & ALT_REF_FRAME) !=0;
   short relativeTime = frame->timeMs - globals->clusterTime;
-  dbg_printf("[webM] write simple block track %d keyframe %d frame #%llu time %llu data size %lu, Relative Time %d\n",
-             gs->source.trackID, isKeyFrame,
+  dbg_printf("[webM] write simple block track %d keyframe %d invisible %d frame #%llu time %llu data size %lu, Relative Time %d\n",
+             gs->source.trackID, isKeyFrame, invisible,
              gs->framesOut, frame->timeMs, frame->size, relativeTime);
   
   writeSimpleBlock(ebml, gs->source.trackID, relativeTime,
