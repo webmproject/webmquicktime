@@ -773,22 +773,30 @@ OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, 
 //  Call this for each block in a section (maybe a cluster) to collect sample references first, 
 //  and then call AddMediaSampleReferences() later for the section, or once at the end of file.
 //
+//  Lacing means there could be multiple Frames per Block, so iterate and add all Frames here.
+//
 OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack)
 {
   OSErr err = noErr;
+  dbg_printf("Audio Block\n");
 
-  SampleReferencePtr srp;
-  srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
-  srp->dataOffset = webmBlock->GetOffset();
-  srp->dataSize = webmBlock->GetSize();
-  srp->durationPerSample = 0;               // need to calculate this later for all samples.
-  srp->numberOfSamples = 1;
-  srp->sampleFlags = 0; // ?
+  long frameCount = webmBlock->GetFrameCount();
+  for (long fi = 0; fi < frameCount; fi++) {
+    const mkvparser::Block::Frame& webmFrame = webmBlock->GetFrame(fi);  // zero-based index
+    dbg_printf("\tFrame:\tpos:%15lld, len:%15ld\n", webmFrame.pos, webmFrame.len);
 
-  store->audioSamples.push_back(*srp);
-  store->audioTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+    SampleReferencePtr srp;
+    srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
+    srp->dataOffset = webmFrame.pos;          // webmBlock->GetOffset();
+    srp->dataSize = webmFrame.len;            // webmBlock->GetSize();
+    srp->durationPerSample = 0;               // need to calculate this later for all samples.
+    srp->numberOfSamples = 1;
+    srp->sampleFlags = 0; // ?
 
-  dbg_printf("Audio Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
+    store->audioSamples.push_back(*srp);
+    store->audioTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+  }
+
   return err;
 }
 
@@ -902,24 +910,33 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
 //  Call this for each block in a section (maybe a cluster) to collect sample references first, 
 //  and then call AddMediaSampleReferences() later for the section, or once at the end of file.
 //
+//  Lacing means there could be multiple Frames per Block, so iterate and add all Frames here.
+//
 OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::VideoTrack* webmVideoTrack)
 {
   OSErr err = noErr;
+  dbg_printf("Video Block\n");
 
-  SampleReferencePtr srp;
-  srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
-  srp->dataOffset = webmBlock->GetOffset();
-  srp->dataSize = webmBlock->GetSize();
-  srp->durationPerSample = 0;               // need to calculate this later for all samples.
-  srp->numberOfSamples = 1;
-  srp->sampleFlags = 0;                     //
-  if (!webmBlock->IsKey())
-    srp->sampleFlags |= mediaSampleNotSync;
+  long frameCount = webmBlock->GetFrameCount();
+  for (long fi = 0; fi < frameCount; fi++) {
+    const mkvparser::Block::Frame& webmFrame = webmBlock->GetFrame(fi);  // zero-based index
+    dbg_printf("\tFrame:\tpos:%15lld, len:%15ld\n", webmFrame.pos, webmFrame.len);
 
-  store->videoSamples.push_back(*srp);
-  store->videoTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+    SampleReferencePtr srp;
+    srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
+    srp->dataOffset = webmFrame.pos;          // webmBlock->GetOffset();
+    srp->dataSize = webmFrame.len;            // webmBlock->GetSize();
+    srp->durationPerSample = 0;               // need to calculate this later for all samples.
+    srp->numberOfSamples = 1;
+    srp->sampleFlags = 0;                     //
+    if (!webmBlock->IsKey())
+      srp->sampleFlags |= mediaSampleNotSync;
 
-  dbg_printf("Video Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
+    store->videoSamples.push_back(*srp);
+    store->videoTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+  }
+
+//  dbg_printf("Video Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
   return err;
 }
 
