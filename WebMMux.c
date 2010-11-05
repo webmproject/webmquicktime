@@ -294,11 +294,12 @@ static void _startNewCluster(WebMExportGlobalsPtr globals, EbmlGlobal *ebml)
   globals->blocksInCluster =1;
 }
 
-Boolean isTwoPass(WebMExportGlobalsPtr globals)
+void GetEncoderSettings(WebMExportGlobalsPtr globals, Boolean *bIsTwoPass, Boolean *bAltRefEnabled)
 {
   //DO a first pass if needed
   ComponentInstance videoCI =NULL;
-  Boolean bTwoPass = false;
+  *bIsTwoPass = false;
+  *bAltRefEnabled = false;
   ComponentResult err = getVideoComponentInstace(globals, &videoCI);
   if(err) 
   {
@@ -320,9 +321,12 @@ Boolean isTwoPass(WebMExportGlobalsPtr globals)
   globals->currentPass = 1;
   if (GetHandleSize(globals->videoSettingsCustom) > 8)
   {
-    bTwoPass = ((UInt32*)*(globals->videoSettingsCustom))[1] ==2;
+    *bIsTwoPass = ((UInt32*)*(globals->videoSettingsCustom))[1] ==2;
     dbg_printf("[WebM] globals->videoSettingsCustom)[0] = %4.4s  twoPass =%d\n",
-               &((UInt32*) *(globals->videoSettingsCustom))[0], bTwoPass);
+               &((UInt32*) *(globals->videoSettingsCustom))[0], *bIsTwoPass);
+    *bAltRefEnabled = ((UInt32*)*(globals->videoSettingsCustom))[25] ==1;
+    dbg_printf("[WebM] globals->videoSettingsCustom)[0] = %4.4s  Altref =%d\n",
+               &((UInt32*) *(globals->videoSettingsCustom))[0], *bAltRefEnabled);
   }
   else 
   {
@@ -335,7 +339,6 @@ bail:
     CloseComponent(videoCI);
     videoCI= NULL;
   }
-  return bTwoPass;
 }
 
 ComponentResult _doFirstPass(WebMExportGlobalsPtr globals)
@@ -465,16 +468,13 @@ ComponentResult _getStreamWithMinTime(WebMExportGlobalsPtr globals, GenericStrea
   *minTimeMs = ULONG_MAX;
   *minTimeStream = NULL;
 
-  //first check if everything is complete
-  //TODO break this off into its own function
-
   //see if there's an empty queue
   for (iStream = 0; iStream < globals->streamCount; iStream++)
   {
     GenericStream *gs = &(*globals->streams)[iStream];
     if (gs->frameQueue.size == 0  && !gs->complete)
     {
-      dbg_printf("REMOVE -- need to fill stream %d\n", iStream);
+      //dbg_printf("REMOVE -- need to fill stream %d\n", iStream);
       return noErr;
     }
   }
@@ -549,11 +549,12 @@ ComponentResult _writeBlock(WebMExportGlobalsPtr globals, GenericStreamPtr gs, E
              gs->source.trackID, isKeyFrame, invisible,
              gs->framesOut, frame->timeMs, frame->size, relativeTime);
   
+  //NOTE: right now alt ref frames are not marked invisible
   writeSimpleBlock(ebml, gs->source.trackID, relativeTime,
-                   isKeyFrame, invisible, 0 , 0,
+                   isKeyFrame, 0, 0 , 0,
                    frame->data, frame->size);
   dbg_printf("[webM] Queue Size %d", gs->frameQueue.size);
-  releaseFrame(&gs->frameQueue);
+  popFrame(&gs->frameQueue);
   //TODO this if statement needs to come out later, audio video have different
   //framesOut meanings
   if(gs->trackType == VideoMediaType)
@@ -620,11 +621,13 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
   globals->clusterOffset = *(SInt64 *)& ebml.offset;
   globals->clusterKeyFrameTime = UINT_MAX;
   
-  Boolean bTwoPass = isTwoPass(globals);
+  Boolean bTwoPass;
+  GetEncoderSettings(globals, &bTwoPass, &globals->bAltRefEnabled);
   dbg_printf("[WebM] Is Two Pass %d\n",bTwoPass);
   //start first pass in a two pass
   if (bTwoPass)
     _doFirstPass(globals);
+  
   
   while (!allStreamsDone)
   {
@@ -654,6 +657,7 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
         _addCue(globals, tmpU , minFrame->timeMs, minTimeStream->source.trackID);
     }  //end if VideoMediaType
     _writeBlock(globals, minTimeStream, &ebml);
+    
 
     globals->blocksInCluster ++;            
     

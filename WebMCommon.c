@@ -21,7 +21,7 @@ WebMBufferedFrame* getFrame(WebMQueuedFrames *queue)
   return queue->queue[0];
 }
 
-void releaseFrame(WebMQueuedFrames *queue)
+void popFrame(WebMQueuedFrames *queue)
 {
   if (queue->size <=0)
     return;
@@ -67,7 +67,7 @@ int frameQueueSize(WebMQueuedFrames *queue)
 int freeFrameQueue(WebMQueuedFrames *queue)
 {
   while(queue->size > 0)
-    releaseFrame(queue);
+    popFrame(queue);
   free(queue->queue);
 }
 

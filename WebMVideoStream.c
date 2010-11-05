@@ -55,6 +55,7 @@ bail:
 
 
 
+
 //callback function of the decompression session
 static void _frameDecompressedCallback(void *refCon, OSStatus inerr,
                                        ICMDecompressionTrackingFlags decompressionFlags,
@@ -189,28 +190,58 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
   
   dbg_printf("[webM] allocate data %d bytes\n", enc_size);
   
-  //create a buffer with frame data
-  void * buf = malloc(enc_size);
-  memcpy(buf, ICMEncodedFrameGetDataPtr(ef), enc_size);
   
   //pass appropriate flags for frame type
   ICMFrameType frame_type = ICMEncodedFrameGetFrameType(ef);
   UInt16 frameFlags = VIDEO_FRAME;
-  if (frame_type == kICMFrameType_I)
-    frameFlags += KEY_FRAME;
-  else if(frame_type == kICMFrameType_Unknown)
-    frameFlags += ALT_REF_FRAME; // currently using the unknown to indicat alt-ref
+  
+  //NOTE: With Altref frames, the decodeTimeStamp Represents the altref time
+  //  this is a workaround that I don't like, ideally some other sort of
+  //  parameter could handle this.
   
   UInt64 displayTime = ICMEncodedFrameGetDisplayTimeStamp(ef);
   UInt64 timeScale = ICMEncodedFrameGetTimeScale(ef);
+
   dbg_printf("[WebM] ICMEncodedFrameGetDisplayTimeStamp %llu ICMEncodedFrameGetTimeScale %llu\n", 
-             displayTime,timeScale);
+             displayTime, timeScale);
   
   UInt32 decodeNum = ICMEncodedFrameGetDecodeNumber(ef);
   UInt32 timeMs = displayTime * 1000/timeScale;
   dbg_printf("[WebM] adding frame %d to queue %lu flags %lx\n", decodeNum, timeMs, frameFlags);
   
-  addFrameToQueue(&vs->frameQueue, buf, enc_size,  timeMs, frameFlags, decodeNum -1);
+  if (frame_type != kICMFrameType_Unknown)
+  {
+    if (frame_type == kICMFrameType_I)
+      frameFlags += KEY_FRAME;
+    //create a buffer with frame data
+    void * buf = malloc(enc_size);
+    memcpy(buf, ICMEncodedFrameGetDataPtr(ef), enc_size);
+
+    addFrameToQueue(&vs->frameQueue, buf, enc_size,  timeMs, frameFlags, decodeNum -1);
+  }
+  else 
+  {
+    //There are two frames embedded in altref frames...
+    UInt32 decodeTimeMs = vs->vid.lastTimeMs + (timeMs - vs->vid.lastTimeMs)/2;
+    const unsigned char * cBuf = ICMEncodedFrameGetDataPtr(ef);
+    UInt32 altrefPortion= *((UInt32*)cBuf);
+    dbg_printf("[WebM]Size Of altref data in frame %lu at time %lu\n", altrefPortion, decodeTimeMs);
+    void * altrefBuf = malloc(altrefPortion);
+    memcpy(altrefBuf, &cBuf[4], altrefPortion);                          
+    frameFlags += ALT_REF_FRAME; // currently using the unknown to indicat alt-ref
+    addFrameToQueue(&vs->frameQueue, altrefBuf, altrefPortion,  decodeTimeMs, frameFlags, decodeNum -1);
+
+    //also write the following interframe
+    UInt32 framePortion = enc_size - altrefPortion -4;
+    dbg_printf("[WebM]Size Of inter frame %lu at time %lu\n", framePortion, timeMs);
+    frameFlags = VIDEO_FRAME;
+    void * frameBuf = malloc(altrefPortion);
+    memcpy(frameBuf, &cBuf[altrefPortion+4], altrefPortion);                          
+    addFrameToQueue(&vs->frameQueue, frameBuf, framePortion,  timeMs, frameFlags, decodeNum -1);
+  }
+  
+  vs->vid.lastTimeMs = timeMs;
+
   dbg_printf("[webM]  exit _frame_compressed_callback(err = %d)\n", err);
   return err;
 }
@@ -231,7 +262,7 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
   
   // Disable B frames.
   err = ICMCompressionSessionOptionsSetAllowFrameReordering(options, false);
-  
+  if (err) goto bail;
   
   //  ---  Transfer spatial settings   ----
   SCSpatialSettings ss;
@@ -375,7 +406,7 @@ static void initFrameTimeRecord(GenericStreamPtr vs, ICMFrameTimeRecord *frameTi
   frameTimeRecord->recordSize = sizeof(ICMFrameTimeRecord);
   //si->source.time is in milliseconds whereas this value needs to be in timeScale Units
   //*(TimeValue64 *) &frameTimeRecord->value = vs->currentFrame * vs->source.params.durationPerSample / si->source.timeScale;
-  *(TimeValue64 *) &frameTimeRecord->value = vs->source.time;
+  frameTimeRecord->value = SInt64ToWide(vs->source.time);
   frameTimeRecord->scale = vs->source.timeScale;
   frameTimeRecord->rate = fixed1;
   frameTimeRecord->duration = vs->source.params.durationPerSample;
@@ -398,7 +429,8 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, GenericStreamPtr
     vs->source.eos = true;
     err= noErr;
   }
-  else {
+  else 
+  {
     vs->framesIn += 1;
   }
   

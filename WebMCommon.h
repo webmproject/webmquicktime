@@ -64,7 +64,7 @@ typedef struct
   void *refCon;
   MovieExportGetDataParams params;
   Boolean eos;
-  SInt32 time;                    //This time must be based on the source Time scale
+  TimeValue64 time;                    //This time must be based on the source Time scale
   TimeScale timeScale;
   long trackID;
 } StreamSource;
@@ -73,7 +73,7 @@ typedef struct
 
 void initFrameQueue(WebMQueuedFrames *queue);
 WebMBufferedFrame* getFrame(WebMQueuedFrames *queue);
-void releaseFrame(WebMQueuedFrames *queue);
+void popFrame(WebMQueuedFrames *queue);
 // returns -1 on memory error
 int addFrameToQueue(WebMQueuedFrames *queue, void * data,UInt32 size, UInt64 timeMs, UInt16 frameType, UInt32 indx);
 int frameQueueSize(WebMQueuedFrames *queue);

@@ -97,6 +97,8 @@ VP8_Encoder_Open(
   glob->sourceQueue.queue = NULL;
   glob->sourceQueue.frames_in =0;
   glob->sourceQueue.frames_out =0;
+  glob->altRefFrame.buf =0;
+  glob->altRefFrame.size =0;
   
   int i;
   for (i=0;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
@@ -490,7 +492,6 @@ VP8_Encoder_EncodeFrame(
   ComponentResult err = noErr;
   ICMCompressionFrameOptionsRef frameOptions;
   dbg_printf("[vp8e - %08lx] flags are %x\n", (UInt32)glob, flags);
-  
   err = encodeThisSourceFrame(glob, sourceFrame);
 }
 

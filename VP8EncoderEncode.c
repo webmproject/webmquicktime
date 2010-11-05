@@ -47,7 +47,6 @@ static Boolean isInQueue(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sou
 
 static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_cx_pkt_t *pkt)
 {
-  const UInt32 timeThreshold = 2;
   ICMMutableEncodedFrameRef encodedFrame = NULL;
   unsigned char *dataPtr;
   size_t dataSize = 0;
@@ -63,19 +62,30 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   ICMCompressorSourceFrameRef sourceFrame = NULL;
   dbg_printf("[VP8E] emitEncodedFrame frames out %ld, pts %ld,  frames in queue %d\n",
              glob->sourceQueue.frames_out, pkt->data.frame.pts, glob->sourceQueue.size);
+
+  if (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE)
+  {
+    dbg_printf("[VP8E] Keeping Altref Frame data %ld\n", pkt->data.frame.sz);
+    //This indicates an alt -ref frame, instead of popping the frame I'm just going to hold on to data and append.
+    if (glob->altRefFrame.buf != NULL)
+    {
+      //this shouldn't happen
+      dbg_printf("[VP8E]  Errror: possible memory leak in alt ref frame data\n");
+    }
+    glob->altRefFrame.buf = malloc(pkt->data.frame.sz);
+    memcpy(glob->altRefFrame.buf, pkt->data.frame.buf, pkt->data.frame.sz);
+    glob->altRefFrame.size = pkt->data.frame.sz;
+    return noErr;
+  }
+  
+  
   while (glob->sourceQueue.size > 0)
   {
-    if (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE)
-    {
-      dbg_printf("[VP8E] Altref Frame\n");
-      //This indicates an alt -ref frame, instead of popping the frame I'm just going to keep it.
-      sourceFrame = glob->sourceQueue.queue[0];
-      break;      
-    }
-    UInt32 expectedTime = glob->sourceQueue.frames_out  * glob->cfg.g_timebase.num * 1000 / glob->cfg.g_timebase.den;
+    //time is in timeBase *2
+    UInt32 expectedTime = glob->sourceQueue.frames_out  * 2 ;
     dbg_printf("Expected time = %lu\n", expectedTime);
     sourceFrame = popSourceFrame(glob);
-    if (expectedTime > pkt->data.frame.pts - timeThreshold)
+    if (expectedTime >= pkt->data.frame.pts)
     {
       break;
     }
@@ -87,7 +97,7 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
     }
     sourceFrame = NULL;
   }
-  if (sourceFrame == NULL)
+  if (sourceFrame == NULL && (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE) == 0)
   {
     dbg_printf("[VP8e] Error: asked to output a frame at time %ld but last frame in was %ld\n",
                pkt->data.frame.pts, glob->sourceQueue.frames_in);
@@ -97,11 +107,12 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   TimeScale timescale = 0;
   ICMValidTimeFlags validTimeFlags = 0;
   unsigned int bitrate = 0;
-  TimeValue64 timeStamp=0;
+  TimeValue64 timeStamp=0,decodeTimeStamp=0;
   TimeScale timeScale =0;
   
   //use the time stamp of the input frame for the output frame
   err = ICMCompressorSourceFrameGetDisplayTimeStampAndDuration(sourceFrame, &timeStamp,NULL, &timeScale, NULL);
+  decodeTimeStamp = timeStamp;
   dbg_printf("[VP8e] ICMCompressorSourceFrameGetDisplayTimeStampAndDuration(%lld,%lld)\n" ,timeStamp, timeScale );
   
   err = ICMEncodedFrameCreateMutable(glob->session, sourceFrame, 
@@ -117,9 +128,26 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
     goto bail;
   }
   
+  //if we have an altref frame, prepend that data.
+  if (glob->altRefFrame.buf != NULL)
+  {
+    //This method prepends the altref size and altref data to the following interframe.
+    // I've also tried sending in bogus source frames, and sending back altref via those (has major implementation issues)
+    // Also I've tried reading altref size from the data... Seems as though I can't though in the future that may be better.
+    //Quicktime and altref frames are difficult because of paramErr failures that occur when trying to use sourceframes 2x
+    
+    memcpy(&(dataPtr[dataSize]), &glob->altRefFrame.size, sizeof(glob->altRefFrame.size));
+    dataSize += sizeof(glob->altRefFrame.size);
+    dbg_printf("[VP8e] Appended altrefsize %ld bytes %lu\n", glob->altRefFrame.size, dataSize);
+    
+    memcpy(&(dataPtr[dataSize]), glob->altRefFrame.buf, glob->altRefFrame.size);
+    dataSize += glob->altRefFrame.size;
+    dbg_printf("[VP8e] Appended altref frame bytes %lu\n", dataSize);
+  }
+  
   dbg_printf("[vp8e - %08lx] copying %d bytes of data to output dataBuffer\n", (UInt32)glob, pkt->data.frame.sz);
   memcpy(&(dataPtr[dataSize]), pkt->data.frame.buf, pkt->data.frame.sz);
-  dataSize = pkt->data.frame.sz;
+  dataSize += pkt->data.frame.sz;
   
   dbg_printf("[vp8e - %08lx]  Encoded frame %d with %d bytes of data\n", (UInt32)glob, glob->frameCount, dataSize);
   
@@ -128,6 +156,7 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   droppableFrame = pkt->data.frame.flags & VPX_FRAME_IS_DROPPABLE;
   dbg_printf(droppableFrame ? "Droppable frame\n" : "Not droppable frame\n");
   invisibleFrame = pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE;
+
   // Update the encoded frame to reflect the actual frame size, sample flags and frame type.
   err = ICMEncodedFrameSetDataSize(encodedFrame, dataSize);
   
@@ -144,9 +173,16 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
   }
   
   ICMFrameType frameType = keyFrame ? kICMFrameType_I : kICMFrameType_P;    
-  if (pkt->data.frame.flags & VPX_FRAME_IS_INVISIBLE)
+  if (glob->altRefFrame.buf != NULL)
+  {
     frameType = kICMFrameType_Unknown;
-  dbg_printf("[vp8e - %08lx] frame type set to %c\n", (UInt32)glob, keyFrame ? 'I' : 'P');
+    free(glob->altRefFrame.buf);
+    glob->altRefFrame.buf =NULL;
+    glob->altRefFrame.size =0;
+    dbg_printf("[vp8e - %08lx] frame type set to Unknown\n", (UInt32)glob);  
+  }
+  else
+    dbg_printf("[vp8e - %08lx] frame type set to %c\n", (UInt32)glob, keyFrame ? 'I' : 'P');
   
   if (kICMFrameType_I == frameType)
     mediaSampleFlags |= mediaSampleDoesNotDependOnOthers;
@@ -162,9 +198,9 @@ static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_
 
   if (timeStamp == 0)
   {
-    //TODO make sure time scale is the same
-    timeStamp = pkt->data.frame.pts * timeScale / 1000;
+    timeStamp = pkt->data.frame.pts * glob->cfg.g_timebase.num * timeScale / 2 /glob->cfg.g_timebase.den ;  //pts is timebase *2 2      
   }
+
   dbg_printf("[vp8e]setting ICMEncodedFrameSetDisplayTimeStamp %lld\n", timeStamp);
   err= ICMEncodedFrameSetDisplayTimeStamp(encodedFrame, timeStamp);
   
@@ -193,7 +229,9 @@ ComponentResult completeThisSourceFrame(VP8EncoderGlobals glob,
   ComponentResult err = noErr;
 
   if (!isInQueue(glob, sourceFrame))
+  {
     err = encodeThisSourceFrame(glob, sourceFrame);
+  }
   if (err) return err;
   while (isInQueue(glob, sourceFrame))
   {
@@ -222,9 +260,10 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
   const UInt8 *decoderDataPtr;
   int storageIndex = 0;
   
-  UInt32 timeMs = glob->frameCount * glob->cfg.g_timebase.num * 1000 / glob->cfg.g_timebase.den;
-  dbg_printf("[vp8e - %08lx] encode this frame %08lx %ld * %ld / %ld time %lu\n",
-             (UInt32)glob, (UInt32)sourceFrame, glob->frameCount, glob->cfg.g_timebase.num, glob->cfg.g_timebase.den,timeMs);
+  //time is multiplied by 2 to allow space for altref frames
+  UInt32 time2 = glob->frameCount * 2;
+  dbg_printf("[vp8e - %08lx] encode this frame %08lx %ld  time2 %lu\n",
+             (UInt32)glob, (UInt32)sourceFrame, glob->frameCount, time2);
   
   //long dispNumber = ICMCompressorSourceFrameGetDisplayNumber(sourceFrame);
   
@@ -241,7 +280,7 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
     int flags = 0 ; //TODO - find out what I may need in these flags
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d  flags %x\n", (UInt32)glob, glob->codec, glob->raw, glob->frameCount,  flags);
     //TODO seems like quality should be an option.  Right now hardcoded to GOOD_QUALITY
-    codecError = vpx_codec_encode(glob->codec, glob->raw, timeMs,
+    codecError = vpx_codec_encode(glob->codec, glob->raw, time2,
                                   1, flags, VPX_DL_GOOD_QUALITY);
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec exit\n", (UInt32)glob);
   }
@@ -249,7 +288,7 @@ ComponentResult encodeThisSourceFrame(VP8EncoderGlobals glob,
   {
     int flags = 0 ; //TODO - find out what I may need in these flags
     dbg_printf("[vp8e - %08lx]  vpx_codec_encode codec %x  raw %x framecount %d ----NULL TERMINATION\n", (UInt32)glob, glob->codec, NULL, glob->frameCount,  flags);
-    codecError = vpx_codec_encode(glob->codec, NULL, timeMs,
+    codecError = vpx_codec_encode(glob->codec, NULL, time2,
                                   1, flags, VPX_DL_GOOD_QUALITY);
   }
   glob->frameCount++ ;  //framecount gets reset on a new pass

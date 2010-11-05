@@ -92,6 +92,8 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr store, ComponentInsta
     store->bExportVideo = 1;
     store->bExportAudio = 1;
     
+    store->bAltRefEnabled = 0;
+    
     store->audioSettingsAtom = NULL;
     store->videoSettingsAtom = NULL;
     store->videoSettingsCustom = NULL;

@@ -41,6 +41,7 @@ typedef struct
   ICMDecompressionSessionRef decompressionSession;
   ICMCompressionSessionRef compressionSession;
   Boolean             bTwoPass;
+  UInt32              lastTimeMs;
 } VideoStream, *VideoStreamPtr;
 
 typedef struct
@@ -91,6 +92,8 @@ typedef struct
   /* settings */
   Boolean             bExportVideo;
   Boolean             bExportAudio;
+  
+  Boolean             bAltRefEnabled;
   
   AudioStreamBasicDescription audioBSD;
   
