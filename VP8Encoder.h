@@ -17,27 +17,44 @@ typedef UInt32 VP8customSettings[TOTAL_CUSTOM_VP8_SETTINGS];
 
 typedef struct
 {
-    ComponentInstance               self;
-    ComponentInstance               target;
-    
-    ICMCompressorSessionRef         session; // NOTE: we do not need to retain or release this
-    ICMCompressionSessionOptionsRef sessionOptions;
-    
-    long                            width;
-    long                            height;
-    size_t                          maxEncodedDataSize;
-    int                             nextDecodeNumber;
-    
-    //VP8 Specific Variables
-    vpx_codec_err_t      res;
-    vpx_codec_ctx_t      *codec;
-    vpx_codec_enc_cfg_t  cfg;
-    vpx_image_t          *raw;
-    vpx_fixed_buf_t      stats;
-    VP8customSettings    settings;
-    int                  frameCount;
-    enum vpx_enc_pass         currentPass;
-    
+  unsigned char* buf;
+  UInt32 size;
+}VP8Buffer;
+
+typedef struct 
+{
+  ICMCompressorSourceFrameRef* queue;
+  int size;
+  int max;
+  unsigned long frames_in;
+  unsigned long frames_out;
+}ICMCompressorSourceFrameRefQueue;
+
+typedef struct
+{
+  ComponentInstance               self;
+  ComponentInstance               target;
+  
+  ICMCompressorSessionRef         session; // NOTE: we do not need to retain or release this
+  ICMCompressionSessionOptionsRef sessionOptions;
+  
+  long                            width;
+  long                            height;
+  size_t                          maxEncodedDataSize;
+  int                             nextDecodeNumber;
+  
+  //VP8 Specific Variables
+  vpx_codec_err_t      res;
+  vpx_codec_ctx_t      *codec;
+  vpx_codec_enc_cfg_t  cfg;
+  vpx_image_t          *raw;
+  vpx_fixed_buf_t      stats;
+  VP8customSettings    settings;
+  int                  frameCount;
+  enum vpx_enc_pass         currentPass;
+  ICMCompressorSourceFrameRefQueue sourceQueue;
+  VP8Buffer altRefFrame;  ///an option dummy source frame
+  
 } VP8EncoderGlobalsRecord, *VP8EncoderGlobals;
 
 #endif

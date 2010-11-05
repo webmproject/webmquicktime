@@ -23,32 +23,62 @@
 
 #endif /* __APPLE_CC__ */
 
+typedef struct
+{
+  void *data;
+  UInt32 size;
+  UInt32 offset;
+}WebMBuffer;
+
+enum{
+  KEY_FRAME = 0x01,
+  VIDEO_FRAME = 0x02,
+  AUDIO_FRAME = 0x04,
+  ALT_REF_FRAME = 0x08
+};
 
 typedef struct
 {
-    void *data;
-    UInt32 size;
-    UInt32 offset; //pointer to the end of output buffers data.
-} WebMBuffer;
+  void *data;
+  UInt32 size;
+  UInt32 offset; //pointer to the end of output buffers data.
+  UInt64 timeMs; //time in milliseconds
+  UInt16 frameType;  //corresponds to above frame types
+  UInt32 indx;
+} WebMBufferedFrame;
+
+
+//these frames should be queued chronologically
+typedef struct
+{
+  WebMBufferedFrame** queue;
+  int maxSize;  //the maximum allocated memory
+  int size;
+} WebMQueuedFrames;
+
 
 typedef struct
 {
-    MovieExportGetPropertyUPP propertyProc;
-    MovieExportGetDataUPP dataProc;
-    void *refCon;
-    MovieExportGetDataParams params;
-    Boolean eos;
-    SInt32 time;                    //This time must be based on the source Time scale
-    TimeScale timeScale;
-    long trackID;
-    Boolean bQdFrame;
-    unsigned long blockTimeMs;
+  MovieExportGetPropertyUPP propertyProc;
+  MovieExportGetDataUPP dataProc;
+  void *refCon;
+  MovieExportGetDataParams params;
+  Boolean eos;
+  TimeValue64 time;                    //This time must be based on the source Time scale
+  TimeScale timeScale;
+  long trackID;
 } StreamSource;
 
 
-int freeBuffer(WebMBuffer *buf);
-int allocBuffer(WebMBuffer *buf, size_t size);
-void initBuffer(WebMBuffer *buf);
+
+void initFrameQueue(WebMQueuedFrames *queue);
+WebMBufferedFrame* getFrame(WebMQueuedFrames *queue);
+void popFrame(WebMQueuedFrames *queue);
+// returns -1 on memory error
+int addFrameToQueue(WebMQueuedFrames *queue, void * data,UInt32 size, UInt64 timeMs, UInt16 frameType, UInt32 indx);
+int frameQueueSize(WebMQueuedFrames *queue);
+int freeFrameQueue(WebMQueuedFrames *queue);
+
 void initMovieGetParams(StreamSource *get);
 void dbg_printDataParams(StreamSource *get);
 ComponentResult initStreamSource(StreamSource *source,  TimeScale scale,

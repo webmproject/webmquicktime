@@ -10,11 +10,11 @@
 #ifndef _WEBM_VIDEO_STREAM_H_
 #define _WEBM_VIDEO_STREAM_H_ 1
 //helper functions
-ComponentResult openDecompressionSession(VideoStreamPtr si);
-ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, VideoStreamPtr si);
+ComponentResult openDecompressionSession(GenericStreamPtr si);
+ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, GenericStreamPtr si);
 
-ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, VideoStreamPtr si);
-ComponentResult initVideoStream(VideoStreamPtr vs);
-ComponentResult startPass(VideoStreamPtr vs,int pass);
-ComponentResult endPass(VideoStreamPtr vs);
+ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, GenericStreamPtr si);
+ComponentResult initVideoStream(GenericStreamPtr vs);
+ComponentResult startPass(GenericStreamPtr vs,int pass);
+ComponentResult endPass(GenericStreamPtr vs);
 #endif

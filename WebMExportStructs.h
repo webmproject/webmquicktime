@@ -29,89 +29,93 @@
 
 typedef struct
 {
-    StreamSource source;
-    WebMBuffer         outBuf;
-
-    ComponentInstance vorbisComponentInstance;
-    AudioStreamBasicDescription asbd;
-    UInt64 currentEncodedFrames;
-    UInt64 framesIn;
+  ComponentInstance vorbisComponentInstance;
+  AudioStreamBasicDescription asbd;
+  WebMBuffer buf;
 } AudioStream, *AudioStreamPtr;
 
 
 
 typedef struct
 {
-    StreamSource source;
-    WebMBuffer         outBuf;
-
-    ICMDecompressionSessionRef decompressionSession;
-    ICMCompressionSessionRef compressionSession;
-
-    ICMFrameType        frame_type;
-    unsigned int        currentFrame;   //the current frame being encoded.
-    Boolean             bTwoPass;
+  ICMDecompressionSessionRef decompressionSession;
+  ICMCompressionSessionRef compressionSession;
+  Boolean             bTwoPass;
+  UInt32              lastTimeMs;
 } VideoStream, *VideoStreamPtr;
 
 typedef struct
 {
-    OSType trackType;
-    union
-    {
-        VideoStream vid;
-        AudioStream aud;
-    } ;
-} GenericStream;
+  OSType           trackType;
+  StreamSource     source;
+  WebMQueuedFrames frameQueue;
+  UInt64 framesIn;
+  UInt64 framesOut;
+  Boolean complete;
+  union
+  {
+    VideoStream vid;
+    AudioStream aud;
+  } ;
+} GenericStream, *GenericStreamPtr;
 
 typedef struct
 {
-    UInt64 loc;
-    unsigned long timeVal;
-    unsigned int  track;
-    unsigned int blockNumber;
+  UInt64 loc;
+  unsigned long timeVal;
+  unsigned int  track;
+  unsigned int blockNumber;
 } WebMCuePoint;
 
 typedef struct
 {
-    ComponentInstance  self;
-    ComponentInstance  quickTimeMovieExporter;
+  ComponentInstance  self;
+  ComponentInstance  quickTimeMovieExporter;
+  
+  int             streamCount;
+  GenericStream    **streams;  //should be either audio or video
+  
+  unsigned long   cueCount;
+  Handle          cueHandle;
+  
+  MovieProgressUPP   progressProc;
+  long               progressRefCon;
+  Boolean            progressOpen;
+  
+  Boolean            canceled;
+  Boolean            startNewCluster;
+  UInt64             newClusterStartTime;
+  
+  double              framerate;
+  UInt32             webmTimeCodeScale;
+  
+  /* settings */
+  Boolean             bExportVideo;
+  Boolean             bExportAudio;
+  
+  Boolean             bAltRefEnabled;
+  
+  AudioStreamBasicDescription audioBSD;
+  
+  //Ebml writing
+  unsigned long clusterTime;
+  unsigned long clusterKeyFrameTime;
+  EbmlLoc clusterStart;
+  unsigned int blocksInCluster;  //this increments any time a block added
+  SInt64 clusterOffset;
 
-    int             streamCount;
-    GenericStream    **streams;  //should be either audio or video
-
-    unsigned long   cueCount;
-    Handle          cueHandle;
-
-    MovieProgressUPP   progressProc;
-    long               progressRefCon;
-    Boolean            progressOpen;
-
-    Boolean            canceled;
-
-    double              framerate;
-    UInt32             webmTimeCodeScale;
-
-    /* settings */
-    Boolean             bExportVideo;
-    Boolean             bExportAudio;
-
-    AudioStreamBasicDescription audioBSD;
-
-    //Ebml writing
-    unsigned long clusterTime;
-    EbmlLoc clusterStart;
-
-    /////////////////
-    QTAtomContainer     audioSettingsAtom;      //hold on to any audio settings the user changes
-    QTAtomContainer     videoSettingsAtom;
-    Handle              videoSettingsCustom;     //this contains vp8 custom settings.
-    unsigned int        currentPass;
-    
-    /* settings dialog vars */
-    Boolean            bMovieHasAudio;
-    Boolean            bMovieHasVideo;
-    Movie              setdlg_movie;
-    Track              setdlg_track;
+  /////////////////
+  QTAtomContainer     audioSettingsAtom;      //hold on to any audio settings the user changes
+  QTAtomContainer     videoSettingsAtom;
+  Handle              videoSettingsCustom;     //this contains vp8 custom settings.
+  unsigned int        currentPass;
+  
+  /* settings dialog vars */
+  Boolean            bMovieHasAudio;
+  Boolean            bMovieHasVideo;
+  Movie              setdlg_movie;
+  Track              setdlg_track;
+  
 } WebMExportGlobals, *WebMExportGlobalsPtr;
 
 #endif /* __exporter_types_h__ */
