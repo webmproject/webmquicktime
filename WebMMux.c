@@ -474,7 +474,6 @@ ComponentResult _getStreamWithMinTime(WebMExportGlobalsPtr globals, GenericStrea
     GenericStream *gs = &(*globals->streams)[iStream];
     if (gs->frameQueue.size == 0  && !gs->complete)
     {
-      //dbg_printf("REMOVE -- need to fill stream %d\n", iStream);
       return noErr;
     }
   }

@@ -128,54 +128,40 @@ ComponentResult OpenVP8Dlg(WebMExportGlobalsPtr globals, WindowRef window)
 
     if (!err)
     {
-      dbg_printf("REMOVE 1\n");
         currentPictureHandle = GetMoviePict(globals->setdlg_movie, movieTime);
-      dbg_printf("REMOVE 2\n");
 
         if (currentPictureHandle != NULL)
         {
             Rect rect;
-          dbg_printf("REMOVE 3\n");
             QDGetPictureBounds(currentPictureHandle, &rect);
-          dbg_printf("REMOVE 4\n");
             short testFlags = scPreferScalingAndCropping | scDontDetermineSettingsFromTestImage;
-          dbg_printf("REMOVE 5\n");
             err = SCSetTestImagePictHandle(stdVideo, currentPictureHandle, &rect, testFlags);
         }
     }
 
     //this does the user dialog and waits until they exit
-  dbg_printf("REMOVE 6\n");
     err = SCRequestSequenceSettings(stdVideo);
 
     if (err) goto bail;
-  dbg_printf("REMOVE 7\n");
 
     err = SCGetSettingsAsAtomContainer(stdVideo, &globals->videoSettingsAtom);
     if (globals->videoSettingsCustom == NULL)
     {
-      dbg_printf("REMOVE 8\n");
         globals->videoSettingsCustom = NewHandleClear(0);
-      dbg_printf("REMOVE 9\n");
         SetHandleSize(globals->videoSettingsCustom, 0);
     }
-  dbg_printf("REMOVE a\n");
     err = SCGetInfo(stdVideo, scCodecSettingsType, &globals->videoSettingsCustom);
-  dbg_printf("REMOVE s\n");
     if (err) goto bail;
 bail:
 
     if (stdVideo != NULL)
         CloseComponent(stdVideo);
 
-  dbg_printf("REMOVE d\n");
     if (currentPictureHandle != NULL)
         DisposeHandle((Handle)currentPictureHandle);
-  dbg_printf("REMOVE f\n");
 
     if (compressionList != NULL)
         DisposeHandle(compressionList);
-  dbg_printf("REMOVE g\n");
 
     return err;
 }

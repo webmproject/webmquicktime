@@ -101,7 +101,6 @@ static void _frameDecompressedCallback(void *refCon, OSStatus inerr,
       // if we were responsible for managing source data buffers,
       //  we should release the source buffer here,
       //  using sourceFramemovieGet.refCon to identify it.
-      dbg_printf("[WebM] Remove sourceFrame %ld\n", (UInt32)sourceFrameRefCon);
       
     }
   }
