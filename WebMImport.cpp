@@ -232,7 +232,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   store->dataRefType = dataRefType;
   store->audioDescHand = NULL;
   store->vp8DescHand = NULL;
-  store->loadState = kMovieLoadStateLoading;  // ****
+  store->loadState = kMovieLoadStateLoading;
+  store->videoMaxLoaded = 0;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
   TimeValue mediaDuration, audioMediaDuration;
@@ -248,8 +249,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
 
   // Use IMkvReader subclass that knows about quicktime dataRef and dataHandler objects, rather than plain file io.
   long long pos = 0;
-  MkvReaderQT reader;
-  int status = reader.Open(dataRef, dataRefType);
+  MkvReaderQT* reader = (MkvReaderQT*) new MkvReaderQT;   // allocate reader on heap so it doesn't go out of scape at end of ImportDataRef().
+  int status = reader->Open(dataRef, dataRefType);
   if (status != 0) {
     dbg_printf("[WebM Import] MkvReaderQT::Open() Error, status = %d\n", status);
     return invalidDataRef;
@@ -257,8 +258,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   
   long long totalLength = 0;
   long long availLength = 0;
-  reader.Length(&totalLength, &availLength);
-  dbg_printf("MkvReaderQT.m_length = %lld bytes. availableLength = %lld\n", totalLength, availLength);
+  reader->Length(&totalLength, &availLength);
+  dbg_printf("MkvReaderQT::m_length = %lld bytes. availableLength = %lld\n", totalLength, availLength);
   
   // Use the libwebm project (libmkvparser.a) to parse the WebM file.
 
@@ -267,7 +268,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   //
   using namespace mkvparser;
   EBMLHeader ebmlHeader;
-  long long headerstatus = ebmlHeader.Parse(&reader, pos);
+  long long headerstatus = ebmlHeader.Parse(reader, pos);
   if (headerstatus != 0) {
     dbg_printf("[WebM Import] EBMLHeader.Parse() Error, returned %lld.\n", headerstatus );
     return -1;  // or maybe invalidDataRef
@@ -277,12 +278,13 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // WebM Segment
   //
   mkvparser::Segment* webmSegment;
-  long long ret = mkvparser::Segment::CreateInstance(&reader, pos, webmSegment);
+  long long ret = mkvparser::Segment::CreateInstance(reader, pos, webmSegment);   // pass ownership of reader object to Segment
   if (ret) {
     dbg_printf("Segment::CreateInstance() failed.\n");
     return -1;
   }
 
+  // Load the WebM Segment.
   ret = webmSegment->Load();
   if (ret) {
     dbg_printf("Segment::Load() failed.\n");
@@ -503,22 +505,27 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
   DumpWebMGlobals(store);
 
   // get next cluster
-// mkvparser::Cluster* webmCluster = store->webmSegment->GetNext(store->webmCluster);
-//  store->webmCluster = webmCluster;
-  store->webmCluster = store->webmSegment->GetNext(store->webmCluster);
-
-  DumpWebMGlobals(store);
+  mkvparser::Cluster* webmCluster = store->webmSegment->GetNext(store->webmCluster);
+  delete store->webmCluster;
+  store->webmCluster = webmCluster;
+  //store->webmCluster = store->webmSegment->GetNext(store->webmCluster);
 
   // import the cluster
   if ((store->webmCluster != NULL) && !store->webmCluster->EOS()) {
     AddCluster(store, store->webmCluster, store->webmTracks, store->segmentDuration);
   }
   else {  
-    // if no more clusters, return flags
+    // If no more clusters
+    // Add any remaining samples from cache.
+    if (store->videoSamples.size() > 0)
+      FinishAddingVideoBlocks(store, store->segmentDuration);
+    if (store->audioSamples.size() > 0)
+      FinishAddingAudioBlocks(store, store->segmentDuration);
+
+    // set flags to indicate we are done.
     *outFlags |= movieImportResultComplete;
     store->loadState = kMovieLoadStateComplete;
   }
-
 
   return noErr;
 }
@@ -557,12 +564,10 @@ pascal ComponentResult WebMImportGetLoadState(WebMImportGlobals store, long* imp
 OSErr AddCluster(WebMImportGlobals store, mkvparser::Cluster* webmCluster, mkvparser::Tracks* webmTracks, long long lastTime_ns)
 {
   OSErr err = noErr;
-  dbg_printf("WebM Import - AddCluster() \n");
-  DumpWebMGlobals(store);
 
   const long long timeCode = webmCluster->GetTimeCode();
   const long long time_ns = webmCluster->GetTime();
-//  dbg_printf("TIME - Cluster Time: %lld\n", time_ns); // ****
+  // dbg_printf("TIME - Cluster Time: %lld\n", time_ns);
 
   // Loop for each Block in Cluster
   const mkvparser::BlockEntry* webmBlockEntry = webmCluster->GetFirst();
@@ -599,7 +604,7 @@ OSErr AddCluster(WebMImportGlobals store, mkvparser::Cluster* webmCluster, mkvpa
 
   FinishAddingVideoBlocks(store, lastTime_ns);    // or AddSamplesToTrack() for video, or make it general and pass in audio or video media, etc.
   FinishAddingAudioBlocks(store, lastTime_ns);
-  // ***** store->loadState = kMovieLoadStatePlayable;
+  store->loadState = kMovieLoadStatePlayable;
 
   return err;
 }
@@ -768,22 +773,30 @@ OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, 
 //  Call this for each block in a section (maybe a cluster) to collect sample references first, 
 //  and then call AddMediaSampleReferences() later for the section, or once at the end of file.
 //
+//  Lacing means there could be multiple Frames per Block, so iterate and add all Frames here.
+//
 OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack)
 {
   OSErr err = noErr;
+  dbg_printf("Audio Block\n");
 
-  SampleReferencePtr srp;
-  srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
-  srp->dataOffset = webmBlock->GetOffset();
-  srp->dataSize = webmBlock->GetSize();
-  srp->durationPerSample = 0;               // need to calculate this later for all samples.
-  srp->numberOfSamples = 1;
-  srp->sampleFlags = 0; // ?
+  long frameCount = webmBlock->GetFrameCount();
+  for (long fi = 0; fi < frameCount; fi++) {
+    const mkvparser::Block::Frame& webmFrame = webmBlock->GetFrame(fi);  // zero-based index
+    dbg_printf("\tFrame:\tpos:%15lld, len:%15ld\n", webmFrame.pos, webmFrame.len);
 
-  store->audioSamples.push_back(*srp);
-  store->audioTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+    SampleReferencePtr srp;
+    srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
+    srp->dataOffset = webmFrame.pos;          // webmBlock->GetOffset();
+    srp->dataSize = webmFrame.len;            // webmBlock->GetSize();
+    srp->durationPerSample = 0;               // need to calculate this later for all samples.
+    srp->numberOfSamples = 1;
+    srp->sampleFlags = 0; // ?
 
-  dbg_printf("Audio Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
+    store->audioSamples.push_back(*srp);
+    store->audioTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+  }
+
   return err;
 }
 
@@ -860,14 +873,16 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
 
   sectionStart_ns = store->audioTimes[0]; // or if we dont delete the refs, use store->audioTimes[sectionStartIndex];
   sectionStart_qt = static_cast<TimeValue>(double(sectionStart_ns) / ns_per_sec * mediaTimeScale);
-  sectionEnd_ns = lastTime_ns;  // arg passed in
-  sectionDuration_ns = sectionEnd_ns - sectionStart_ns;
-  sectionDuration_qt = static_cast<TimeValue>(double(sectionDuration_ns) / ns_per_sec * mediaTimeScale);
-  if (sectionDuration_qt != accSectionDuration_qt)
-    dbg_printf("FinishAddingAudioBlocks duration mismatch.  accSecDur_qt=%ld != secDur_qt=%ld\n", accSectionDuration_qt, sectionDuration_qt);
+  //sectionEnd_ns = lastTime_ns;  // arg passed in
+  //sectionDuration_ns = sectionEnd_ns - sectionStart_ns;
+  //sectionDuration_qt = static_cast<TimeValue>(double(sectionDuration_ns) / ns_per_sec * mediaTimeScale);
+  //if (sectionDuration_qt != accSectionDuration_qt)
+  //  dbg_printf("FinishAddingAudioBlocks duration mismatch.  accSecDur_qt=%ld != secDur_qt=%ld\n", accSectionDuration_qt, sectionDuration_qt);
   TimeValue trackStart = -1;  // -1 means insert the media at the END of the track
   TimeValue mediaTime = sectionStart_qt; // starting point of media section to insert, expressed in media's time scale.
   TimeValue mediaDuration = accSectionDuration_qt;  // duration of media section, expressed in media's time scale. 
+  dbg_printf("audioMaxLoaded=%ld, sectionStart_qt=%ld\n", store->audioMaxLoaded, sectionStart_qt); // test, use maxLoaded in call to Insert instead of calculated value here.
+  mediaTime = store->audioMaxLoaded;  // use actual duration value for frames already loaded, rather than calculating it now. Avoid -2014 error from Insert call below.
   err = InsertMediaIntoTrack(store->movieAudioTrack, trackStart, mediaTime, mediaDuration, fixed1);
   if (err)
     dbg_printf("InsertMediaIntoTrack FAIL with err = %d\n", err);
@@ -895,24 +910,33 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
 //  Call this for each block in a section (maybe a cluster) to collect sample references first, 
 //  and then call AddMediaSampleReferences() later for the section, or once at the end of file.
 //
+//  Lacing means there could be multiple Frames per Block, so iterate and add all Frames here.
+//
 OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::VideoTrack* webmVideoTrack)
 {
   OSErr err = noErr;
+  dbg_printf("Video Block\n");
 
-  SampleReferencePtr srp;
-  srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
-  srp->dataOffset = webmBlock->GetOffset();
-  srp->dataSize = webmBlock->GetSize();
-  srp->durationPerSample = 0;               // need to calculate this later for all samples.
-  srp->numberOfSamples = 1;
-  srp->sampleFlags = 0;                     //
-  if (!webmBlock->IsKey())
-    srp->sampleFlags |= mediaSampleNotSync;
+  long frameCount = webmBlock->GetFrameCount();
+  for (long fi = 0; fi < frameCount; fi++) {
+    const mkvparser::Block::Frame& webmFrame = webmBlock->GetFrame(fi);  // zero-based index
+    dbg_printf("\tFrame:\tpos:%15lld, len:%15ld\n", webmFrame.pos, webmFrame.len);
 
-  store->videoSamples.push_back(*srp);
-  store->videoTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+    SampleReferencePtr srp;
+    srp = (SampleReferencePtr)malloc(sizeof(SampleReferenceRecord));
+    srp->dataOffset = webmFrame.pos;          // webmBlock->GetOffset();
+    srp->dataSize = webmFrame.len;            // webmBlock->GetSize();
+    srp->durationPerSample = 0;               // need to calculate this later for all samples.
+    srp->numberOfSamples = 1;
+    srp->sampleFlags = 0;                     //
+    if (!webmBlock->IsKey())
+      srp->sampleFlags |= mediaSampleNotSync;
 
-  dbg_printf("Video Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
+    store->videoSamples.push_back(*srp);
+    store->videoTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
+  }
+
+//  dbg_printf("Video Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
   return err;
 }
 
