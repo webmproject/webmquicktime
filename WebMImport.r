@@ -18,13 +18,11 @@
 //
 // WebM Import component
 //
-// canMovieImportValidateFile
 // canMovieImportAvoidBlocking
-// canMovieImportWithIdle
-// canMovieImportPartial | canMovieImportInPlace | hasMovieImportMIMEList | \
-// canMovieImportValidateDataReferences | \
+// canMovieImportPartial
 
-#define kImporterFlags canMovieImportFiles | canMovieImportInPlace | canMovieImportDataReferences | cmpThreadSafe | hasMovieImportMIMEList | canMovieImportWithIdle
+#define kImporterFlags canMovieImportFiles | canMovieImportInPlace | canMovieImportDataReferences | cmpThreadSafe | hasMovieImportMIMEList | canMovieImportWithIdle | \
+canMovieImportValidateFile | canMovieImportValidateDataReferences
 
 resource 'STR ' (263) {
   "WebM" "0.0.1" " see http://webmproject.org"

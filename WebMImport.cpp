@@ -488,13 +488,63 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
 pascal ComponentResult WebMImportGetMIMETypeList(WebMImportGlobals store, QTAtomContainer *outMimeInfo)
 {
   dbg_printf("[WebM Import]  >> [%08lx] :: GetMIMETypeList()\n", (UInt32) store);
+  OSErr err = GetComponentResource((Component)store->self, 'mime', 263, (Handle *)outMimeInfo);
+  if (err != noErr) {
+    dbg_printf("GetMIMETypeList FAILED");
+  }
   dbg_printf("[WebM Import]  << [%08lx] :: GetMIMETypeList()\n", (UInt32) store);
-  return GetComponentResource((Component)store->self, 'mime', 263, (Handle *)outMimeInfo);
+
+  return err;
 }
 
 
-// MovieImportValidate
+//--------------------------------------------------------------------------------
 // MovieImportValidateDataRef
+pascal ComponentResult WebMImportValidateDataRef(WebMImportGlobals store, Handle dataRef, OSType dataRefType, UInt8 *valid)
+{
+  OSErr err = noErr;
+  dbg_printf("[WebM Import]  >> [%08lx] :: ValidateDataRef()\n", (UInt32) store);
+  MkvReaderQT* reader = (MkvReaderQT*) new MkvReaderQT;
+  int status = reader->Open(dataRef, dataRefType);
+  if (status == 0) {
+    *valid = 128;
+    err = noErr;
+  }
+  else {
+    dbg_printf("[WebM Import] ValidateDataRef() FAIL... err = %d\n", err);
+    err = invalidDataRef;
+  }
+
+  dbg_printf("[WebM Import]  << [%08lx] :: ValidateDataRef()\n", (UInt32) store);
+  return err;
+}
+
+
+//--------------------------------------------------------------------------------
+// MovieImportValidate
+pascal ComponentResult WebMImportValidate(WebMImportGlobals store, const FSSpec *theFile, Handle theData, Boolean *valid)
+{
+  OSErr err = noErr;
+
+  dbg_printf("[WebM Import]  >> [%08lx] :: Validate()\n", (UInt32) store);
+  FSRef fileFSRef;
+  AliasHandle fileAlias = NULL;
+  *valid = false;
+
+  if ((err = FSpMakeFSRef(theFile, &fileFSRef) == noErr) &&
+      (err = FSNewAliasMinimal(&fileFSRef, &fileAlias) == noErr)) {
+    err = MovieImportValidateDataRef(store->self,  (Handle)fileAlias, rAliasType, (UInt8*) valid);
+  }
+
+  if (*valid == false) {
+    dbg_printf("[WebM Import] Validate() FAIL... \n");
+  }
+
+  dbg_printf("[WebM Import]  << [%08lx] :: Validate()\n", (UInt32) store);
+  return err;
+}
+
+
 // MovieImportRegister
 
 
