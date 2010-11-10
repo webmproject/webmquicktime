@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		1011B852123EBB6E003592D2 /* libmkvparser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1011B851123EBB6E003592D2 /* libmkvparser.a */; };
-		1025BBB41253EB900091053E /* WebMImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1025BBB21253EB900091053E /* WebMImport.cpp */; };
 		1026A2B11250DCBA00A4A761 /* WebM.component in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8D01CCD20486CAD60068D4B7 /* WebM.component */; };
+		103EF9A5128B2DC60032CEE6 /* WebMImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1025BBB21253EB900091053E /* WebMImport.cpp */; };
+		103EF9A6128B2DCB0032CEE6 /* mkvreaderqt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 10D73AE5124D4A2A00673FEC /* mkvreaderqt.cpp */; };
 		10C2262C122D91CC00359ACF /* WebMImport.r in Rez */ = {isa = PBXBuildFile; fileRef = 10C2262B122D91CC00359ACF /* WebMImport.r */; };
-		10D73AE7124D4A2A00673FEC /* mkvreaderqt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 10D73AE5124D4A2A00673FEC /* mkvreaderqt.cpp */; };
 		8D01CCCA0486CAD60068D4B7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		BB124AE012392B0300A26F24 /* VP8EncoderGui.c in Sources */ = {isa = PBXBuildFile; fileRef = BB124ADF12392B0300A26F24 /* VP8EncoderGui.c */; };
@@ -403,6 +403,8 @@
 				BB98161B11FF1FC60031AA75 /* EbmlDataHWriter.c in Sources */,
 				BB124AE012392B0300A26F24 /* VP8EncoderGui.c in Sources */,
 				BBB2D454125E08A100F54FBA /* VP8EncoderEncode.c in Sources */,
+				103EF9A5128B2DC60032CEE6 /* WebMImport.cpp in Sources */,
+				103EF9A6128B2DCB0032CEE6 /* mkvreaderqt.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
