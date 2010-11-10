@@ -71,32 +71,32 @@ typedef struct
 {
   ComponentInstance  self;
   ComponentInstance  quickTimeMovieExporter;
-  
+
   int             streamCount;
   GenericStream    **streams;  //should be either audio or video
-  
+
   unsigned long   cueCount;
   Handle          cueHandle;
-  
+
   MovieProgressUPP   progressProc;
   long               progressRefCon;
   Boolean            progressOpen;
-  
+
   Boolean            canceled;
   Boolean            startNewCluster;
   UInt64             newClusterStartTime;
-  
+
   double              framerate;
   UInt32             webmTimeCodeScale;
-  
+
   /* settings */
   Boolean             bExportVideo;
   Boolean             bExportAudio;
-  
+
   Boolean             bAltRefEnabled;
-  
+
   AudioStreamBasicDescription audioBSD;
-  
+
   //Ebml writing
   unsigned long clusterTime;
   unsigned long clusterKeyFrameTime;
@@ -109,13 +109,13 @@ typedef struct
   QTAtomContainer     videoSettingsAtom;
   Handle              videoSettingsCustom;     //this contains vp8 custom settings.
   unsigned int        currentPass;
-  
+
   /* settings dialog vars */
   Boolean            bMovieHasAudio;
   Boolean            bMovieHasVideo;
   Movie              setdlg_movie;
   Track              setdlg_track;
-  
+
 } WebMExportGlobals, *WebMExportGlobalsPtr;
 
 #endif /* __exporter_types_h__ */

@@ -70,20 +70,20 @@ VP8_Encoder_Open(
 {
   ComponentResult err = noErr;
   dbg_printf("[vp8e - %08lx] Open Called\n", (UInt32)glob);
-  
+
   glob = calloc(sizeof(VP8EncoderGlobalsRecord), 1);
-  
+
   if (! glob)
   {
     err = memFullErr;
     goto bail;
   }
-  
+
   SetComponentInstanceStorage(self, (Handle)glob);
-  
+
   glob->self = self;
   glob->target = self;
-  
+
   glob->nextDecodeNumber = 1;
   glob->frameCount = 0;
   glob->raw = NULL;
@@ -99,13 +99,13 @@ VP8_Encoder_Open(
   glob->sourceQueue.frames_out =0;
   glob->altRefFrame.buf =0;
   glob->altRefFrame.size =0;
-  
+
   int i;
   for (i=0;i<TOTAL_CUSTOM_VP8_SETTINGS; i++)
   {
     glob->settings[i]= UINT_MAX;
   }
-  
+
 bail:
   dbg_printf("[vp8e - %08lx] Open Called exit %d \n", (UInt32)glob, err);
   return err;
@@ -120,7 +120,7 @@ VP8_Encoder_Close(
                   ComponentInstance self)
 {
   dbg_printf("[vp8e - %08lx]  Close Called\n", (UInt32)glob);
-  
+
   if (glob)
   {
     if (glob->stats.buf != NULL)
@@ -129,30 +129,30 @@ VP8_Encoder_Close(
       glob->stats.buf =NULL;
       glob->stats.sz=0;
     }
-    
+
     if (glob->codec) //see if i've initialized the vpx_codec
     {
       if (vpx_codec_destroy(glob->codec))
         dbg_printf("[vp8e - %08lx] Failed to destroy codec\n", (UInt32)glob);
-      
+
       free(glob->codec);
     }
-    
+
     ICMCompressionSessionOptionsRelease(glob->sessionOptions);
     glob->sessionOptions = NULL;
-    
+
     if (glob->raw)
     {
       vpx_img_free(glob->raw);
       free(glob->raw);
     }
-    
+
     if (glob->sourceQueue.queue != NULL)
       free(glob->sourceQueue.queue);
-    
+
     free(glob);
   }
-  
+
   return noErr;
 }
 
@@ -195,7 +195,7 @@ VP8_Encoder_GetCodecInfo(VP8EncoderGlobals glob, CodecInfo *info)
 {
   dbg_printf("[vp8e - %08lx] GetCodecInfo called\n", (UInt32)glob);
   OSErr err = noErr;
-  
+
   if (info == NULL)
   {
     err = paramErr;
@@ -203,18 +203,18 @@ VP8_Encoder_GetCodecInfo(VP8EncoderGlobals glob, CodecInfo *info)
   else
   {
     CodecInfo **tempCodecInfo;
-    
+
     err = GetComponentResource((Component)glob->self, codecInfoResourceType, 255, (Handle *)&tempCodecInfo);
-    
+
     if (err == noErr)
     {
       *info = **tempCodecInfo;
       DisposeHandle((Handle)tempCodecInfo);
     }
   }
-  
+
   dbg_printf("[vp8e - %08lx] GetCodecInfo exit %d\n", (UInt32)glob, err);
-  
+
   return err;
 }
 
@@ -235,15 +235,15 @@ VP8_Encoder_GetMaxCompressionSize(
   dbg_printf("[vp8e - %08lx] VP8_Encoder_GetMaxCompressionSize\n", (UInt32)glob);
   ComponentResult err = noErr;
   size_t maxBytes = 0;
-  
+
   if (! size)
     return paramErr;
-  
+
   //this is a very large guess... but they did ask for the max.
   maxBytes = (srcRect->right - srcRect->left) * (srcRect->bottom - srcRect->top) / 4;
-  
+
   *size = maxBytes;
-  
+
 bail:
   return err;
 }
@@ -253,10 +253,10 @@ static void
 addNumberToDictionary(CFMutableDictionaryRef dictionary, CFStringRef key, SInt32 numberSInt32)
 {
   CFNumberRef number = CFNumberCreate(NULL, kCFNumberSInt32Type, &numberSInt32);
-  
+
   if (! number)
     return;
-  
+
   CFDictionaryAddValue(dictionary, key, number);
   CFRelease(number);
 }
@@ -266,10 +266,10 @@ static void
 addDoubleToDictionary(CFMutableDictionaryRef dictionary, CFStringRef key, double numberDouble)
 {
   CFNumberRef number = CFNumberCreate(NULL, kCFNumberDoubleType, &numberDouble);
-  
+
   if (! number)
     return;
-  
+
   CFDictionaryAddValue(dictionary, key, number);
   CFRelease(number);
 }
@@ -280,7 +280,7 @@ roundUpToMultipleOf16(int n)
 {
   if (0 != (n & 15))
     n = (n + 15) & ~15;
-  
+
   return n;
 }
 
@@ -300,39 +300,39 @@ createPixelBufferAttributesDictionary(SInt32 width, SInt32 height,
   CFNumberRef number = NULL;
   CFMutableArrayRef array = NULL;
   SInt32 widthRoundedUp, heightRoundedUp, extendRight, extendBottom;
-  
+
   pixelBufferAttributes = CFDictionaryCreateMutable(
                                                     NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-  
+
   if (! pixelBufferAttributes) goto bail;
-  
+
   array = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
-  
+
   if (! array) goto bail;
-  
+
   // Under kCVPixelBufferPixelFormatTypeKey, add the list of source pixel formats.
   // This can be a CFNumber or a CFArray of CFNumbers.
   for (i = 0; i < pixelFormatCount; i++)
   {
     number = CFNumberCreate(NULL, kCFNumberSInt32Type, &pixelFormatList[i]);
-    
+
     if (! number) goto bail;
-    
+
     CFArrayAppendValue(array, number);
-    
+
     CFRelease(number);
     number = NULL;
   }
-  
+
   CFDictionaryAddValue(pixelBufferAttributes, kCVPixelBufferPixelFormatTypeKey, array);
   CFRelease(array);
   array = NULL;
-  
+
   // Add kCVPixelBufferWidthKey and kCVPixelBufferHeightKey to specify the dimensions
   // of the source pixel buffers.  Normally this is the same as the compression target dimensions.
   addNumberToDictionary(pixelBufferAttributes, kCVPixelBufferWidthKey, width);
   addNumberToDictionary(pixelBufferAttributes, kCVPixelBufferHeightKey, height);
-  
+
   // If you want to require that extra scratch pixels be allocated on the edges of source pixel buffers,
   // add the kCVPixelBufferExtendedPixels{Left,Top,Right,Bottom}Keys to indicate how much.
   // Internally our encoded can only support multiples of 16x16 macroblocks;
@@ -343,35 +343,35 @@ createPixelBufferAttributesDictionary(SInt32 width, SInt32 height,
   heightRoundedUp = roundUpToMultipleOf16(height);
   extendRight = widthRoundedUp - width;
   extendBottom = heightRoundedUp - height;
-  
+
   if (extendRight || extendBottom)
   {
     addNumberToDictionary(pixelBufferAttributes, kCVPixelBufferExtendedPixelsRightKey, extendRight);
     addNumberToDictionary(pixelBufferAttributes, kCVPixelBufferExtendedPixelsBottomKey, extendBottom);
   }
-  
+
   // Altivec code is most efficient reading data aligned at addresses that are multiples of 16.
   // Pretending that we have some altivec code, we set kCVPixelBufferBytesPerRowAlignmentKey to
   // ensure that each row of pixels starts at a 16-byte-aligned address.
   addNumberToDictionary(pixelBufferAttributes, kCVPixelBufferBytesPerRowAlignmentKey, 16);
-  
+
   // This codec accepts YCbCr input in the form of '2vuy' format pixel buffers.
   // We recommend explicitly defining the gamma level and YCbCr matrix that should be used.
   addDoubleToDictionary(pixelBufferAttributes, kCVImageBufferGammaLevelKey, 2.2);
   CFDictionaryAddValue(pixelBufferAttributes, kCVImageBufferYCbCrMatrixKey, kCVImageBufferYCbCrMatrix_ITU_R_601_4);
-  
+
   err = noErr;
   *pixelBufferAttributesOut = pixelBufferAttributes;
   pixelBufferAttributes = NULL;
-  
+
 bail:
-  
+
   if (pixelBufferAttributes) CFRelease(pixelBufferAttributes);
-  
+
   if (number) CFRelease(number);
-  
+
   if (array) CFRelease(array);
-  
+
   return err;
 }
 
@@ -393,20 +393,20 @@ VP8_Encoder_PrepareToCompressFrames(
   CFMutableDictionaryRef compressorPixelBufferAttributes = NULL;
   //This format later needs to be converted
   OSType pixelFormatList[] = { k422YpCbCr8PixelFormat }; // also known as '2vuy'
-  
+
   Fixed gammaLevel;
   int frameIndex;
   SInt32 widthRoundedUp, heightRoundedUp;
-  
+
   // Record the compressor session for later calls to the ICM.
   // Note: this is NOT a CF type and should NOT be CFRetained or CFReleased.
   glob->session = session;
-  
+
   // Retain the session options for later use.
   ICMCompressionSessionOptionsRelease(glob->sessionOptions);
   glob->sessionOptions = sessionOptions;
   ICMCompressionSessionOptionsRetain(glob->sessionOptions);
-  
+
   // Modify imageDescription here if needed.
   // We'll set the image description gamma level to say "2.2".
   gammaLevel = kQTCCIR601VideoGammaLevel;
@@ -415,21 +415,21 @@ VP8_Encoder_PrepareToCompressFrames(
                                        kICMImageDescriptionPropertyID_GammaLevel,
                                        sizeof(gammaLevel),
                                        &gammaLevel);
-  
+
   if (err)
     goto bail;
-  
+
   // Record the dimensions from the image description.
   glob->width = (*imageDescription)->width;
   glob->height = (*imageDescription)->height;
   dbg_printf("[vp8e - %08lx] Prepare to compress frame width %d height %d\n", (UInt32)glob, glob->width, glob->height);
-  
+
   if (glob->width < 16 || glob->width % 2 || glob->height < 16 || glob->height % 2)
     dbg_printf("[vp8e - %08lx] Warning :: Invalid resolution: %ldx%ld", (UInt32)glob, glob->width, glob->height);
-  
+
   if (glob->raw == NULL)
     glob->raw = calloc(1, sizeof(vpx_image_t));
-  
+
   //Right now I'm only using YV12, this is great for webm, as I control the spit component
   if (!vpx_img_alloc(glob->raw, IMG_FMT_YV12, glob->width, glob->height, 1))
   {
@@ -437,43 +437,43 @@ VP8_Encoder_PrepareToCompressFrames(
     err = paramErr;
     goto bail;
   }
-  
+
   glob->maxEncodedDataSize = glob->width * glob->height * 2;
   dbg_printf("[vp8e - %08lx] currently allocating %d bytes as my max encoded size\n", (UInt32)glob, glob->maxEncodedDataSize);
-  
+
   // Create a pixel buffer attributes dictionary.
   err = createPixelBufferAttributesDictionary(glob->width, glob->height,
                                               pixelFormatList, sizeof(pixelFormatList) / sizeof(OSType),
                                               &compressorPixelBufferAttributes);
-  
+
   if (err)
     goto bail;
-  
+
   *compressorPixelBufferAttributesOut = compressorPixelBufferAttributes;
   compressorPixelBufferAttributes = NULL;
-  
+
   /* Populate encoder configuration */
   glob->res = vpx_codec_enc_config_default((&vpx_codec_vp8_cx_algo), &glob->cfg, 0);
-  
+
   if (glob->res)
   {
     dbg_printf("[vp8e - %08lx] Failed to get config: %s\n", (UInt32)glob, vpx_codec_err_to_string(glob->res));
     err = paramErr; //this may be something different ....
     goto bail;
   }
-  
+
   glob->cfg.g_w = glob->width;
   glob->cfg.g_h = glob->height;
   dbg_printf("[vp8e - %08lx] resolution %dx%d\n", (UInt32)glob,
              glob->cfg.g_w, glob->cfg.g_h);
-  
+
 bail:
-  
+
   if (err)
     dbg_printf("[vp8e - %08lx] Error %d\n", (UInt32)glob, err);
-  
+
   if (compressorPixelBufferAttributes) CFRelease(compressorPixelBufferAttributes);
-  
+
   return err;
 }
 
@@ -515,8 +515,8 @@ VP8_Encoder_CompleteFrame(
   dbg_printf("[vp8e - %08lx] flags are %x\n", (UInt32)glob, flags);
   //todo, this should verify that the source frame is complete
   completeThisSourceFrame(glob, sourceFrame);
-  
-  
+
+
 bail:
   return err;
 }
@@ -549,7 +549,7 @@ pascal ComponentResult VP8_Encoder_GetDITLForSize(VP8EncoderGlobals store,
 {
   Handle h = NULL;
   ComponentResult err = noErr;
-  
+
   switch (requestedSize->h) {
     case kSGSmallestDITLSize:
       GetComponentResource((Component)(store->self), FOUR_CHAR_CODE('DITL'),
@@ -561,31 +561,31 @@ pascal ComponentResult VP8_Encoder_GetDITLForSize(VP8EncoderGlobals store,
       err = badComponentSelector;
       break;
   }
-  
+
   return err;
 }
 
 pascal ComponentResult VP8_Encoder_DITLInstall(VP8EncoderGlobals storage,
-                                               DialogRef d, 
+                                               DialogRef d,
                                                short itemOffset)
 {
   ControlRef cRef;
-  
-  
+
+
   unsigned long onePassRadio = (*storage).settings[1] == 1;
   unsigned long twoPassRadio = (*storage).settings[1] == 2;
-  
+
   GetDialogItemAsControl(d, kItemOnePass + itemOffset, &cRef);
   SetControl32BitValue(cRef, onePassRadio);
-  
+
   GetDialogItemAsControl(d, kItemTwoPass + itemOffset, &cRef);
   SetControl32BitValue(cRef, twoPassRadio);
-  
+
   return noErr;
 }
 
-pascal ComponentResult VP8_Encoder_DITLEvent(VP8EncoderGlobals storage, 
-                                             DialogRef d, 
+pascal ComponentResult VP8_Encoder_DITLEvent(VP8EncoderGlobals storage,
+                                             DialogRef d,
                                              short itemOffset,
                                              const EventRecord *theEvent,
                                              short *itemHit,
@@ -596,16 +596,16 @@ pascal ComponentResult VP8_Encoder_DITLEvent(VP8EncoderGlobals storage,
 }
 
 pascal ComponentResult VP8_Encoder_DITLItem(VP8EncoderGlobals storage,
-                                            DialogRef d, 
-                                            short itemOffset, 
+                                            DialogRef d,
+                                            short itemOffset,
                                             short itemNum)
 {
   ControlRef onePassControlRef;
   ControlRef twoPassControlRef;
   GetDialogItemAsControl(d, itemOffset + kItemOnePass, &onePassControlRef);
   GetDialogItemAsControl(d, itemOffset + kItemTwoPass, &twoPassControlRef);
-  
-  
+
+
   switch (itemNum - itemOffset) {
     case kItemOnePass:
       SetControl32BitValue(onePassControlRef, 1);
@@ -619,7 +619,7 @@ pascal ComponentResult VP8_Encoder_DITLItem(VP8EncoderGlobals storage,
       runAdvancedWindow(storage);
       break;
   }
-  
+
   return noErr;
 }
 
@@ -629,12 +629,12 @@ pascal ComponentResult VP8_Encoder_DITLRemove(VP8EncoderGlobals storage,
 {
   ControlRef cRef;
   UInt32 onePass;
-  
+
   GetDialogItemAsControl(d, kItemOnePass + itemOffset, &cRef);
   onePass = GetControl32BitValue(cRef);
-  
+
   (*storage).settings[1] = onePass?1:2;
-  
+
   return noErr;
 }
 
@@ -650,12 +650,12 @@ pascal ComponentResult VP8_Encoder_DITLValidateInput(VP8EncoderGlobals storage,
 ComponentResult VP8_Encoder_GetSettings(VP8EncoderGlobals globals, Handle settings)
 {
   ComponentResult err = noErr;
-  
+
   dbg_printf("[VP8e -- %08lx] GetSettings()\n", (UInt32) globals);
-  
+
   if (!settings) {
     err = paramErr;
-    dbg_printf("[VP8e -- %08lx] ParamErr\n", (UInt32) globals);        
+    dbg_printf("[VP8e -- %08lx] ParamErr\n", (UInt32) globals);
   } else {
     SetHandleSize(settings, TOTAL_CUSTOM_VP8_SETTINGS * 4);
     ((UInt32 *) *settings)[0] = 'VP80';
@@ -666,7 +666,7 @@ ComponentResult VP8_Encoder_GetSettings(VP8EncoderGlobals globals, Handle settin
       //dbg_printf("[vp8e] get setting %d as %lu\n",i,((UInt32 *) *settings)[i]);
     }
   }
-  
+
   return err;
 }
 
@@ -674,13 +674,13 @@ ComponentResult VP8_Encoder_SetSettings(VP8EncoderGlobals globals, Handle settin
 {
   ComponentResult err = noErr;
   dbg_printf("[VP8e -- %08lx] SetSettings() %d\n", (UInt32) globals, GetHandleSize(settings));
-  
+
   int i;
   if (!settings || GetHandleSize(settings) == 0) {
     dbg_printf("[VP8e] no handle\n");
     for (i=1;i< TOTAL_CUSTOM_VP8_SETTINGS; i++)
       globals->settings[i] = UINT_MAX; //default
-  } 
+  }
   else if (GetHandleSize(settings) == TOTAL_CUSTOM_VP8_SETTINGS * 4 && ((UInt32 *) *settings)[0] == 'VP80') {
     for (i=1;i< TOTAL_CUSTOM_VP8_SETTINGS; i++)
     {
@@ -690,7 +690,7 @@ ComponentResult VP8_Encoder_SetSettings(VP8EncoderGlobals globals, Handle settin
     dbg_printf("[VP8e] ParamErr\n");
     err = paramErr;
   }
-  
+
   return err;
 }
 ComponentResult VP8_Encoder_RequestSettings(VP8EncoderGlobals globals, Handle settings,
@@ -731,8 +731,8 @@ pascal ComponentResult VP8_Encoder_BeginPass(VP8EncoderGlobals globals,ICMCompre
     if (globals->codec == NULL) // this should be initialized if there was a first pass
       return nilHandleErr;
     globals->cfg.g_pass = VPX_RC_LAST_PASS;
-    globals->cfg.rc_twopass_stats_in.sz = globals->stats.sz; 
-    globals->cfg.rc_twopass_stats_in.buf = globals->stats.buf; 
+    globals->cfg.rc_twopass_stats_in.sz = globals->stats.sz;
+    globals->cfg.rc_twopass_stats_in.buf = globals->stats.buf;
     globals->frameCount = 0;
     if(vpx_codec_enc_init(globals->codec,  &vpx_codec_vp8_cx_algo, &globals->cfg, 0))
     {
@@ -742,11 +742,11 @@ pascal ComponentResult VP8_Encoder_BeginPass(VP8EncoderGlobals globals,ICMCompre
     }
     setCustomPostInit(globals); //not sure if I this is needed just following ivfenc example
   }
-  else 
+  else
   {
     return paramErr;///not sure what other type of pass there is
   }
-  
+
   return err;
 }
 pascal ComponentResult VP8_Encoder_EndPass(VP8EncoderGlobals globals)
@@ -769,7 +769,7 @@ pascal ComponentResult VP8_Encoder_EndPass(VP8EncoderGlobals globals)
   return err;
 }
 
-pascal ComponentResult VP8_Encoder_ProcessBetweenPasses(VP8EncoderGlobals globals, ICMMultiPassStorageRef  multiPassStorage, 
+pascal ComponentResult VP8_Encoder_ProcessBetweenPasses(VP8EncoderGlobals globals, ICMMultiPassStorageRef  multiPassStorage,
                                                         Boolean * interpassProcessingDoneOut,
                                                         ICMCompressionPassModeFlags * requestedNextPassModeFlagsOut)
 {

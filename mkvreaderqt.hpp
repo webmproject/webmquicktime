@@ -28,12 +28,12 @@ public:
 
   virtual int Read(long long position, long length, unsigned char* buffer);
   virtual int Length(long long* total, long long* available);
-  
+
 private:
   long long m_length;
   Handle m_dataRef; // might not need to store this after open()
   DataHandler m_dataHandler;  // ComponentInstance
-  
+
 };
 
 #endif

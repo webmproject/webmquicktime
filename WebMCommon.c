@@ -33,10 +33,10 @@ void popFrame(WebMQueuedFrames *queue)
   for (i=1; i < queue->size; i ++)
     queue->queue[i-1] = queue->queue[i];
   queue->size -=1;
-  
+
 }
 
-int addFrameToQueue(WebMQueuedFrames *queue, void * data, UInt32 dataSize, 
+int addFrameToQueue(WebMQueuedFrames *queue, void * data, UInt32 dataSize,
                     UInt64 timeMs, UInt16 frameType, UInt32 indx)
 {
   if (queue->size +1 > queue->maxSize)
@@ -52,9 +52,9 @@ int addFrameToQueue(WebMQueuedFrames *queue, void * data, UInt32 dataSize,
   frame->timeMs = timeMs;
   frame->frameType = frameType;
   frame->indx = indx;
-  
+
   queue->queue[queue->size] = frame;
-  
+
   queue->size += 1;
   return 0;
 }
@@ -106,22 +106,22 @@ ComponentResult initStreamSource(StreamSource *source, TimeScale scale,
                                  MovieExportGetDataUPP getDataProc, void *refCon)
 {
   ComponentResult err = noErr;
-  
+
   dbg_printf("[WebM] InitStreamSource %d timescale = %d\n", trackID, scale);
-  
+
   source->trackID = trackID;
   source->propertyProc = propertyProc;
   source->dataProc = getDataProc;
   source->refCon = refCon;
   source->timeScale = scale;
-  
+
   memset(&source->params, 0, sizeof(MovieExportGetDataParams));
   source->params.recordSize = sizeof(MovieExportGetDataParams);
   source->params.trackID = source->trackID;
   source->params.sourceTimeScale = scale;
   source->eos = false;
   source->time = 0;
-  
+
   return err;
 }
 

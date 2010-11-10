@@ -38,7 +38,7 @@ static void setUIntFromControl(UInt32 * i, WindowRef w, int id)
     ControlID   cID = {'VP8A', id};
     ControlRef  ref;
     UInt32 originalVal = *i; //used for debugging
-    
+
     OSStatus gotControl = GetControlByID(w, &cID, &ref);
     if(gotControl !=0)
     {
@@ -47,19 +47,19 @@ static void setUIntFromControl(UInt32 * i, WindowRef w, int id)
     }
     ControlKind kind;
     OSStatus gotKind= GetControlKind(ref,&kind);
-    
+
     if (kind.kind == 'eutx')
     {
-        CFStringRef string;    
+        CFStringRef string;
         Size size;
         GetControlData(ref,kControlEditTextPart, kControlEditTextCFStringTag,
                    sizeof( CFStringRef ),&string, &size);
         if (size != 0 && CFStringGetLength(string) !=0)
         {
             SInt32 gcdInt = CFStringGetIntValue(string);
-            *i = gcdInt;        
+            *i = gcdInt;
         }
-        else 
+        else
         {
             *i=UINT_MAX;
         }
@@ -77,8 +77,8 @@ static void setUIntFromControl(UInt32 * i, WindowRef w, int id)
     {
         dbg_printf("[VP8E] Error unhandled control type %d\n", kind.kind);
     }
-    
-    
+
+
 }
 
 static ComponentResult settingsFromGui(VP8customSettings c, WindowRef w)
@@ -89,14 +89,14 @@ static ComponentResult settingsFromGui(VP8customSettings c, WindowRef w)
     {
         setUIntFromControl(&c[i], w, i);
     }
-    
+
     return noErr;
 }
 static void setControlFromUInt(UInt32 i, WindowRef w, int id)
 {
     ControlID   cID = {'VP8A', id};
     ControlRef  ref;
-    
+
     OSStatus gotControl = GetControlByID(w, &cID, &ref);
     if(gotControl !=0)
     {
@@ -105,7 +105,7 @@ static void setControlFromUInt(UInt32 i, WindowRef w, int id)
     }
     ControlKind kind;
     OSStatus gotKind= GetControlKind(ref,&kind);
-    
+
     if (kind.kind == 'eutx')
     {
         if (i != UINT_MAX)
@@ -128,8 +128,8 @@ static void setControlFromUInt(UInt32 i, WindowRef w, int id)
     {
         dbg_printf("[VP8E] Error unhandled control type %d\n", kind.kind);
     }
-    
-    
+
+
 }
 static ComponentResult settingsToGui(VP8customSettings c, WindowRef w)
 {
@@ -147,37 +147,37 @@ static ComponentResult GetWindowAdvanced(WindowRef *window)
     ComponentResult err = noErr;
     CFBundleRef bundle = NULL;
     IBNibRef    nibRef = NULL;
-    
+
     bundle = CFBundleGetBundleWithIdentifier(CFSTR(kWebMExportBundleID));
-    
+
     if (bundle == NULL)
     {
         dbg_printf("[VP8e]  Error :: CFBundleGetBundleWithIdentifier\n");
         err = readErr;
         goto bail;
     }
-    
+
     err = CreateNibReferenceWithCFBundle(bundle, CFSTR("WebMExport"), &nibRef);
     if (err)
     {
         dbg_printf("[VP8e]  >> Error :: CreateNibReferenceWithCFBundle\n");
         goto bail;
     }
-    
+
     err = CreateWindowFromNib(nibRef, CFSTR("Advanced"), window);
-    
+
     if (err)
     {
         dbg_printf("[VP8e]  >> Error :: CreateWindowFromNib\n");
         goto bail;
     }
-    
+
 bail:
-    
+
     if (nibRef)
         DisposeNibReference(nibRef);
-    
-    
+
+
     return err;
 }
 
@@ -187,18 +187,18 @@ pascal OSStatus AdvancedWindowEventHandler(EventHandlerCallRef inHandler, EventR
     HICommand command;
     OSStatus rval = eventNotHandledErr;
     VP8EncoderGlobals globals = (VP8EncoderGlobals) inUserData;
-    
+
     dbg_printf("[vp8e] :: SettingsWindowEventHandler()\n", (UInt32) globals);
-    
+
     window = ActiveNonFloatingWindow();
-    
+
     if (window == NULL)
         goto bail;
-    
+
     GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand, NULL, sizeof(HICommand), NULL, &command);
-    
+
     dbg_printf("[WebM]   | [%08lx] :: SettingsWindowEventHandler('%4.4s')\n", (UInt32) globals, (char *) &command.commandID);
-    
+
     switch (command.commandID)
     {
         case kHICommandOK:
@@ -206,7 +206,7 @@ pascal OSStatus AdvancedWindowEventHandler(EventHandlerCallRef inHandler, EventR
             QuitAppModalLoopForWindow(window);
             rval = noErr;
             break;
-            
+
         case kHICommandCancel:
             QuitAppModalLoopForWindow(window);
             rval = noErr;
@@ -214,7 +214,7 @@ pascal OSStatus AdvancedWindowEventHandler(EventHandlerCallRef inHandler, EventR
         default:
             break;
     }
-    
+
 bail:
     return rval;
 }
@@ -230,20 +230,20 @@ ComponentResult runAdvancedWindow(VP8EncoderGlobals globals)
 
     EventTypeSpec eventList[] = {{kEventClassCommand, kEventCommandProcess}};
     EventHandlerUPP AdvancedWindowEventHandlerUPP = NewEventHandlerUPP(AdvancedWindowEventHandler);
-    
+
     dbg_printf("[VP8e %lld] runAdvancedWindow()\n", (UInt32) globals);
     GetWindowAdvanced(&window);
-    
+
     portChanged = QDSwapPort(GetWindowPort(window), &savedPort);
     dbg_printf("[VP8e %lld] runAdvancedWindow() portChanged %d \n", (UInt32) globals, portChanged);
-    
-    
+
+
     InstallWindowEventHandler(window, AdvancedWindowEventHandlerUPP, GetEventTypeCount(eventList), eventList, globals, NULL);
-    
+
     settingsToGui(globals->settings, window);
-    
+
     ShowWindow(window);
-    
+
     RunAppModalLoopForWindow(window);
 bail:
     if (window)
@@ -253,10 +253,10 @@ bail:
             portChanged = QDSwapPort(savedPort, NULL);
             dbg_printf("[VP8e %lld] runAdvancedWindow() revert: portChanged %d \n", (UInt32) globals, portChanged);
         }
-        
+
         DisposeWindow(window);
     }
-    
+
     if (AdvancedWindowEventHandlerUPP)
         DisposeEventHandlerUPP(AdvancedWindowEventHandlerUPP);
 }

@@ -10,7 +10,7 @@
 
 
 //--------------------------------------------------------------------------------
-MkvReaderQT::MkvReaderQT() : 
+MkvReaderQT::MkvReaderQT() :
   m_length(0), m_dataRef(NULL), m_dataHandler(NULL)
 {
 }
@@ -29,7 +29,7 @@ int MkvReaderQT::Open(Handle dataRef, OSType dataRefType)
 
   if ((m_dataRef) || (m_dataHandler))
     return -2;
-  
+
   m_dataRef = dataRef;
 
   long fileSize = 0;
@@ -40,26 +40,26 @@ int MkvReaderQT::Open(Handle dataRef, OSType dataRefType)
   ComponentInstance dataHandler = 0;
 	err = OpenAComponent(GetDataHandler(dataRef, dataRefType, kDataHCanRead), &dataHandler);
 	if (err) return -3;
-  
+
   // Provide a data reference to the data handler.
 	// Then you may start reading and/or writing
 	// movie data from that data reference.
 	err = DataHSetDataRef(dataHandler, dataRef);
 	if (err) return -4;
-  
-  // Open a read path to the current data reference. 
+
+  // Open a read path to the current data reference.
   // You need to do this before your component can read data using a data handler component.
 	err = DataHOpenForRead(dataHandler);
 	if (err) return -5;
-  
+
   // Get the size, in bytes, of the current data reference.
   // This is functionally equivalent to the File Manager's GetEOF function.
 	err = DataHGetFileSize(dataHandler, &fileSize);
 	if (err) return -6;
   m_length = fileSize;
-  
+
   // dbg_printf("[WebM Import] DataHGetFileSize = %d\n", fileSize);
-  //  dbg_printf("[WebM Import] sizeof Header %d\n", sizeof(header));  
+  //  dbg_printf("[WebM Import] sizeof Header %d\n", sizeof(header));
 
   m_dataHandler = dataHandler;
   return 0;
@@ -80,7 +80,7 @@ int MkvReaderQT::Read(long long position, long length, unsigned char* buffer)
 
   if (length == 0)
     return 0;
-  
+
   // DatHGetPreferredBlockSize()
   // MovieImportSetIdleManager(store, store->idleManager)
 
@@ -104,11 +104,11 @@ int MkvReaderQT::Read(long long position, long length, unsigned char* buffer)
                           NULL);        // pointer to a data-handler completion function - NULL for Syncronous operation
 	if (err)
     return -2;
- 
+
   // if we read less than what caller asked for, then return error.
   //if (size < size_t(length))
   //  return -1;
-  
+
   return 0;
 }
 

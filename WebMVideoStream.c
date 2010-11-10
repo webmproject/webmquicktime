@@ -16,32 +16,32 @@ OSStatus EnableMultiPassWithTemporaryFile(ICMCompressionSessionOptionsRef inComp
 {
   FSRef tempDirRef;
   ICMMultiPassStorageRef multiPassStorage = NULL;
-  
+
   OSStatus status;
-  
+
   *outMultiPassStorage = NULL;
-  
+
   // users temp directory
   status = FSFindFolder(kUserDomain, kTemporaryFolderType,
                         kCreateFolder, &tempDirRef);
   if (noErr != status) goto bail;
-  
+
   // create storage using a temporary file with a unique file name
   status = ICMMultiPassStorageCreateWithTemporaryFile(kCFAllocatorDefault,
                                                       &tempDirRef,
                                                       NULL, 0,
                                                       &multiPassStorage);
   if (noErr != status) goto bail;
-  
+
   // enable multi-pass by setting the compression session options
   // note - the compression session options object retains the multi-pass
   // storage object
-  status = ICMCompressionSessionOptionsSetProperty(inCompressionSessionOptions, 
+  status = ICMCompressionSessionOptionsSetProperty(inCompressionSessionOptions,
                                                    kQTPropertyClass_ICMCompressionSessionOptions,
                                                    kICMCompressionSessionOptionsPropertyID_MultiPassStorage,
                                                    sizeof(ICMMultiPassStorageRef),
                                                    &multiPassStorage);
-  
+
 bail:
   if (noErr != status) {
     // this api is NULL safe so we can just call it
@@ -49,7 +49,7 @@ bail:
   } else {
     *outMultiPassStorage = multiPassStorage;
   }
-  
+
   return status;
 }
 
@@ -66,24 +66,24 @@ static void _frameDecompressedCallback(void *refCon, OSStatus inerr,
 {
   OSStatus err;
   dbg_printf("[webM]  >> _frameDecompressedCallback(err=%d)\n", inerr);
-  
+
   if (!inerr)
   {
     GenericStreamPtr vs = (GenericStreamPtr) refCon;
-    
-    
+
+
     if ((decompressionFlags & kICMDecompressionTracking_EmittingFrame) && pixelBuffer)
     {
       ICMCompressionFrameOptionsRef frameOptions = NULL;
       OSType pf = CVPixelBufferGetPixelFormatType(pixelBuffer);
-      
+
       dbg_printf("[webM]   _frame_decompressed() = %ld; dFlags %ld,"
                  " dispTime %lld, dispDur %lld, timeFlags %ld [%ld '%4.4s' (%ld x %ld)]\n",
                  inerr, decompressionFlags, displayTime, displayDuration, validTimeFlags,
                  CVPixelBufferGetDataSize(pixelBuffer), (char *) &pf,
                  CVPixelBufferGetWidth(pixelBuffer),
                  CVPixelBufferGetHeight(pixelBuffer));
-      
+
       // Feed the frame to the compression session.
       dbg_printf("feeding the frame to the compression session\n");
       err = ICMCompressionSessionEncodeFrame(vs->vid.compressionSession, pixelBuffer,
@@ -101,29 +101,29 @@ static void _frameDecompressedCallback(void *refCon, OSStatus inerr,
       // if we were responsible for managing source data buffers,
       //  we should release the source buffer here,
       //  using sourceFramemovieGet.refCon to identify it.
-      
+
     }
   }
-  
+
   dbg_printf("[webM] exit _frameDecompressedCallback err= %ld\n", err);
-  
+
 }
 
 static void addint32toDictionary(CFMutableDictionaryRef dictionary, CFStringRef key, SInt32 i)
 {
   CFNumberRef number = CFNumberCreate(NULL, kCFNumberSInt32Type, &i);
-  
+
   if (!number) return;
-  
+
   CFDictionaryAddValue(dictionary, key, number);
   CFRelease(number);
 }
 static void addShortToDictionary(CFMutableDictionaryRef dictionary, CFStringRef key, short i)
 {
   CFNumberRef number = CFNumberCreate(NULL, kCFNumberShortType, &i);
-  
+
   if (!number) return;
-  
+
   CFDictionaryAddValue(dictionary, key, number);
   CFRelease(number);
 }
@@ -132,24 +132,24 @@ static void addShortToDictionary(CFMutableDictionaryRef dictionary, CFStringRef 
 ComponentResult openDecompressionSession(GenericStreamPtr vs)
 {
   ImageDescriptionHandle idh = (ImageDescriptionHandle)(vs->source.params.desc);
-  
+
   ComponentResult err = noErr;
   CFMutableDictionaryRef pixelBufferAttributes = NULL;
   ICMDecompressionTrackingCallbackRecord trackingCallBackRecord;
   OSType pixelFormat = k422YpCbCr8PixelFormat;
   ImageDescription *id = *idh;
-  
+
   //create a dictionary describingg the pixel buffer we want to get back
   pixelBufferAttributes = CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
   addShortToDictionary(pixelBufferAttributes, kCVPixelBufferWidthKey, id->width);
   addShortToDictionary(pixelBufferAttributes, kCVPixelBufferHeightKey, id->height);
   addint32toDictionary(pixelBufferAttributes, kCVPixelBufferHeightKey, pixelFormat);
-  
-  
+
+
   //call back function for the decompression session
   trackingCallBackRecord.decompressionTrackingCallback = _frameDecompressedCallback;
   trackingCallBackRecord.decompressionTrackingRefCon = (void *) vs; //reference to pass to the callback function
-  
+
   err = ICMDecompressionSessionCreate(NULL, idh, /* sessionOptions */ NULL, pixelBufferAttributes,
                                       &trackingCallBackRecord, &vs->vid.decompressionSession);
   return err;
@@ -162,19 +162,19 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
 {
   dbg_printf("[webM]  enter _frame_compressed_callback(err = %d)\n", err);
   GenericStreamPtr vs = (GenericStreamPtr) efRefCon;
-  
+
   if (err)
     return err;
-  
+
   UInt32 enc_size = ICMEncodedFrameGetDataSize(ef);
   ImageDescriptionHandle imgDesc;
-  
+
   err = ICMEncodedFrameGetImageDescription(ef, &imgDesc);
-  
+
   if (!err)
   {
     ImageDescription *id = *imgDesc;
-    
+
     dbg_printf("[webM --%08lx] :: _frame_compressed() = %ld, '%4.4s'"
                " %08lx %08lx [%d x %d] [%f x %f] %ld %d %d %d\n",
                (UInt32) - 1, err, (char *) &id->cType,
@@ -185,29 +185,29 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
                (UInt32) - 1, ICMEncodedFrameGetDecodeDuration(ef),
                enc_size, ICMEncodedFrameGetBufferSize(ef));
   }
-  
-  
+
+
   dbg_printf("[webM] allocate data %d bytes\n", enc_size);
-  
-  
+
+
   //pass appropriate flags for frame type
   ICMFrameType frame_type = ICMEncodedFrameGetFrameType(ef);
   UInt16 frameFlags = VIDEO_FRAME;
-  
+
   //NOTE: With Altref frames, the decodeTimeStamp Represents the altref time
   //  this is a workaround that I don't like, ideally some other sort of
   //  parameter could handle this.
-  
+
   UInt64 displayTime = ICMEncodedFrameGetDisplayTimeStamp(ef);
   UInt64 timeScale = ICMEncodedFrameGetTimeScale(ef);
 
-  dbg_printf("[WebM] ICMEncodedFrameGetDisplayTimeStamp %llu ICMEncodedFrameGetTimeScale %llu\n", 
+  dbg_printf("[WebM] ICMEncodedFrameGetDisplayTimeStamp %llu ICMEncodedFrameGetTimeScale %llu\n",
              displayTime, timeScale);
-  
+
   UInt32 decodeNum = ICMEncodedFrameGetDecodeNumber(ef);
   UInt32 timeMs = displayTime * 1000/timeScale;
   dbg_printf("[WebM] adding frame %d to queue %lu flags %lx\n", decodeNum, timeMs, frameFlags);
-  
+
   if (frame_type != kICMFrameType_Unknown)
   {
     if (frame_type == kICMFrameType_I)
@@ -218,7 +218,7 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
 
     addFrameToQueue(&vs->frameQueue, buf, enc_size,  timeMs, frameFlags, decodeNum -1);
   }
-  else 
+  else
   {
     //There are two frames embedded in altref frames...
     UInt32 decodeTimeMs = vs->vid.lastTimeMs + (timeMs - vs->vid.lastTimeMs)/2;
@@ -226,7 +226,7 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
     UInt32 altrefPortion= *((UInt32*)cBuf);
     dbg_printf("[WebM]Size Of altref data in frame %lu at time %lu\n", altrefPortion, decodeTimeMs);
     void * altrefBuf = malloc(altrefPortion);
-    memcpy(altrefBuf, &cBuf[4], altrefPortion);                          
+    memcpy(altrefBuf, &cBuf[4], altrefPortion);
     frameFlags += ALT_REF_FRAME; // currently using the unknown to indicat alt-ref
     addFrameToQueue(&vs->frameQueue, altrefBuf, altrefPortion,  decodeTimeMs, frameFlags, decodeNum -1);
 
@@ -235,10 +235,10 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
     dbg_printf("[WebM]Size Of inter frame %lu at time %lu\n", framePortion, timeMs);
     frameFlags = VIDEO_FRAME;
     void * frameBuf = malloc(altrefPortion);
-    memcpy(frameBuf, &cBuf[altrefPortion+4], altrefPortion);                          
+    memcpy(frameBuf, &cBuf[altrefPortion+4], altrefPortion);
     addFrameToQueue(&vs->frameQueue, frameBuf, framePortion,  timeMs, frameFlags, decodeNum -1);
   }
-  
+
   vs->vid.lastTimeMs = timeMs;
 
   dbg_printf("[webM]  exit _frame_compressed_callback(err = %d)\n", err);
@@ -250,33 +250,33 @@ _frame_compressed_callback(void *efRefCon, ICMCompressionSessionRef session,
 static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMCompressionSessionOptionsRef options)
 {
   ComponentInstance videoCI = NULL;
-  
+
   ComponentResult err = getVideoComponentInstace(glob, &videoCI);
   if(err) goto bail;
-  
+
   //  --- Hardcoded settings ---
   //Allow P Frames
   err = ICMCompressionSessionOptionsSetAllowTemporalCompression(options, true);
   if (err) goto bail;
-  
+
   // Disable B frames.
   err = ICMCompressionSessionOptionsSetAllowFrameReordering(options, false);
   if (err) goto bail;
-  
+
   //  ---  Transfer spatial settings   ----
   SCSpatialSettings ss;
   err = SCGetInfo(videoCI, scSpatialSettingsType, &ss);
   if (err) goto bail;
-  
+
   dbg_printf("[WebM]Spatial settings - depth %d Quality %lx\n", ss.depth, ss.spatialQuality);
-  
+
   //  ------ Transfer Temporal Settings   --------
   SCTemporalSettings ts;
   err = SCGetInfo(videoCI, scTemporalSettingsType, &ts);
   if (err) goto bail;
   dbg_printf("[WebM] Temporal Settings max keyframerate %ld quality %ld frameRate %f\n",
              ts.keyFrameRate, ts.temporalQuality,FixedToFloat(ts.frameRate));
-  
+
   SInt32 keyFrameRate = ts.keyFrameRate;
   if (keyFrameRate != 0)
   {
@@ -289,18 +289,18 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
                                                 kICMCompressionSessionOptionsPropertyID_Quality,
                                                 sizeof(CodecQ), &ts.temporalQuality);
   if (err) goto bail;
-  
+
   err = ICMCompressionSessionOptionsSetProperty(options,
                                                 kQTPropertyClass_ICMCompressionSessionOptions,
                                                 kICMCompressionSessionOptionsPropertyID_ExpectedFrameRate,
                                                 sizeof(Fixed), &ts.frameRate);
   if (err) goto bail;
-  
-  
+
+
   //  ------  Transfer Datarate Settings   ----
-  SCDataRateSettings ds;  
+  SCDataRateSettings ds;
   err = SCGetInfo(videoCI, scDataRateSettingsType, &ds);
-  dbg_printf("[webm] DataRateSettings %ld frameDuration %ld, spatial Quality %d, temporal Quality %d\n", 
+  dbg_printf("[webm] DataRateSettings %ld frameDuration %ld, spatial Quality %d, temporal Quality %d\n",
              ds.dataRate, ds.frameDuration, ds.minSpatialQuality, ds.minTemporalQuality);
   if (err) goto bail;
   if (ds.dataRate != 0)
@@ -308,17 +308,17 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
     err = ICMCompressionSessionOptionsSetProperty(options,
                                                   kQTPropertyClass_ICMCompressionSessionOptions,
                                                   kICMCompressionSessionOptionsPropertyID_AverageDataRate,
-                                                  sizeof(SInt32), &ds.dataRate); 
+                                                  sizeof(SInt32), &ds.dataRate);
     if (err) goto bail;
   }
-  
+
   //  ------  Transfer Custom Settings   ----
   if (glob->videoSettingsCustom == NULL)
   {
     glob->videoSettingsCustom = NewHandleClear(0);
     SetHandleSize(glob->videoSettingsCustom, 0);
   }
-  err = SCGetInfo(videoCI, scCodecSettingsType, &glob->videoSettingsCustom);                
+  err = SCGetInfo(videoCI, scCodecSettingsType, &glob->videoSettingsCustom);
   if (glob->videoSettingsCustom != NULL)
   {
     err = ICMCompressionSessionOptionsSetProperty(options,
@@ -327,16 +327,16 @@ static ComponentResult setCompressionSettings(WebMExportGlobalsPtr glob, ICMComp
                                                   sizeof(glob->videoSettingsCustom),
                                                   &glob->videoSettingsCustom);
   }
-  
+
   QTUnlockContainer(glob->videoSettingsAtom);
-  
+
 bail:
-  
+
   if (videoCI != NULL)
     CloseComponent(videoCI);
   if (err)
     dbg_printf("[webm] Error in setCompressionSettingFromAC %d\n", err);
-  
+
   return err;
 }
 
@@ -346,26 +346,26 @@ ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, GenericStre
   ComponentResult err = noErr;
   ICMCompressionSessionOptionsRef options;
   ICMEncodedFrameOutputRecord efor;
-  
+
   ImageDescription *id = *(ImageDescriptionHandle) vs->source.params.desc;
   int width = id->width;
   int height = id->height;
-  
+
   StreamSource *source = &vs->source;
-  
+
   err = ICMCompressionSessionOptionsCreate(NULL, &options);
-  
+
   if (err) goto bail;
-  
+
   ICMCompressionSessionOptionsSetDurationsNeeded(options, true);
-  
-  
+
+
   setCompressionSettings(globals, options);
-  
+
   efor.encodedFrameOutputCallback = _frame_compressed_callback;
   efor.encodedFrameOutputRefCon = (void *) vs;
   efor.frameDataAllocator = NULL;
-  
+
   //Even though VP8 doesn't use this, I am enabling a temporary storage file
   //  This is so quick time allows the two pass
   if (vs->vid.bTwoPass)
@@ -375,7 +375,7 @@ ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, GenericStre
     if (noErr != status) goto bail;
     ICMMultiPassStorageRelease(multiPassStorage);
   }
-  
+
   dbg_printf("[webM] openCompressionSession timeScale = %ld (%d x %d)\n",
              vs->source.timeScale, width, height);
   err = ICMCompressionSessionCreate(NULL, width,
@@ -385,16 +385,16 @@ ComponentResult openCompressionSession(WebMExportGlobalsPtr globals, GenericStre
                                     NULL, &efor, &vs->vid.compressionSession);
   dbg_printf("[webM] created compression Session %d\n", err);
   if(err) goto bail;
-  
+
   //After initializing the compression session, set passes if there are two passes
   if (vs->vid.bTwoPass)
     err = startPass(vs,1);
-  
+
 bail:
-  
+
   if (err)
     dbg_printf("[WebM] Open Comprlession Session error = \n", err);
-  
+
   return err;
 }
 
@@ -422,39 +422,39 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, GenericStreamPtr
   initMovieGetParams(&vs->source);
   err = InvokeMovieExportGetDataUPP(vs->source.refCon, &vs->source.params,
                                     vs->source.dataProc);
-  
+
   if (err == eofErr)
   {
     vs->source.eos = true;
     err= noErr;
   }
-  else 
+  else
   {
     vs->framesIn += 1;
   }
-  
+
   if (err != noErr)
     return err;
-    
+
   dbg_printDataParams(&vs->source);
   initFrameTimeRecord(vs, &frameTimeRecord);
-  
+
   if (vs->vid.decompressionSession == NULL)
   {
     err = openDecompressionSession(vs);
     dbg_printf("[webM] open new decompression session %d\n", err);
-    
+
     if (err != noErr) return err;
   }
-  
+
   if (vs->vid.compressionSession == NULL)
   {
     err = openCompressionSession(globals, vs);
     dbg_printf("[webM] open new compression session %d\n", err);
-    
+
     if (err != noErr) return err;
   }
-  
+
   //the callback function also compresses, the compressed data is then kept in vs->outBuf.data
   dbg_printf("[webm] Call ICMDecompressionSessionDecodeFrame\n");
   if (!vs->source.eos)
@@ -465,7 +465,7 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, GenericStreamPtr
                                              vs->source.params.dataSize,
                                              NULL,  //session options
                                              &frameTimeRecord, vs);
-    
+
   }
   else
   {
@@ -481,7 +481,7 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, GenericStreamPtr
   if (framerate == 0)
   {
     globals->framerate = (1.0 * vs->source.params.sourceTimeScale) / (1.0 * vs->source.params.durationPerSample );
-    dbg_printf("[webm] Recomputing framerate %ld / %ld\n", 
+    dbg_printf("[webm] Recomputing framerate %ld / %ld\n",
                vs->source.params.durationPerSample, vs->source.params.sourceTimeScale);
     framerate = globals->framerate;
   }
@@ -512,9 +512,9 @@ ComponentResult startPass(GenericStreamPtr vs,int pass)
     cpFlag = kICMCompressionPassMode_OutputEncodedFrames | kICMCompressionPassMode_ReadFromMultiPassStorage;
   else
     return paramErr;
-  
+
   OSStatus os= ICMCompressionSessionBeginPass(vs->vid.compressionSession, cpFlag, 0);
-  if (os) 
+  if (os)
   {
     dbg_printf("[WebM] Error on ICMCompressionSessionBeginPass %d\n", os);
     err = os;  //TODO choose an apropriate error message
@@ -525,9 +525,9 @@ ComponentResult startPass(GenericStreamPtr vs,int pass)
 OSStatus endPass(GenericStreamPtr vs)
 {
   dbg_printf("[WEBM] End pass session %ld\n", (UInt32) vs->vid.compressionSession);
-  OSStatus os = ICMCompressionSessionEndPass(vs->vid.compressionSession);         
+  OSStatus os = ICMCompressionSessionEndPass(vs->vid.compressionSession);
   if (os != 0)
     dbg_printf("[WEBM] Error: endPass got error %d\n", os);
-  
+
   return os;
 }

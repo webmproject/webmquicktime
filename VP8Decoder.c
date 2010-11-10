@@ -356,10 +356,10 @@ pascal ComponentResult VP8_Decoder_BeginBand(VP8DecoderGlobals glob, CodecDecomp
         return paramErr;
     }
 #else
-    // Ignore return value, but use is_kf field.  vpx_codec_peek_stream_info() returns error for non-keyframes. 
+    // Ignore return value, but use is_kf field.  vpx_codec_peek_stream_info() returns error for non-keyframes.
     dbg_printf("VP8_Decoder_BeginBand ignoring return value from vpx_codec_peek_stream_info.\n");
 #endif
-  
+
     keyFrame = stream_info.is_kf;
     storageIndex = 0;
     droppableFrame = 0;

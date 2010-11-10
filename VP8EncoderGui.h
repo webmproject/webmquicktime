@@ -10,7 +10,7 @@
 #define _VP8ENCODER_GUI_H_
 
 #define kDEADLINE 'VPdl'
-#define kTHREADCOUNT 'VPtc' 
+#define kTHREADCOUNT 'VPtc'
 #define kERROR_RESILIENT 'VPer'
 #define kEND_USAGE 'VPeu'
 #define kLOG_IN_FRAMES 'VPlf'

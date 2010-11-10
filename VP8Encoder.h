@@ -21,7 +21,7 @@ typedef struct
   UInt32 size;
 }VP8Buffer;
 
-typedef struct 
+typedef struct
 {
   ICMCompressorSourceFrameRef* queue;
   int size;
@@ -34,15 +34,15 @@ typedef struct
 {
   ComponentInstance               self;
   ComponentInstance               target;
-  
+
   ICMCompressorSessionRef         session; // NOTE: we do not need to retain or release this
   ICMCompressionSessionOptionsRef sessionOptions;
-  
+
   long                            width;
   long                            height;
   size_t                          maxEncodedDataSize;
   int                             nextDecodeNumber;
-  
+
   //VP8 Specific Variables
   vpx_codec_err_t      res;
   vpx_codec_ctx_t      *codec;
@@ -54,7 +54,7 @@ typedef struct
   enum vpx_enc_pass         currentPass;
   ICMCompressorSourceFrameRefQueue sourceQueue;
   VP8Buffer altRefFrame;  ///an option dummy source frame
-  
+
 } VP8EncoderGlobalsRecord, *VP8EncoderGlobals;
 
 #endif

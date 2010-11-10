@@ -181,7 +181,7 @@ ComponentResult getVideoComponentInstace(WebMExportGlobalsPtr glob, ComponentIns
     if (err) goto bail;
     if (glob->videoSettingsCustom != NULL)
     {
-        err = SCSetInfo(*videoCI, scCodecSettingsType, &glob->videoSettingsCustom);            
+        err = SCSetInfo(*videoCI, scCodecSettingsType, &glob->videoSettingsCustom);
     }
 bail:
     return err;

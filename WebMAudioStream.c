@@ -217,7 +217,7 @@ static void _initAudioBufferList(GenericStreamPtr as, AudioBufferList **audioBuf
 
   UInt32 maxBytesPerPacket = 4096;
   ComponentResult err = noErr;
-  
+
   err = QTGetComponentProperty(as->aud.vorbisComponentInstance, kQTPropertyClass_SCAudio,
                              kQTSCAudioPropertyID_MaximumOutputPacketSize,
                                  sizeof(maxBytesPerPacket), &maxBytesPerPacket, NULL);
@@ -227,11 +227,11 @@ static void _initAudioBufferList(GenericStreamPtr as, AudioBufferList **audioBuf
     maxBytesPerPacket = 255 *255;  //this should be roughly valid for ogg Vorbis
     err = noErr;
   }
-  
+
   UInt32 bufferListSize = offsetof(AudioBufferList, mBuffers[ioPackets]);
-  
+
   dbg_printf("[WebM]Calling InitAudioBufferList size %ld, each buffer being %lu\n", bufferListSize, maxBytesPerPacket);
-  
+
   *audioBufferList = (AudioBufferList *) malloc(bufferListSize);
   (*audioBufferList)->mNumberBuffers = ioPackets;
   UInt32 wantedSize = maxBytesPerPacket * ioPackets;
@@ -242,7 +242,7 @@ static void _initAudioBufferList(GenericStreamPtr as, AudioBufferList **audioBuf
     as->aud.buf.size = wantedSize;
     as->aud.buf.offset = 0;
   }
-  
+
   for (i = 0; i < ioPackets; i++)
   {
     (*audioBufferList)->mBuffers[i].mNumberChannels = as->aud.asbd.mChannelsPerFrame;
@@ -255,26 +255,26 @@ static void _initAudioBufferList(GenericStreamPtr as, AudioBufferList **audioBuf
 ComponentResult compressAudio(GenericStreamPtr as)
 {
   ComponentResult err = noErr;
-  
+
   if (as->source.eos)
     return noErr;  //shouldn't be called here.
-  
+
   UInt32 ioPackets = 1; //I want to get only one packet at a put it in a simple block
   AudioStreamPacketDescription *packetDesc = NULL;
-  
+
   packetDesc = (AudioStreamPacketDescription *)calloc(ioPackets, sizeof(AudioStreamPacketDescription));
-  
+
   AudioBufferList *audioBufferList = NULL;
   _initAudioBufferList(as, &audioBufferList, ioPackets);  //allocates memory
   dbg_printf("[WebM] call SCAudioFillBuffer(%x,%x,%x,%x,%x, %x)\n", as->aud.vorbisComponentInstance, _fillBuffer_callBack,
              (void *) as, &ioPackets,
              audioBufferList, packetDesc);
-  
+
   err = SCAudioFillBuffer(as->aud.vorbisComponentInstance, _fillBuffer_callBack,
                           (void *) as, &ioPackets,
                           audioBufferList, packetDesc);
   dbg_printf("[WebM] exit SCAudioFillBuffer %d packets, err = %d\n", ioPackets, err);
-  
+
   if (err == eofErr)
   {
     dbg_printf("[WebM] Total Frames in = %lld, Total Frames Out = %lld\n",
@@ -283,14 +283,14 @@ ComponentResult compressAudio(GenericStreamPtr as)
       as->source.eos = true;
     err= noErr;
   }
-  
+
   if (err) goto bail;
-  
+
   if (ioPackets > 0)
   {
     as->aud.buf.offset = 0;
     int i = 0;
-    
+
     for (i = 0; i < ioPackets; i++)
     {
       dbg_printf("[WebM] packet is %ld bytes, %ld frames\n", packetDesc[i].mDataByteSize,  packetDesc[i].mVariableFramesInPacket);
@@ -314,17 +314,17 @@ ComponentResult compressAudio(GenericStreamPtr as)
   {
     as->complete = true;
   }
-  
+
 bail:
-  
+
   if (audioBufferList != NULL)
     free(audioBufferList);
-  
+
   if (packetDesc != NULL)
     free(packetDesc);
-  
-  
-  
+
+
+
   return err;
 }
 
@@ -350,7 +350,7 @@ typedef struct CookieAtomHeader CookieAtomHeader;
 static void _oggLacing(UInt8 **ptr, UInt32 size)
 {
   long tmpLacing = size;
-  
+
   while (tmpLacing >= 0)
   {
     if (tmpLacing >= 255)
@@ -360,7 +360,7 @@ static void _oggLacing(UInt8 **ptr, UInt32 size)
       UInt8 ui8tmp = tmpLacing;
       **ptr = ui8tmp;
     }
-    
+
     (*ptr) ++;
     tmpLacing -= 255;
   }
@@ -376,14 +376,14 @@ static void _dbg_printVorbisHeader(const UInt8 *ptr)
   long bitrate_minimum = *(long *)(&ptr[24]);
   UInt8 blockSize0 = ptr[28] >> 4;
   UInt8 blockSize1 = ptr[28] & 0x0f;
-  
+
   dbg_printf("Vorbis header reads vers %ld channels %d sampleRate %ld\n"
              "\t bitrates max %ld nominal %ld min %ld\n"
              "\t blockSize_0 %d, blockSize_1 %d\n",
              vorbisVersion, audioChannels, audioSampleRate,
              bitrate_maximum, bitrate_nominal, bitrate_minimum,
              blockSize0, blockSize1);
-  
+
 }
 
 ComponentResult write_vorbisPrivateData(GenericStreamPtr as, UInt8 **buf, UInt32 *bufSize)
@@ -392,66 +392,66 @@ ComponentResult write_vorbisPrivateData(GenericStreamPtr as, UInt8 **buf, UInt32
   void *magicCookie = NULL;
   UInt32 cookieSize = 0;
   dbg_printf("[WebM] Get Vorbis Private Data\n");
-  
+
   err = QTGetComponentPropertyInfo(as->aud.vorbisComponentInstance,
                                    kQTPropertyClass_SCAudio,
                                    kQTSCAudioPropertyID_MagicCookie,
                                    NULL, &cookieSize, NULL);
-  
+
   if (err) return err;
-  
+
   dbg_printf("[WebM] Cookie Size %d\n", cookieSize);
-  
+
   magicCookie = calloc(1, cookieSize);
   err = QTGetComponentProperty(as->aud.vorbisComponentInstance,
                                kQTPropertyClass_SCAudio,
                                kQTSCAudioPropertyID_MagicCookie,
                                cookieSize, magicCookie, NULL);
-  
+
   if (err) goto bail;
-  
+
   UInt8 *ptrheader = (UInt8 *) magicCookie;
   UInt8 *cend = ptrheader + cookieSize;
   CookieAtomHeader *aheader = (CookieAtomHeader *) ptrheader;
   WebMBuffer header, header_vc, header_cb;
   header.size = header_vc.size = header_cb.size = 0;
-  
+
   while (ptrheader < cend)
   {
     aheader = (CookieAtomHeader *) ptrheader;
     ptrheader += EndianU32_BtoN(aheader->size);
-    
+
     if (ptrheader > cend || EndianU32_BtoN(aheader->size) <= 0)
       break;
-    
+
     switch (EndianS32_BtoN(aheader->type))
     {
       case kCookieTypeVorbisHeader:
         header.size = EndianS32_BtoN(aheader->size) - 2 * sizeof(long);
         header.data = aheader->data;
         break;
-        
+
       case kCookieTypeVorbisComments:
         header_vc.size = EndianS32_BtoN(aheader->size) - 2 * sizeof(long);
         header_vc.data = aheader->data;
         break;
-        
+
       case kCookieTypeVorbisCodebooks:
         header_cb.size = EndianS32_BtoN(aheader->size) - 2 * sizeof(long);
         header_cb.data = aheader->data;
         break;
-        
+
       default:
         break;
     }
   }
-  
+
   if (header.size == 0 || header_vc.size == 0 || header_cb.size == 0)
   {
     err = paramErr;
     goto bail;
   }
-  
+
   //1 + header1 /255 + header2 /255 + idheader.len +
   *bufSize = 1;  //the first byte which is always 0x02
   *bufSize += (header.size - 1) / 255 + 1; //the header size lacing
@@ -461,29 +461,29 @@ ComponentResult write_vorbisPrivateData(GenericStreamPtr as, UInt8 **buf, UInt32
              header.size, header_vc.size , header_cb.size, *bufSize);
   *buf = malloc(*bufSize);
   UInt8 *ptr = *buf;
-  
+
   *ptr = 0x02;
   ptr ++;
   //using ogg lacing write out the size of the first two packets
   _oggLacing(&ptr, header.size);
   _oggLacing(&ptr, header_vc.size);
-  
+
   _dbg_printVorbisHeader(header.data);
-  
+
   memcpy(ptr, header.data, header.size);
   ptr += header.size;
   memcpy(ptr, header_vc.data, header_vc.size);
   ptr += header_vc.size;
   memcpy(ptr, header_cb.data, header_cb.size);
-  
+
 bail:
-  
+
   if (magicCookie != NULL)
   {
     free(magicCookie);
     magicCookie = NULL;
   }
-  
+
   return err;
 }
 
@@ -497,6 +497,6 @@ ComponentResult initAudioStream(GenericStreamPtr as)
   as->aud.buf.size =0;
   as->aud.buf.offset=0;
   as->aud.buf.data = NULL;
-  
+
   return noErr;
 }
