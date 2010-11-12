@@ -13,7 +13,8 @@
 #include <QuickTime/QuickTime.r>
 
 #include "VP8CodecVersion.h"
-#include "WebMExportVersions.h"
+//#include "WebMExportVersions.h"
+#include "WebMImport.hpp"
 
 //
 // WebM Import component
@@ -22,7 +23,9 @@
 // canMovieImportPartial
 
 #define kImporterFlags canMovieImportFiles | canMovieImportInPlace | canMovieImportDataReferences | cmpThreadSafe | hasMovieImportMIMEList | canMovieImportWithIdle | \
-canMovieImportValidateFile | canMovieImportValidateDataReferences
+canMovieImportValidateFile | canMovieImportValidateDataReferences | \
+canMovieImportAvoidBlocking | canMovieImportPartial
+
 
 resource 'STR ' (263) {
   "WebM" "0.0.1" " see http://webmproject.org"
@@ -42,17 +45,16 @@ resource 'thng' (263) {
 	263,							// Info ID
 	0,								// Icon Type
 	0,								// Icon ID
-	kImporterFlags,
-	componentHasMultiplePlatforms +			// Registration Flags 
-	componentDoAutoVersion,
+	kWebMImportVersion,       // not kImporterFlags,
+	componentDoAutoVersion | componentHasMultiplePlatforms,			// Registration Flags
 	0,										// Resource ID of Icon Family
   {
-    kImporterFlags | cmpThreadSafe, 
+    kImporterFlags,
     'dlle',
     263,
     platformIA32NativeEntryPoint,
   },
-  0,0;
+  'thnr', 263;
 };
 
 // Code Entry Point for Mach-O and Windows
@@ -94,7 +96,7 @@ resource 'thnr' (263) {
   
     'mcfg', 1, 0,
     'mcfg', 263, 0
-  }
+  };
 };
 
 // mcfg - QT Media Configuration Resource
@@ -106,13 +108,14 @@ resource 'mcfg' (263)
     // determine which group this MIME type will be listed under in MIME configuration panel
     kQTMediaConfigVideoGroupID,
     
-    kQTMediaConfigUsePluginByDefault
-    | kQTMediaConfigCanUseApp
-    | kQTMediaConfigCanUsePlugin
-    | kQTMediaConfigBinaryFile,
+    kQTMediaConfigUsePluginByDefault \
+    | kQTMediaConfigCanUseApp \
+    | kQTMediaConfigCanUsePlugin \
+    | kQTMediaConfigBinaryFile \
+    | kQTMediaConfigTakeFileAssociationByDefault,
 
     'WebM',       // MacOS file type when saved (OSType)
-    0,
+    'TVOD',
     
     // Component info used by QT plugin to find componet to open this type of file
     'eat ',
@@ -136,7 +139,7 @@ resource 'mcfg' (263)
     
     // Array of MIME types that describe this media type
     {
-      "video/webm"
+      "video/webm";
     },
   }
 };
