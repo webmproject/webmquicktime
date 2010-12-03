@@ -590,11 +590,9 @@ pascal ComponentResult WebMImportSetIdleManager(WebMImportGlobals store, IdleMan
 //--------------------------------------------------------------------------------
 pascal ComponentResult WebMImportGetMaxLoadedTime(WebMImportGlobals store, TimeValue *time)
 {
-  *time = 0;
-  if (store->videoMaxLoaded > store->audioMaxLoaded)
-    *time = store->videoMaxLoaded;
-  else
-    *time = store->audioMaxLoaded;
+  // time arg is in movie's timescale so return video maxloaded
+  *time = store->videoMaxLoaded;
+
   return noErr;
 }
 
