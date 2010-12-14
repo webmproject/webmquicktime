@@ -249,7 +249,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
 
   // Use IMkvReader subclass that knows about quicktime dataRef and dataHandler objects, rather than plain file io.
   long long pos = 0;
-  MkvReaderQT* reader = (MkvReaderQT*) new MkvReaderQT;   // allocate reader on heap so it doesn't go out of scape at end of ImportDataRef().
+  //MkvReaderQT* reader = (MkvReaderQT*) new MkvReaderQT;   // allocate reader on heap so it doesn't go out of scape at end of ImportDataRef().
+  MkvReaderQT* reader = (MkvReaderQT*) new MkvBufferedReaderQT;   // JAK - test buffered reads for performance.
   int status = reader->Open(dataRef, dataRefType);
   if (status != 0) {
     dbg_printf("[WebM Import] MkvReaderQT::Open() Error, status = %d\n", status);

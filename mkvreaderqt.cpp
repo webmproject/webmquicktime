@@ -8,6 +8,10 @@
 
 #include "mkvreaderqt.hpp"
 
+extern "C" {
+#include "log.h"
+}
+
 
 //--------------------------------------------------------------------------------
 MkvReaderQT::MkvReaderQT() :
@@ -58,6 +62,17 @@ int MkvReaderQT::Open(Handle dataRef, OSType dataRefType)
 	if (err) return -6;
   m_length = fileSize;
 
+  // JAK
+#if 0
+  Boolean buffersReads;
+  Boolean buffersWrites;
+  DataHDoesBuffer(dataHandler,  &buffersReads, &buffersWrites);
+  dbg_printf("DataHDoesBuffer() buffersReads = %d\n", buffersReads);
+  long blockSize = 0;
+  DataHGetPreferredBlockSize(dataHandler, &blockSize);
+  dbg_printf("DataHGetPreferredBlockSize() is %ld\n", blockSize);
+#endif
+
   // dbg_printf("[WebM Import] DataHGetFileSize = %d\n", fileSize);
   //  dbg_printf("[WebM Import] sizeof Header %d\n", sizeof(header));
 
@@ -80,6 +95,9 @@ int MkvReaderQT::Read(long long position, long length, unsigned char* buffer)
 
   if (length == 0)
     return 0;
+
+  if (length != 1)
+    dbg_printf("MkvReaderQT::Read() len = %ld\n", length);
 
   // DatHGetPreferredBlockSize()
   // MovieImportSetIdleManager(store, store->idleManager)
@@ -121,6 +139,79 @@ int MkvReaderQT::Length(long long* total, long long* available)
   if (available)
     *available = m_length;
 
+  return 0;
+}
+
+
+
+//--------------------------------------------------------------------------------
+//
+MkvBufferedReaderQT::MkvBufferedReaderQT() :
+  m_buffer(), m_bufpos(0), m_chunksize(kDefaultChunkSize)
+{
+}
+
+//--------------------------------------------------------------------------------
+MkvBufferedReaderQT::~MkvBufferedReaderQT()
+{
+}
+
+//--------------------------------------------------------------------------------
+//
+int MkvBufferedReaderQT::Read(long long requestedPos, long requestedLen, unsigned char* outbuf)
+{
+  dbg_printf("MkvBufferedReaderQT::Read() - requestedPos = %lld, requestedLen = %ld\n", requestedPos, requestedLen);
+  dbg_printf("\tm_bufpos = %lld, m_buffer.size = %lu\n", m_bufpos, m_buffer.size());
+
+  if (requestedPos != m_bufpos) {
+    dbg_printf("\tNON-CONTIGUOUS READ, empty the buffer\n");
+    // non-contiguous read
+    // empty buffer
+    size_t numToPop = m_buffer.size();
+    for (long i=0; i < numToPop; i++) {
+      m_buffer.pop();
+    }
+    // reset position even though empty queue
+    m_bufpos = requestedPos;
+  }
+
+  dbg_printf("\tm_bufpos=%lld, requestedLen=%ld, m_buffer.size() = %lu\n", m_bufpos, requestedLen, m_buffer.size());
+
+  // contiguous read (or empty buffer)
+  // is the request larger than what we already have in buffer?
+  if (requestedLen > m_buffer.size()) {
+    dbg_printf("\tNOT ENOUGH IN BUFFER, read from file.\n");
+    // not enough in buffer...
+    // read from data handler (file)
+    size_t growSize = (requestedLen < m_chunksize) ? m_chunksize : requestedLen; // grow buffer by chunksize or requestedLen, whichever is greater.
+    unsigned char* tempBuf = (unsigned char*)malloc(growSize);
+    int err = this->MkvReaderQT::Read(requestedPos, growSize, tempBuf);
+    if (err != 0) {
+      free(tempBuf);
+      return err;
+    }
+
+    // append to existing buffer
+    for (long i=0; i < growSize; i++) {
+      m_buffer.push(tempBuf[i]);
+    }
+
+    free(tempBuf);
+  }
+
+  dbg_printf("\tm_buffer.front = %1x\n", m_buffer.front());
+
+  // read from buffer
+  if (requestedLen > 0) {
+    for (long i=0; i < requestedLen; i++) {
+      outbuf[i] = m_buffer.front();
+      m_buffer.pop();
+      m_bufpos++;
+    }
+  }
+
+  dbg_printf("\toutbuf[0]=%1x\n", outbuf[0]);
+  dbg_printf("MkvBufferedReaderQT::Read() return.\n\n");
   return 0;
 }
 
