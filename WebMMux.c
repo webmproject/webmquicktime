@@ -469,6 +469,7 @@ ComponentResult _getStreamWithMinTime(WebMExportGlobalsPtr globals, GenericStrea
   *minTimeStream = NULL;
 
   //see if there's an empty queue
+  //TODO : this seems as though it shouldn't happen
   for (iStream = 0; iStream < globals->streamCount; iStream++)
   {
     GenericStream *gs = &(*globals->streams)[iStream];
@@ -481,7 +482,9 @@ ComponentResult _getStreamWithMinTime(WebMExportGlobalsPtr globals, GenericStrea
   for (iStream = 0; iStream < globals->streamCount; iStream++)
   {
     GenericStream *gs = &(*globals->streams)[iStream];
-
+    if (gs->frameQueue.size == 0 && gs->complete)
+      continue;  //if the stream is complete just continue
+    
     WebMBufferedFrame* frame = gs->frameQueue.queue[0];
     dbg_printf("[WebM] %lu Frame Time = %ld\n",iStream, frame->timeMs);
 

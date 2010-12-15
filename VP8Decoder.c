@@ -36,8 +36,6 @@ typedef struct
     long                        height;
     vpx_codec_ctx_t             *ctx;
     vpx_image_t                 *lastImg;
-    /*  struct InternalPixelBuffer  storedFrameArray[kMaxStoredFrames];
-     struct InternalPixelBuffer  immediateFrame;*/
     Handle                      wantedDestinationPixelTypes;
   } VP8DecoderGlobalsRecord, *VP8DecoderGlobals;
 
