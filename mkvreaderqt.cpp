@@ -12,6 +12,9 @@ extern "C" {
 #include "log.h"
 }
 
+static void ReadCompletion(Ptr request, long refcon, OSErr readErr);
+
+
 
 //--------------------------------------------------------------------------------
 MkvReaderQT::MkvReaderQT() :
@@ -147,8 +150,9 @@ int MkvReaderQT::Length(long long* total, long long* available)
 //--------------------------------------------------------------------------------
 //
 MkvBufferedReaderQT::MkvBufferedReaderQT() :
-  m_buffer(), m_bufpos(0), m_chunksize(kDefaultChunkSize)
+  m_buffer(), bufDataSize(0), bufStartFilePos(0), bufCurFilePos(0), bufEndFilePos(0), m_chunksize(kDefaultChunkSize), m_PendingReadSize(0)
 {
+  bufDataMax = sizeof(buf);
 }
 
 //--------------------------------------------------------------------------------
@@ -160,26 +164,24 @@ MkvBufferedReaderQT::~MkvBufferedReaderQT()
 //
 int MkvBufferedReaderQT::Read(long long requestedPos, long requestedLen, unsigned char* outbuf)
 {
-  dbg_printf("MkvBufferedReaderQT::Read() - requestedPos = %lld, requestedLen = %ld\n", requestedPos, requestedLen);
-  dbg_printf("\tm_bufpos = %lld, m_buffer.size = %lu\n", m_bufpos, m_buffer.size());
+  //dbg_printf("MkvBufferedReaderQT::Read() - requestedPos = %lld, requestedLen = %ld\n", requestedPos, requestedLen);
+  //dbg_printf("\tbufStartFilePos = %lld, m_buffer.size = %lu\n", bufStartFilePos, m_buffer.size());
 
-  if (requestedPos != m_bufpos) {
-    dbg_printf("\tNON-CONTIGUOUS READ, empty the buffer\n");
-    // non-contiguous read
-    // empty buffer
-    size_t numToPop = m_buffer.size();
-    for (long i=0; i < numToPop; i++) {
-      m_buffer.pop();
-    }
-    // reset position even though empty queue
-    m_bufpos = requestedPos;
+  if ((requestedPos < bufStartFilePos) ||
+      (requestedPos > bufEndFilePos) ||
+      ((requestedPos + requestedLen - 1) > bufEndFilePos)) {  // m_bufHeadPos+m_buffer.size())) {
+    // non-contiguous read, miss
+    dbg_printf("\tNON-CONTIGUOUS READ, CACHE MISS requestedPos = %lld, requestedLen = %ld [%ld - %ld - %ld]\n", requestedPos, requestedLen, bufStartFilePos, bufCurFilePos, bufEndFilePos);
+    int err = this->MkvReaderQT::Read(requestedPos, requestedLen, outbuf);
+    return err;
   }
 
-  dbg_printf("\tm_bufpos=%lld, requestedLen=%ld, m_buffer.size() = %lu\n", m_bufpos, requestedLen, m_buffer.size());
 
+  //dbg_printf("\tm_bufpos=%lld, requestedLen=%ld, m_buffer.size() = %lu\n", m_bufpos, requestedLen, m_buffer.size());
+#if 0
   // contiguous read (or empty buffer)
   // is the request larger than what we already have in buffer?
-  if (requestedLen > m_buffer.size()) {
+  if ((requestedPos + requestedLen - 1) > bufEndFilePos) {  // (m_bufHeadPos + m_buffer.size() - 1)) {
     dbg_printf("\tNOT ENOUGH IN BUFFER, read from file.\n");
     // not enough in buffer...
     // read from data handler (file)
@@ -193,26 +195,101 @@ int MkvBufferedReaderQT::Read(long long requestedPos, long requestedLen, unsigne
 
     // append to existing buffer
     for (long i=0; i < growSize; i++) {
-      m_buffer.push(tempBuf[i]);
+      m_buffer.push_back(tempBuf[i]);
     }
 
     free(tempBuf);
   }
-
-  dbg_printf("\tm_buffer.front = %1x\n", m_buffer.front());
+#endif
+  //dbg_printf("\tm_buffer.front = %1x\n", m_buffer.front());
 
   // read from buffer
   if (requestedLen > 0) {
     for (long i=0; i < requestedLen; i++) {
-      outbuf[i] = m_buffer.front();
-      m_buffer.pop();
-      m_bufpos++;
+      outbuf[i] = buf[requestedPos - bufStartFilePos + i];
+      //outbuf[i] = m_buffer[requestedPos - bufStartFilePos + i]; //.front();
+      //m_buffer.pop();
+      //m_bufpos++;
     }
+    // ****  dbg_printf("BUF CACHE HIT!\n");
+    bufCurFilePos = (requestedPos + requestedLen);
   }
 
-  dbg_printf("\toutbuf[0]=%1x\n", outbuf[0]);
-  dbg_printf("MkvBufferedReaderQT::Read() return.\n\n");
+  //dbg_printf("\toutbuf[0]=%1x\n", outbuf[0]);
+  //dbg_printf("MkvBufferedReaderQT::Read() return.\n");
+  //dbg_printf("\n");
   return 0;
+}
+
+//--------------------------------------------------------------------------------
+void MkvBufferedReaderQT::ReadAsync(MkvBufferedReaderQT* reader, long requestedLen)
+{
+  if (reader->m_PendingReadSize != 0) {
+    // if an async read is already pending, nop and return now.
+    return;
+  }
+
+  dbg_printf("ReadAsync...\n");
+  dbg_printf("MkvBufferedReaderQT::buf %ld [%ld - %ld - %ld] %ld\n", reader->bufDataSize, reader->bufStartFilePos, reader->bufCurFilePos, reader->bufEndFilePos, reader->bufDataMax);
+
+  if (reader->read_completion_cb == NULL)
+    reader->read_completion_cb = NewDataHCompletionUPP(ReadCompletion);
+
+  if (reader->bufDataSize + requestedLen > reader->bufDataMax) {
+    reader->CompactBuffer(requestedLen);
+  }
+
+  if (reader->bufDataSize + requestedLen <= reader->bufDataMax) {
+    wide ofst;
+    ofst.hi = 0;
+    ofst.lo = reader->bufEndFilePos;
+    reader->m_PendingReadSize = requestedLen;
+    reader->readErr = DataHReadAsync(reader->m_dataHandler, reader->buf + reader->bufDataSize, requestedLen, &ofst, reader->read_completion_cb, (long)reader);
+  }
+  else {
+    dbg_printf("MkvBufferedReaderQT::ReadAsync() FAIL - BUFFER FULL. bufDataSize=%ld, consumed=%ld\n", reader->bufDataSize, (reader->bufCurFilePos - reader->bufStartFilePos));
+    reader->m_PendingReadSize = 0;
+    DataHTask(reader->m_dataHandler);
+    //ReadCompletion(NULL, (long)reader, noErr);  // **** maybe wait, and then call comletion, just to keep pump going...
+  }
+}
+
+
+//--------------------------------------------------------------------------------
+static void ReadCompletion(Ptr request, long refcon, OSErr readErr)
+{
+  MkvBufferedReaderQT* reader = (MkvBufferedReaderQT*)refcon;
+  reader->readErr = readErr;
+  reader->bufEndFilePos += reader->m_PendingReadSize; // incr file position by amount that was just read into buf
+  reader->bufDataSize += reader->m_PendingReadSize; // incr size of data in buf
+  reader->m_PendingReadSize = 0;
+
+  dbg_printf("...ReadCompletion (filePos=%ld)\n", reader->bufEndFilePos);
+
+
+  long readSize = kReadChunkSize; // MkvBufferedReaderQT::kDefaultChunkSize;
+  MkvBufferedReaderQT::ReadAsync(reader);   // , readSize);  use default arg
+}
+
+
+//--------------------------------------------------------------------------------
+void MkvBufferedReaderQT::CompactBuffer(long requestedSize)
+{
+  long remainingDataSize = (bufDataMax - bufDataSize);
+  long consumedDataSize = (bufCurFilePos - bufStartFilePos);
+  if (requestedSize > remainingDataSize) {
+    if (consumedDataSize > (requestedSize - remainingDataSize)) {
+      dbg_printf("CompactBuffer() consumedDataSize=%ld\n", consumedDataSize);
+      memmove(&buf[0], &buf[consumedDataSize], (bufDataSize - consumedDataSize));
+      bufDataSize -= consumedDataSize;
+      bufStartFilePos += consumedDataSize;
+    }
+    else {
+      dbg_printf("CompactBuffer() FAIL. Wait for more data to be consumed.\n");
+    }
+  }
+  else
+    dbg_printf("CompactBuffer() NOP, don't need to compact at this time.\n");
 }
 
 
