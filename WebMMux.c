@@ -87,6 +87,7 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
         double fps = globals->framerate;
         if (fps == 0)
         {
+                    
           fps = gs->source.timeScale / 100.0;  //framerate estime should be replaced with more accurate
           globals->framerate = fps;
         }
@@ -332,7 +333,17 @@ void GetEncoderSettings(WebMExportGlobalsPtr globals, Boolean *bIsTwoPass, Boole
   {
     dbg_printf("[WebM] getVideoComponentInstace handleSize = %d\n",GetHandleSize(globals->videoSettingsCustom) );
   }
-
+  
+  //get framerate here if possible
+  SCTemporalSettings ts;
+  err= SCGetInfo(videoCI, scTemporalSettingsType, &ts);
+  double fps = FixedToFloat(ts.frameRate);
+  //I'm not sure if this if statement is needed here
+  dbg_printf("[WebM] SCGetInfo temporal settings returning framerate of %lf, previous fps\n", fps, globals->framerate);
+  if (fps != 0 && globals->framerate != 0)
+  {
+    globals->framerate = fps;
+  }
 bail:
   if (videoCI != NULL)
   {
