@@ -465,7 +465,6 @@ ComponentResult compressNextFrame(WebMExportGlobalsPtr globals, GenericStreamPtr
                                              vs->source.params.dataSize,
                                              NULL,  //session options
                                              &frameTimeRecord, vs);
-
   }
   else
   {
