@@ -341,7 +341,7 @@ void GetEncoderSettings(WebMExportGlobalsPtr globals, Boolean *bIsTwoPass, Boole
   double fps = FixedToFloat(ts.frameRate);
   //I'm not sure if this if statement is needed here
   dbg_printf("[WebM] SCGetInfo(scTemporalSettingsType) framerate %lf, previous fps %f\n", fps, globals->framerate);
-  if (fps != 0 && globals->framerate != 0)
+  if (fps != 0)
   {
     globals->framerate = fps;
   }
@@ -598,6 +598,9 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
   dbg_printf("[WebM-%08lx] :: muxStreams( duration %f)\n", (UInt32) globals, duration);
   WebMBufferedFrame * minFrame;
 
+  Boolean bTwoPass;
+  GetEncoderSettings(globals, &bTwoPass, &globals->bAltRefEnabled);
+  dbg_printf("[WebM] Is Two Pass %d\n",bTwoPass);
 
   UInt32 iStream;
   Boolean allStreamsDone = false;
@@ -635,9 +638,6 @@ ComponentResult muxStreams(WebMExportGlobalsPtr globals, DataHandler data_h)
   globals->clusterOffset = *(SInt64 *)& ebml.offset;
   globals->clusterKeyFrameTime = UINT_MAX;
 
-  Boolean bTwoPass;
-  GetEncoderSettings(globals, &bTwoPass, &globals->bAltRefEnabled);
-  dbg_printf("[WebM] Is Two Pass %d\n",bTwoPass);
   //start first pass in a two pass
   if (bTwoPass)
     _doFirstPass(globals);
