@@ -37,7 +37,7 @@ typedef struct {
   IdleManager idleManager;
   mkvparser::Segment* webmSegment;
   const mkvparser::Cluster* webmCluster;
-  mkvparser::Tracks* webmTracks;
+  const mkvparser::Tracks* webmTracks;
   long long segmentDuration;
   ::Track movieVideoTrack, movieAudioTrack;
   ::Media movieVideoMedia, movieAudioMedia;
@@ -90,7 +90,7 @@ extern "C" {
 OSErr CreateVP8ImageDescription(long width, long height, ImageDescriptionHandle *descOut);
 OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::AudioTrack* webmAudioTrack);
 OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, Handle* cookie);
-OSErr AddCluster(WebMImportGlobals store, const mkvparser::Cluster* webmCluster, mkvparser::Tracks* webmTracks, long long lastTime_ns);
+OSErr AddCluster(WebMImportGlobals store, const mkvparser::Cluster* webmCluster, const mkvparser::Tracks* webmTracks, long long lastTime_ns);
 OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::AudioTrack* webmAudioTrack);
 OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns);
 OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::VideoTrack* webmVideoTrack);
@@ -311,7 +311,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   //
   // WebM Tracks
   //
-  mkvparser::Tracks* const webmTracks = webmSegment->GetTracks();
+  const mkvparser::Tracks* const webmTracks = webmSegment->GetTracks();
   store->webmTracks = webmTracks;
 
   // Use the WebM Tracks info to create QT Track and QT Media up front.  Don't wait for first video Block object.
@@ -609,7 +609,7 @@ pascal ComponentResult WebMImportGetLoadState(WebMImportGlobals store, long* imp
 #pragma mark -
 
 //--------------------------------------------------------------------------------
-OSErr AddCluster(WebMImportGlobals store, const mkvparser::Cluster* webmCluster, mkvparser::Tracks* webmTracks, long long lastTime_ns)
+OSErr AddCluster(WebMImportGlobals store, const mkvparser::Cluster* webmCluster, const mkvparser::Tracks* webmTracks, long long lastTime_ns)
 {
   OSErr err = noErr;
 
