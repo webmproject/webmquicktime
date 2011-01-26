@@ -267,7 +267,7 @@ void MkvBufferedReaderQT::InitBuffer()
 {
   if ((m_PendingReadSize == 0) && (bufDataSize == 0) && (bufEndFilePos == 0)) {
     dbg_printf("InitBuffer (sync) ...");
-    long requestedLen = kReadChunkSize;
+    long requestedLen = kReadChunkSize * 16;   // **** try larger initial chunk
     m_PendingReadSize = requestedLen;
     int err = this->MkvReaderQT::Read(0, requestedLen, buf);
 
