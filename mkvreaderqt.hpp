@@ -13,6 +13,7 @@
 
 #include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
+#include <queue>
 
 class MkvReaderQT : public mkvparser::IMkvReader
 {
@@ -33,6 +34,24 @@ private:
   long long m_length;
   Handle m_dataRef; // might not need to store this after open()
   DataHandler m_dataHandler;  // ComponentInstance
+
+};
+
+
+class MkvBufferedReaderQT : public MkvReaderQT
+{
+  MkvBufferedReaderQT(const MkvBufferedReaderQT&);
+  MkvBufferedReaderQT& operator=(const MkvBufferedReaderQT&);
+public:
+  MkvBufferedReaderQT();
+  virtual ~MkvBufferedReaderQT();
+  virtual int Read(long long position, long length, unsigned char* buffer);
+  static const size_t kDefaultChunkSize = 1024;
+
+private:
+  std::queue<unsigned char> m_buffer;
+  long long m_bufpos;
+  size_t m_chunksize;
 
 };
 
