@@ -294,7 +294,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     return -1;
   }
 
-  DataHTask(store->dataHandler);  // ********
+  DataHTask(store->dataHandler);
 
 #if USE_PARSE_HEADERS
   // Use ParseHeaders instead of Load(). Test performance.
@@ -574,7 +574,7 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
   dbg_printf("WebMImportIdle()\n");
   DumpWebMGlobals(store);
 
-  DataHTask(store->dataHandler);
+  //DataHTask(store->dataHandler);
 
   // get next cluster
   const mkvparser::Cluster* webmCluster = store->webmSegment->GetNext(store->webmCluster);
@@ -905,9 +905,13 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
     dbg_printf("WebM Import - FinishAddingAudioBlocks - ERROR - parallel vectors with different sizes. numSamples=%d, numTimes=%d\n", numSamples, numTimes);
     // try to recover ****
   }
-  long numSamplesToAdd = (numSamples - 1);    // try deferring the last block in the cache
-  if (numSamples == 1)
-    numSamplesToAdd = 1;  // add last audio block in the file.
+  long numSamplesToAdd = 0;
+  if (numSamples <= 0)
+    return 0;
+  else if (numSamples == 1)
+    numSamplesToAdd = 1;                   // add last audio block in the file.
+  else
+    numSamplesToAdd = (numSamples - 1);    // try deferring the last block in the cache
 
   dbg_printf("WebM Import - FinishAddingAudioBlocks - numSamples = %d, numTimes = %d, numSamplesToAdd=%ld, lastTime_ns = %lld\n", numSamples, numTimes, numSamplesToAdd, lastTime_ns);
 
@@ -1043,9 +1047,13 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
     dbg_printf("WebM Import - FinishAddingVideoBlocks - ERROR - parallel vectors with different sizes. numSamples=%d, numTimes=%d\n", numSamples, numTimes);
     // try to recover ****
   }
-  long numSamplesToAdd = (numSamples - 1);    // try deferring the last block in the cache
-  if (numSamples == 1)
-    numSamplesToAdd = 1;  // add last video block in the file.
+  long numSamplesToAdd = 0;
+  if (numSamples <= 0)
+    return 0;
+  else if (numSamples == 1)
+    numSamplesToAdd = 1;                   // add last video block in the file.
+  else
+    numSamplesToAdd = (numSamples - 1);    // try deferring the last block in the cache
 
   dbg_printf("WebM Import - FinishAddingVideoBlocks - numSamples = %d, numTimes = %d, numSamplesToAdd=%ld, lastTime_ns = %lld\n", numSamples, numTimes, numSamplesToAdd, lastTime_ns);
 

@@ -15,7 +15,7 @@
 #include <QuickTime/QuickTime.h>
 #include <queue>
 
-#define kReadBufferMaxSize  (1024*1024)
+#define kReadBufferMaxSize  (4*1024*1024)
 #define kReadChunkSize        (32*1024)
 
 
