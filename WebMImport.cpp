@@ -24,6 +24,7 @@ extern "C" {
 #include "log.h"
 }
 
+#define USE_PARSE_HEADERS 1
 
 //typedef std::multimap<long, SampleReferencePtr> SampleRefMap;
 typedef std::vector<SampleReferenceRecord> SampleRefVec;
@@ -60,6 +61,7 @@ typedef struct {
   long loadState;                         // kMovieLoadStateLoading, ... kMovieLoadStateComplete
   long videoMaxLoaded;                    // total duration of video blocks already inserted into QT Track, expressed in video media's time scale.
   long audioMaxLoaded;                    // total duration of audio blocks already inserted into QT Track, expressed in audio media's time scale.
+  MkvBufferedReaderQT* reader;      // reader object passed to parser
 } WebMImportGlobalsRec, *WebMImportGlobals;
 
 static const long long ns_per_sec = 1000000000;
@@ -234,6 +236,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   store->vp8DescHand = NULL;
   store->loadState = kMovieLoadStateLoading;
   store->videoMaxLoaded = 0;
+  store->reader = NULL;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
   TimeValue mediaDuration, audioMediaDuration;
@@ -250,12 +253,20 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   // Use IMkvReader subclass that knows about quicktime dataRef and dataHandler objects, rather than plain file io.
   long long pos = 0;
   //MkvReaderQT* reader = (MkvReaderQT*) new MkvReaderQT;   // allocate reader on heap so it doesn't go out of scape at end of ImportDataRef().
-  MkvReaderQT* reader = (MkvReaderQT*) new MkvBufferedReaderQT;   // JAK - test buffered reads for performance.
+  MkvBufferedReaderQT* reader = (MkvBufferedReaderQT*) new MkvBufferedReaderQT;   // JAK - test buffered reads for performance.
+  if (reader == NULL)
+    return invalidDataRef;
   int status = reader->Open(dataRef, dataRefType);
   if (status != 0) {
     dbg_printf("[WebM Import] MkvReaderQT::Open() Error, status = %d\n", status);
     return invalidDataRef;
   }
+  store->reader = reader;
+
+  // preload the io buffer sync
+  unsigned char tmpBuf;
+  //reader->Read(0, 1024, &tmpBuf);   // sync read w/ empty buffer just returns data, does not append to buffer, so this wont work ****
+  reader->ReadAsync(reader);
 
   long long totalLength = 0;
   long long availLength = 0;
@@ -285,6 +296,12 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     return -1;
   }
 
+  DataHTask(store->dataHandler);  // ********
+
+#if USE_PARSE_HEADERS
+  // Use ParseHeaders instead of Load(). Test performance.
+  ret = webmSegment->ParseHeaders();
+#else
   // Load the WebM Segment.
   ret = webmSegment->Load();
   if (ret) {
@@ -299,6 +316,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     return -1;
   }
   dbg_printf("Number of Clusters: %ld\n", numClusters);
+#endif
   store->webmSegment = webmSegment;
 
 
@@ -414,17 +432,20 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     //
     // WebM Cluster - add one cluster
     //
+#if USE_PARSE_HEADERS
+    ret = webmSegment->LoadCluster();
+#endif
     webmCluster = webmSegment->GetFirst();
     store->webmCluster = webmCluster;
     err = AddCluster(store, webmCluster, webmTracks, segmentDuration);  // need tracks object to get track for each block
 
-    if (numClusters == 1) {
-      *outFlags |= movieImportResultComplete;
-      // AddSamplesToTrack() already done inside AddCluster() ?
-    }
-    else {
+//    if (numClusters == 1) {
+//      *outFlags |= movieImportResultComplete;
+//      // AddSamplesToTrack() already done inside AddCluster() ?
+//    }
+//    else {
       *outFlags |= movieImportResultNeedIdles;
-    }
+//    }
 
     return noErr;
   }
@@ -441,7 +462,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     //
     long long lastTime_ns = 0;
     webmCluster = webmSegment->GetFirst();
-    while ((webmCluster != NULL) && !webmCluster->EOS()) {        // or for (i = 0; i < numClusters; i++) {
+    while ((webmCluster != NULL) && !webmCluster->EOS()) {
       lastTime_ns = segmentDuration;  // webmCluster is last cluster in segment, so pass in duration of whole segment.
 
       // Add Cluster to quicktime movie.
@@ -555,6 +576,8 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
   dbg_printf("WebMImportIdle()\n");
   DumpWebMGlobals(store);
 
+  DataHTask(store->dataHandler);
+
   // get next cluster
   const mkvparser::Cluster* webmCluster = store->webmSegment->GetNext(store->webmCluster);
   delete store->webmCluster;
@@ -564,6 +587,10 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
   // import the cluster
   if ((store->webmCluster != NULL) && !store->webmCluster->EOS()) {
     AddCluster(store, store->webmCluster, store->webmTracks, store->segmentDuration);
+#if USE_PARSE_HEADERS
+//*** Do this inside AddCluster at the bottom before return.    long long ret = store->webmSegment->LoadCluster();
+#endif
+    store->reader->MkvBufferedReaderQT::ReadAsync(store->reader);  // restart pump if stalled.
   }
   else {
     // If no more clusters
@@ -654,6 +681,10 @@ OSErr AddCluster(WebMImportGlobals store, const mkvparser::Cluster* webmCluster,
   FinishAddingVideoBlocks(store, lastTime_ns);    // or AddSamplesToTrack() for video, or make it general and pass in audio or video media, etc.
   FinishAddingAudioBlocks(store, lastTime_ns);
   store->loadState = kMovieLoadStatePlayable;
+
+#if USE_PARSE_HEADERS
+  long long ret = store->webmSegment->LoadCluster();
+#endif
 
   return err;
 }
