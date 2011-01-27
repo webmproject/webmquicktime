@@ -263,10 +263,8 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   }
   store->reader = reader;
 
-  // preload the io buffer sync
-  unsigned char tmpBuf;
-  //reader->Read(0, 1024, &tmpBuf);   // sync read w/ empty buffer just returns data, does not append to buffer, so this wont work ****
-  reader->ReadAsync(reader);
+  // Preload the io buffer synchronously.
+  reader->InitBuffer();
 
   long long totalLength = 0;
   long long availLength = 0;

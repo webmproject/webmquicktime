@@ -15,7 +15,7 @@
 #include <QuickTime/QuickTime.h>
 #include <queue>
 
-#define kReadBufferMaxSize  (512*1024)
+#define kReadBufferMaxSize  (1024*1024)
 #define kReadChunkSize        (32*1024)
 
 
@@ -51,23 +51,24 @@ public:
   MkvBufferedReaderQT();
   virtual ~MkvBufferedReaderQT();
   virtual int Read(long long position, long length, unsigned char* buffer);
-  static const size_t kDefaultChunkSize = 1024;
+  void InitBuffer();
   static void ReadAsync(MkvBufferedReaderQT* reader, long requestedLen = kReadChunkSize); //or kReadChunkSize
   void CompactBuffer(long requestedSize = 0);
 
   long m_PendingReadSize; // size requested by ReadAsync, nonzero if async read still outstanding.
   OSErr readErr;          // async read will set this
   unsigned char buf[kReadBufferMaxSize];
-  long bufDataSize;       // bufSize;  // size of data in buf
+  long bufDataSize;       // size of data in buf
   long bufDataMax;
-  long bufStartFilePos;   // long long m_bufHeadPos
+  long bufStartFilePos;   // long long
   long bufCurFilePos;
-  long bufEndFilePos;     // filePos;  // file position already read info buf so far
+  long bufEndFilePos;     // file position already read info buf so far
 
 private:
   //std::queue<unsigned char> m_buffer;
-  std::deque<unsigned char> m_buffer;
-  size_t m_chunksize;
+  //std::deque<unsigned char> m_buffer;
+  //size_t m_chunksize;
+  long long m_previousReadPos;
 
   DataHCompletionUPP  read_completion_cb;
 
