@@ -7,9 +7,19 @@
 // be found in the AUTHORS file in the root of the source tree.
 
 //
-// Quicktime Movie Import Commponent for the WebM format.
+// Quicktime Movie Import Commponent ('eat ') for the WebM format.
 // See www.webmproject.org for more info.
 //
+// The MkvBufferedReaderQT class uses asynchronous io to read WebM data into a buffer.  The "libwebm" project's
+// libmkvparser.a library is used to parse the WebM data (which is similar to Matroska).  This implements an "idling"
+// importer, and for every call to the Idle() routine we import one WebM Cluster.  Audio and video samples
+// are collected in STL containers and then added to QuickTime Media and Track objects.  When the resulting QuickTime
+// movie is played, the VP8 video data is passed to the QuickTime Video Decompressor component ('imdc') to be decoded.
+// Audio data is sent to a separate Vorbis decoder component.
+// When installed in /Library/QuickTime/ folder, this component enables playback of the WebM format
+// in QuickTime Player 7, Safari, and other QuickTime applications on the Mac.
+//
+
 
 #include "WebMImport.hpp"
 
@@ -26,7 +36,6 @@ extern "C" {
 
 #define USE_PARSE_HEADERS 1
 
-//typedef std::multimap<long, SampleReferencePtr> SampleRefMap;
 typedef std::vector<SampleReferenceRecord> SampleRefVec;
 typedef std::vector<long long> SampleTimeVec;
 
@@ -34,7 +43,6 @@ typedef std::vector<long long> SampleTimeVec;
 // WebM Import Component Globals structure
 typedef struct {
   ComponentInstance self;
-  // Boolean idlingImporter;
   IdleManager idleManager;
   mkvparser::Segment* webmSegment;
   const mkvparser::Cluster* webmCluster;
@@ -61,7 +69,7 @@ typedef struct {
   long loadState;                         // kMovieLoadStateLoading, ... kMovieLoadStateComplete
   long videoMaxLoaded;                    // total duration of video blocks already inserted into QT Track, expressed in video media's time scale.
   long audioMaxLoaded;                    // total duration of audio blocks already inserted into QT Track, expressed in audio media's time scale.
-  MkvBufferedReaderQT* reader;      // reader object passed to parser
+  MkvBufferedReaderQT* reader;            // reader object passed to parser
 } WebMImportGlobalsRec, *WebMImportGlobals;
 
 static const long long ns_per_sec = 1000000000;
@@ -100,28 +108,6 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns);
 void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::SegmentInfo* webmSegmentInfo, const mkvparser::Tracks* webmTracks);
 void DumpWebMGlobals(WebMImportGlobals store);
 
-
-//--------------------------------------------------------------------------------
-static const wchar_t* utf8towcs(const char* str)
-{
-  if (str == NULL)
-    return NULL;
-
-  //TODO: this probably requires that the locale be
-  //configured somehow:
-
-  const size_t size = mbstowcs(NULL, str, 0);
-
-  if (size == 0)
-    return NULL;
-
-  wchar_t* const val = new wchar_t[size+1];
-
-  mbstowcs(val, str, size);
-  val[size] = L'\0';
-
-  return val;
-}
 
 
 #pragma mark -
@@ -251,9 +237,9 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     return paramErr;
 
   // Use IMkvReader subclass that knows about quicktime dataRef and dataHandler objects, rather than plain file io.
+  // allocate reader on heap so it doesn't go out of scape at end of ImportDataRef().
   long long pos = 0;
-  //MkvReaderQT* reader = (MkvReaderQT*) new MkvReaderQT;   // allocate reader on heap so it doesn't go out of scape at end of ImportDataRef().
-  MkvBufferedReaderQT* reader = (MkvBufferedReaderQT*) new MkvBufferedReaderQT;   // JAK - test buffered reads for performance.
+  MkvBufferedReaderQT* reader = (MkvBufferedReaderQT*) new MkvBufferedReaderQT;
   if (reader == NULL)
     return invalidDataRef;
   int status = reader->Open(dataRef, dataRefType);
@@ -436,15 +422,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     webmCluster = webmSegment->GetFirst();
     store->webmCluster = webmCluster;
     err = AddCluster(store, webmCluster, webmTracks, segmentDuration);  // need tracks object to get track for each block
-
-//    if (numClusters == 1) {
-//      *outFlags |= movieImportResultComplete;
-//      // AddSamplesToTrack() already done inside AddCluster() ?
-//    }
-//    else {
-      *outFlags |= movieImportResultNeedIdles;
-//    }
-
+    *outFlags |= movieImportResultNeedIdles;
     return noErr;
   }
   else {
@@ -586,13 +564,13 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
   if ((store->webmCluster != NULL) && !store->webmCluster->EOS()) {
     AddCluster(store, store->webmCluster, store->webmTracks, store->segmentDuration);
 #if USE_PARSE_HEADERS
-//*** Do this inside AddCluster at the bottom before return.    long long ret = store->webmSegment->LoadCluster();
+    // AddCluster() calls LoadCluster() just before return so its ready for next idle call.
+    // Otherwise we would have to call it here: long long ret = store->webmSegment->LoadCluster();
 #endif
     store->reader->MkvBufferedReaderQT::ReadAsync(store->reader);  // restart pump if stalled.
   }
   else {
-    // If no more clusters
-    // Add any remaining samples from cache.
+    // If no more clusters, add any remaining samples from cache.
     if (store->videoSamples.size() > 0)
       FinishAddingVideoBlocks(store, store->segmentDuration);
     if (store->audioSamples.size() > 0)
@@ -618,7 +596,6 @@ pascal ComponentResult WebMImportGetMaxLoadedTime(WebMImportGlobals store, TimeV
 {
   // time arg is in movie's timescale so return video maxloaded
   *time = store->videoMaxLoaded;
-
   return noErr;
 }
 
@@ -755,7 +732,7 @@ OSErr CreateAudioDescription(SoundDescriptionHandle *descOut, const mkvparser::A
   asbd.mFormatFlags = kAudioFormatFlagIsBigEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // or leave off big endian if it's LittleEndian
   asbd.mChannelsPerFrame = webmAudioTrack->GetChannels();     // 1;
   asbd.mBitsPerChannel = 0;       // 24; // or webmAudioTrack->GetBitDepth() ?
-  asbd.mFramesPerPacket = 0;      // 1;      // ****
+  asbd.mFramesPerPacket = 0;      // 1;
   asbd.mBytesPerFrame = 0;        // 3;
   asbd.mBytesPerPacket = 0;       // 3;
 
@@ -847,7 +824,7 @@ OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, 
 
 //--------------------------------------------------------------------------------
 //  AddAudioBlock()
-//  Add one video block to cache of sample references.
+//  Add one audio block to cache of sample references.
 //  Call this for each block in a section (maybe a cluster) to collect sample references first,
 //  and then call AddMediaSampleReferences() later for the section, or once at the end of file.
 //
@@ -881,7 +858,7 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
 
 //--------------------------------------------------------------------------------
 //  FinishAddingAudioBlocks
-// Add some audio sample references to the quicktime media.
+// Add some audio sample references to the QuickTime media.
 // The argument lastTime_ns will be timestamp of next sample that is not in store->audioSamples, or it will be set to duration of entire movie.
 // Assume that sample references for a section of audio blocks have already been added to samples list store->audioSamples.
 // This "section" may be all blocks in one cluser, or all blocks within some arbitrary time duration (like every 5 seconds).
@@ -975,8 +952,6 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   // Clean up cache
   // Delete sample refs and times after they have been added to quicktime (or maintain ptr into vector)
   //
-  // store->audioSamples.erase(store->audioSamples.begin(), store->audioSamples.end());
-  // store->audioTimes.erase(store->audioTimes.begin(), store->audioTimes.end());
   store->audioSamples.erase(store->audioSamples.begin(), store->audioSamples.begin()+numSamplesToAdd);  // stl vector.erase(first, last) will not erase last. Range is [first,last).
   store->audioTimes.erase(store->audioTimes.begin(), store->audioTimes.begin()+numSamplesToAdd);
 
@@ -1018,7 +993,7 @@ OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
     store->videoTimes.push_back(blockTime_ns);  // blockTime_ns needs to be passed into AddAudioBlock(), or pass in webmCluster so we can call webmBlock->GetTime(webmCluster); here.
   }
 
-//  dbg_printf("Video Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
+  //  dbg_printf("Video Block: (offset=%ld, size=%ld, duration=calculated later.\n", srp->dataOffset, srp->dataSize);
   return err;
 }
 
@@ -1119,8 +1094,6 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
   // Clean up cache
   // Delete sample refs and times after they have been added to quicktime (or maintain ptr into vector)
   //
-//  store->videoSamples.erase(store->videoSamples.begin(), store->videoSamples.end());
-//  store->videoTimes.erase(store->videoTimes.begin(), store->videoTimes.end());
   store->videoSamples.erase(store->videoSamples.begin(), store->videoSamples.begin()+numSamplesToAdd);  // stl vector.erase(first, last) will not erase last. Range is [first,last).
   store->videoTimes.erase(store->videoTimes.begin(), store->videoTimes.begin()+numSamplesToAdd);
 
@@ -1133,6 +1106,31 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
 
 
 //--------------------------------------------------------------------------------
+static const wchar_t* utf8towcs(const char* str)
+{
+  if (str == NULL)
+    return NULL;
+
+  //TODO: this probably requires that the locale be configured somehow
+
+  const size_t size = mbstowcs(NULL, str, 0);
+
+  if (size == 0)
+    return NULL;
+
+  wchar_t* const val = new wchar_t[size+1];
+
+  mbstowcs(val, str, size);
+  val[size] = L'\0';
+
+  return val;
+}
+
+
+//--------------------------------------------------------------------------------
+//  DumpWebMDebugInfo
+//  Print debugging info for WebM header, segment, tracks.
+//
 void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::SegmentInfo* webmSegmentInfo, const mkvparser::Tracks* webmTracks)
 {
   // Header
@@ -1202,6 +1200,9 @@ void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::Segme
 
 
 //--------------------------------------------------------------------------------
+//  DumpWebMGlobals
+//  Print debugging info for the QT component globals structure.
+//
 void DumpWebMGlobals(WebMImportGlobals store)
 {
     // DEBUG PRINT THE GLOBALS

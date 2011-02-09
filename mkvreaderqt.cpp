@@ -6,6 +6,12 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
+//
+// Implements two reader subclasses: MkvReaderQT and MkvBufferedReaderQT
+// that can be passed to the mkvparser object for its use in reading WebM data.
+// See www.webmproject.org for more info.
+//
+
 #include "mkvreaderqt.hpp"
 
 extern "C" {
@@ -65,7 +71,6 @@ int MkvReaderQT::Open(Handle dataRef, OSType dataRefType)
 	if (err) return -6;
   m_length = fileSize;
 
-  // JAK
 #if 0
   Boolean buffersReads;
   Boolean buffersWrites;
@@ -159,6 +164,7 @@ MkvBufferedReaderQT::MkvBufferedReaderQT() :
 //--------------------------------------------------------------------------------
 MkvBufferedReaderQT::~MkvBufferedReaderQT()
 {
+  // ****
 }
 
 //--------------------------------------------------------------------------------

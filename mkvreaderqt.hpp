@@ -6,6 +6,13 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
+//
+// Defines two reader subclasses: MkvReaderQT and MkvBufferedReaderQT
+// that can be passed to the mkvparser object for its use in reading WebM data.
+// See www.webmproject.org for more info.
+//
+
+
 #ifndef MKVREADERQT_HPP
 #define MKVREADERQT_HPP
 
@@ -18,7 +25,10 @@
 #define kReadBufferMaxSize  (4*1024*1024)
 #define kReadChunkSize        (32*1024)
 
-
+//
+// MkvReaderQT
+// Subclass of IMkvReader that knows about QuickTime dataRef and dataHandler objects, rather than plain file io.
+//
 class MkvReaderQT : public mkvparser::IMkvReader
 {
   MkvReaderQT(const MkvReaderQT&);
@@ -43,6 +53,10 @@ private:
 };
 
 
+//
+// MkvBufferedReaderQT
+// Subclass of MkvReaderQT that uses async io to fill buffer.
+//
 class MkvBufferedReaderQT : public MkvReaderQT
 {
   MkvBufferedReaderQT(const MkvBufferedReaderQT&);
