@@ -16,8 +16,9 @@
 // are collected in STL containers and then added to QuickTime Media and Track objects.  When the resulting QuickTime
 // movie is played, the VP8 video data is passed to the QuickTime Video Decompressor component ('imdc') to be decoded.
 // Audio data is sent to a separate Vorbis decoder component.
-// When installed in /Library/QuickTime/ folder, this component enables playback of the WebM format
-// in QuickTime Player 7, Safari, and other QuickTime applications on the Mac.
+// When the "WebM.component" is installed in /Library/QuickTime/ folder, it enables playback of the WebM format
+// in QuickTime Player 7, Safari, and other QuickTime applications on the Mac.  The vorbis decoder, XiphQT.component,
+// must also be installed for audio support.
 //
 
 
