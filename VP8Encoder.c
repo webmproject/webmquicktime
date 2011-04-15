@@ -493,6 +493,7 @@ VP8_Encoder_EncodeFrame(
   ICMCompressionFrameOptionsRef frameOptions;
   dbg_printf("[vp8e - %08lx] flags are %x\n", (UInt32)glob, flags);
   err = encodeThisSourceFrame(glob, sourceFrame);
+  return err;
 }
 
 // Directs the compressor to finish with a queued source frame, either emitting or dropping it.

@@ -44,6 +44,40 @@ static void addSourceFrame(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef s
 static ICMCompressorSourceFrameRef popSourceFrame(VP8EncoderGlobals glob);
 static Boolean isInQueue(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef sourceFrame);
 
+static void dbg_printEncoderSettings(vpx_codec_enc_cfg_t  *cfg)
+{
+  dbg_printf("[vp8e] ------- dbg_printEncoderSettings\n");
+  dbg_printf("g_usage                     %d\n", cfg->g_usage);
+  dbg_printf("g_threads                   %d\n", cfg->g_threads);
+  dbg_printf("g_profile                   %d\n", cfg->g_profile);
+  dbg_printf("g_w                         %d\n", cfg->g_w);
+  dbg_printf("g_h                         %d\n", cfg->g_h);
+  dbg_printf("g_timebase                  %d/%d\n", cfg->g_timebase.num, cfg->g_timebase.den);
+  dbg_printf("g_error_resilient           %d\n", cfg->g_error_resilient);
+  dbg_printf("g_pass                      %d\n", cfg->g_pass);
+  dbg_printf("g_lag_in_frames             %d\n", cfg->g_lag_in_frames);
+  dbg_printf("rc_dropframe_thresh         %d\n", cfg->rc_dropframe_thresh);
+  dbg_printf("rc_resize_allowed           %d\n", cfg->rc_resize_allowed);
+  dbg_printf("rc_resize_up_thresh         %d\n", cfg->rc_resize_up_thresh);
+  dbg_printf("rc_resize_down_thresh       %d\n", cfg->rc_resize_down_thresh);
+  dbg_printf("rc_resize_down_thresh       %d\n", cfg->rc_resize_down_thresh);
+  dbg_printf("rc_end_usage                %d\n", cfg->rc_end_usage);
+  dbg_printf("rc_twopass_stats_in         %d\n", cfg->rc_twopass_stats_in);
+  dbg_printf("rc_target_bitrate           %d\n", cfg->rc_target_bitrate);
+  dbg_printf("rc_min_quantizer            %d\n", cfg->rc_min_quantizer);
+  dbg_printf("rc_max_quantizer            %d\n", cfg->rc_max_quantizer);
+  dbg_printf("rc_undershoot_pct           %d\n", cfg->rc_undershoot_pct);
+  dbg_printf("rc_overshoot_pct            %d\n", cfg->rc_overshoot_pct);
+  dbg_printf("rc_buf_sz                   %d\n", cfg->rc_buf_sz);
+  dbg_printf("rc_buf_initial_sz           %d\n", cfg->rc_buf_initial_sz);
+  dbg_printf("rc_buf_optimal_sz           %d\n", cfg->rc_buf_optimal_sz);
+  dbg_printf("rc_2pass_vbr_bias_pct       %d\n", cfg->rc_2pass_vbr_bias_pct);
+  dbg_printf("rc_2pass_vbr_minsection_pct %d\n", cfg->rc_2pass_vbr_minsection_pct);
+  dbg_printf("rc_2pass_vbr_maxsection_pct %d\n", cfg->rc_2pass_vbr_maxsection_pct);
+  dbg_printf("kf_mode                     %d\n", cfg->kf_mode);
+  dbg_printf("kf_min_dist                 %d\n", cfg->kf_min_dist);
+  dbg_printf("kf_max_dist                 %d\n", cfg->kf_max_dist);
+}
 
 static ComponentResult emitEncodedFrame(VP8EncoderGlobals glob, const vpx_codec_cx_pkt_t *pkt)
 {
@@ -369,6 +403,7 @@ static void initializeCodec(VP8EncoderGlobals glob, ICMCompressorSourceFrameRef 
   setCustom(glob);
   glob->cfg.g_pass = glob->currentPass;
 
+  dbg_printEncoderSettings(&glob->cfg);
   if (vpx_codec_enc_init(glob->codec, &vpx_codec_vp8_cx_algo, &glob->cfg, 0))
   {
     const char *detail = vpx_codec_error_detail(glob->codec);

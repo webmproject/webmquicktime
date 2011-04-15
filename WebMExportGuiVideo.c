@@ -126,18 +126,30 @@ ComponentResult OpenVP8Dlg(WebMExportGlobalsPtr globals, WindowRef window)
     err = GetMoviesError();
     dbg_printf("[Webm] Set picture to time %ld\n", movieTime);
 
-    if (!err)
+    //This chunk of code is responsible for adding a video preview to the vp8
+    //options dialog.  Currently it is causing crashes.  After much debugging,
+    //I've determined that one of quicktimes function corrupts memory in the heap
+    //when using this option.  Perhaps if the encoder use changes then this
+    //can be uncommented to allow the preview.  See
+    //http://code.google.com/p/webm/issues/detail?id=272
+    /*if (!err)
     {
         currentPictureHandle = GetMoviePict(globals->setdlg_movie, movieTime);
+        dbg_printf("[Webm] GetMoviePict < %ld\n", currentPictureHandle);
 
         if (currentPictureHandle != NULL)
         {
             Rect rect;
             QDGetPictureBounds(currentPictureHandle, &rect);
-            short testFlags = scPreferScalingAndCropping | scDontDetermineSettingsFromTestImage;
-            err = SCSetTestImagePictHandle(stdVideo, currentPictureHandle, &rect, testFlags);
+            dbg_printf("[WebM] QDGetPictureBounds %d %d %d %d\n",
+                rect.top, rect.left, rect.bottom, rect.right);
+            short testFlags = scPreferScalingAndCropping 
+                | scDontDetermineSettingsFromTestImage;
+            err = SCSetTestImagePictHandle(stdVideo, 
+                currentPictureHandle, &rect, testFlags);
+            dbg_printf("[WebM] SCSetTestImagePictHandle %d\n", err);
         }
-    }
+    }*/
 
     //this does the user dialog and waits until they exit
     err = SCRequestSequenceSettings(stdVideo);
