@@ -1,49 +1,56 @@
-This document will guide you through how to build the WebM quicktime component
+=========================
+ Building WebM component
+=========================
 
-A Tested environment
-  1. OS - Leopard MacOS X 10.5.8
-  2. XCode version 3.1.4
-Note: You should be able to build it in a different environment but this is what I've used for development.
+This document will quickly guide you through how to build the WebM
+QuickTime component. The instructions below should work in any fairly
+up-to-date Mac environment, but specifically were tested in Mac OS X
+10.6.8 with Xcode 3.2.6.
 
-B. Prerequisites
- 1. Ogg Component
-    a. Download from http://www.xiph.org/quicktime/download.html
- 2. VP8 SDK
-   - cd ~
-   - mkdir webm
-   - cd webm
-   - git clone git://review.webmproject.org/libvpx.git
-   - mkdir libvpxbuild
-   - cd libvpxbuild
-   - ../libvpx/configure --target=x86-darwin9-gcc
-   - make
-   - cd ..
 
-C Get the webm source code
-  - git clone https://review.webmproject.org/p/webmquicktime
-  - cd webmquicktime
+Build prerequisites
+===================
 
-D Copy VP8 SDK into your webm tree
-  - mkdir lib
-  - cp ../vpxbuild/libvpx.a lib/.
-  - mkdir vpx
-  - cp ../libvpx/vpx/*.h vpx/.
-  - cp ../vpxbuild/vpx_config.h vpx/.
+ * Git
+   - download and install Git (http://code.google.com/p/git-osx-installer/)
 
-E. Build the project
-  - open WebM.xcodeproj
-  - hit the build button
-NOTE: with xcode 3.2.3, You may need to add ~/webm/webmquicktime to you Headers Search Path in the project build information 
+ * Yasm (required to build libvpx)
+   - download, build and install Yasm (http://yasm.tortall.net/)
 
-F. Copy the component
-  - cp -r build/Development\ Intel/WebM.component ~/Library/QuickTime/.
 
-G. Test the component
-  - open avideoFile.mov  (should open the file in quicktime pro)
-  - File ->export
-  - Export:->Movie to WebM
-  - Hit Save
+Getting source code and dependencies
+====================================
 
-H.  Play your file
-  - Use Chrome (dev channel) or other player listed here: 
-      http://www.webmproject.org/users/.
+Get the component source code (issue from command line):
+
+ > git clone git://review.webmproject.org/webmquicktime.git webmquicktime
+ > cd webmquicktime
+
+Pull the dependencies (from within the cloned repository):
+
+ > git submodule update --init
+
+
+Compiling
+=========
+
+From command line, just type:
+
+ > make
+
+Or, using Xcode UI open the WebM.xcodeproj and hit the build button.
+
+If the compilation finished succesfully, the component bundle should
+be ready under build/Release directory.
+
+
+Testing
+=======
+
+Place the component bundle where QuickTime can find it. From the
+top-level directory of the cloned repository type:
+
+ > cp -pR build/Release/WebM.component ~/Library/QuickTime/
+
+QuickTime Player 7 now should be able to open *.webm files and export
+to WebM format. Give it a try.
