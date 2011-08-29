@@ -179,8 +179,8 @@ int MkvBufferedReaderQT::Read(long long requestedPos, long requestedLen, unsigne
   m_previousReadPos = requestedPos;
 
   if ((requestedPos < bufStartFilePos) ||
-      (requestedPos > bufEndFilePos) ||
-      ((requestedPos + requestedLen - 1) > bufEndFilePos)) {  // m_bufHeadPos+m_buffer.size())) {
+      (requestedPos >= bufEndFilePos) ||
+      ((requestedPos + requestedLen) > bufEndFilePos)) {  // m_bufHeadPos+m_buffer.size())) {
     // non-contiguous read, miss
     dbg_printf("\tNON-CONTIGUOUS READ, CACHE MISS requestedPos = %lld, requestedLen = %ld [%ld - %ld - %ld]\n", requestedPos, requestedLen, bufStartFilePos, bufCurFilePos, bufEndFilePos);
     int err = this->MkvReaderQT::Read(requestedPos, requestedLen, outbuf);
