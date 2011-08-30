@@ -11,10 +11,12 @@
 #ifndef LOG_H
 #define LOG_H
 
-//#define ENABLE_DEBUG_LOG 1  //this is now a configuration flag
+
+#include <QuickTime/QuickTime.h>
+
 
 void log_time(FILE *logFile, const char *id, const char *fmt, ...);
-void dbg_printf(const char *s, ...);
+void dbg_printf(const char *s, ...)  __attribute__((format(printf, 1, 2)));
 void dbg_dumpBytes(unsigned char *bytes, int size);
 void dbg_dumpAtom(QTAtomContainer container);
 

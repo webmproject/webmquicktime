@@ -8,16 +8,30 @@
 
 
 
-
-#define OUTPUT_FILE "/var/tmp/webm_debug.txt"
-#include <QuickTime/QuickTime.h>
 #include "log.h"
-static void _dbg_printf(FILE *logFile, const char *s);
 
 
 #if ENABLE_DEBUG_LOG
+
+
 #include <sys/time.h>
 #include <stdarg.h>
+#include <QuickTime/QuickTime.h>
+
+
+#define OUTPUT_FILE "/var/tmp/webm_debug.txt"
+
+static FILE *defaultLogFile = NULL;
+
+
+static inline void _check_init_logfile()
+{
+    if (!defaultLogFile) {
+        defaultLogFile = fopen(OUTPUT_FILE, "a");
+    }
+}
+
+
 void log_time(FILE *logFile, const char *id, const char *fmt, ...)
 {
     if (logFile == 0)
@@ -33,59 +47,40 @@ void log_time(FILE *logFile, const char *id, const char *fmt, ...)
     va_end(ap);
 
     gettimeofday(&now, NULL);
-    fprintf(logFile, "%s, %d%06d, -- %s\n", id, now.tv_sec, now.tv_usec, info);
+    fprintf(logFile, "%s, %d%06d, -- %s\n", id, (int) now.tv_sec,
+            now.tv_usec, info);
 }
-#else
-void log_time(FILE *logFile, const char *id, const char *fmt, ...) {}
-#endif  // ENABLE_DEBUG_LOG
+
 
 void dbg_printf(const char *s, ...)
 {
-#ifdef ENABLE_DEBUG_LOG
-    char buffer[1024];
     va_list args;
+    int count;
+    time_t time_val = time(NULL);
+    struct tm *now = NULL;
+
+    _check_init_logfile();
+
+    now = localtime(&time_val);
+    fprintf(defaultLogFile, "%d-%02d:%02d:%02d  --  ", getpid(),
+            now->tm_hour, now->tm_min, now->tm_sec);
+
     va_start(args, s);
-    vsprintf(buffer, s, args);
+    count = vfprintf(defaultLogFile, s, args);
     va_end(args);
 
-    _dbg_printf(NULL, buffer);
-#endif
-}
-
-static void _dbg_printf(FILE *logFile, const char *s)
-{
-#if ENABLE_DEBUG_LOG
-    bool bCloseLogFile = logFile == NULL;
-
-    if (logFile)
-    {
-        char c[512];
-        time_t time_val = time(NULL);
-        struct tm *now = NULL;
-        now = localtime(&time_val);
-        sprintf(c, "/var/tmp/vp8_debug_%d-%d:%d:%d.txt", getpid(), now->tm_hour, now->tm_min, now->tm_sec);
-        logFile = fopen(c, "w+");
-    }
-    else
-    {
-        logFile = fopen(OUTPUT_FILE, "a");
-        time_t time_val = time(NULL);
-        struct tm *now = NULL;
-        now = localtime(&time_val);
-        fprintf(logFile,    "%d-%d:%d:%d  --  ", getpid(), now->tm_hour, now->tm_min, now->tm_sec);
+    if (count < 0) {
+        fprintf(defaultLogFile, "\ndbg_printf error (%d) in \"%s\" - aborting.\n", count, s);
+        fflush(NULL);
+        abort();
     }
 
-    fprintf(logFile, s);
-
-    if (bCloseLogFile)
-        fclose(logFile);
-
-#endif
+    fflush(defaultLogFile);
 }
+
 
 void dbg_dumpBytes(unsigned char *bytes, int size)
 {
-#if ENABLE_DEBUG_LOG
     int i;
     FILE *logFile = fopen(OUTPUT_FILE, "a");
     time_t time_val = time(NULL);
@@ -107,13 +102,11 @@ void dbg_dumpBytes(unsigned char *bytes, int size)
 
     fprintf(logFile, "\n");
     fclose(logFile);
-#endif
 }
 
 
 static void _dbg_dumpAtom(QTAtomContainer container, QTAtom head, int level)
 {
-#ifdef ENABLE_DEBUG_LOG
     short numChildren = QTCountChildrenOfType(container, head, 0);
     QTAtomType atomType;
     QTAtomID id;
@@ -122,7 +115,7 @@ static void _dbg_dumpAtom(QTAtomContainer container, QTAtom head, int level)
     char *indent = malloc(level + 1);
     memset(indent, ' ', level);
     indent[level] = 0;
-    dbg_printf("%s id %d type %4.4s children %d\n", indent, id, (char *)&atomType, numChildren);
+    dbg_printf("%s id %ld type %4.4s children %d\n", indent, id, (char *)&atomType, numChildren);
     free(indent);
 
     //print all children
@@ -139,13 +132,22 @@ static void _dbg_dumpAtom(QTAtomContainer container, QTAtom head, int level)
         _dbg_dumpAtom(container, nextChild, level + 1);
         curChild = nextChild;
     }
-
-#endif
 }
+
 
 void dbg_dumpAtom(QTAtomContainer container)
 {
-#ifdef ENABLE_DEBUG_LOG
     _dbg_dumpAtom(container, 0, 0);
-#endif
 }
+
+
+#else   //ENABLE_DEBUG_LOG
+
+
+void log_time(FILE *logFile, const char *id, const char *fmt, ...) {};
+void dbg_printf(const char *s, ...) {};
+void dbg_dumpBytes(unsigned char *bytes, int size) {};
+void dbg_dumpAtom(QTAtomContainer container) {};
+
+
+#endif  //ENABLE_DEBUG_LOG

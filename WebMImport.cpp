@@ -786,7 +786,7 @@ OSErr CreateCookieFromCodecPrivate(const mkvparser::AudioTrack* webmAudioTrack, 
 
   size_t vorbisCodecPrivateSize;
   const unsigned char* vorbisCodecPrivateData = webmAudioTrack->GetCodecPrivate(vorbisCodecPrivateSize);
-  dbg_printf("Vorbis Codec Private Data = %x, Vorbis Codec Private Size = %d\n", vorbisCodecPrivateData, vorbisCodecPrivateSize);
+  dbg_printf("Vorbis Codec Private Data = %p, Vorbis Codec Private Size = %ld\n", vorbisCodecPrivateData, vorbisCodecPrivateSize);
 
   int numPackets = vorbisCodecPrivateData[0] + 1;
   const unsigned long idHeaderSize = vorbisCodecPrivateData[1];
@@ -880,7 +880,7 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   long numSamples = store->audioSamples.size();
   long numTimes = store->audioTimes.size();
   if (numSamples != numTimes) {
-    dbg_printf("WebM Import - FinishAddingAudioBlocks - ERROR - parallel vectors with different sizes. numSamples=%d, numTimes=%d\n", numSamples, numTimes);
+    dbg_printf("WebM Import - FinishAddingAudioBlocks - ERROR - parallel vectors with different sizes. numSamples=%ld, numTimes=%ld\n", numSamples, numTimes);
     // try to recover ****
   }
   long numSamplesToAdd = 0;
@@ -891,7 +891,7 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   else
     numSamplesToAdd = (numSamples - 1);    // try deferring the last block in the cache
 
-  dbg_printf("WebM Import - FinishAddingAudioBlocks - numSamples = %d, numTimes = %d, numSamplesToAdd=%ld, lastTime_ns = %lld\n", numSamples, numTimes, numSamplesToAdd, lastTime_ns);
+  dbg_printf("WebM Import - FinishAddingAudioBlocks - numSamples = %ld, numTimes = %ld, numSamplesToAdd=%ld, lastTime_ns = %lld\n", numSamples, numTimes, numSamplesToAdd, lastTime_ns);
 
   long long blockDuration_ns = 0;
   for (long i = 0; i < numSamplesToAdd; ++i) {
@@ -909,7 +909,7 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
     store->audioSamples[i].durationPerSample = blockDuration_qt;  // TimeValue, count of units
     accSectionDuration_qt += blockDuration_qt;    // accumulate duration of section in media time scale
 
-    dbg_printf("\t\t\t i=%d, Time=%lld, Duration_ns=%lld, Duration_qt=%ld, mediaTimeScale=%ld\n", i, store->audioTimes[i], blockDuration_ns, store->audioSamples[i].durationPerSample, mediaTimeScale);
+    dbg_printf("\t\t\t i=%ld, Time=%lld, Duration_ns=%lld, Duration_qt=%ld, mediaTimeScale=%ld\n", i, store->audioTimes[i], blockDuration_ns, store->audioSamples[i].durationPerSample, mediaTimeScale);
     // Alternatively, we can call AddMediaSampleReference() here inside loop, for each block. Supposedly more efficient to call it once after loop, specifying all blocks.
   }
 
@@ -946,7 +946,7 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   err = InsertMediaIntoTrack(store->movieAudioTrack, trackStart, mediaTime, mediaDuration, fixed1);
   if (err)
     dbg_printf("InsertMediaIntoTrack FAIL with err = %d\n", err);
-  dbg_printf("InsertMediaIntoTrack(audioTrack, trackStart=%d, mediaTime=%d, mediaDuration=%d,)\n", trackStart, mediaTime, mediaDuration);
+  dbg_printf("InsertMediaIntoTrack(audioTrack, trackStart=%ld, mediaTime=%ld, mediaDuration=%ld,)\n", trackStart, mediaTime, mediaDuration);
   store->audioMaxLoaded += mediaDuration;
 
   //
@@ -956,7 +956,7 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns)
   store->audioSamples.erase(store->audioSamples.begin(), store->audioSamples.begin()+numSamplesToAdd);  // stl vector.erase(first, last) will not erase last. Range is [first,last).
   store->audioTimes.erase(store->audioTimes.begin(), store->audioTimes.begin()+numSamplesToAdd);
 
-  dbg_printf("FINISH at end of func, size of audio sample vector is: %d\n", store->audioSamples.size());
+  dbg_printf("FINISH at end of func, size of audio sample vector is: %ld\n", store->audioSamples.size());
 
   return err;
 }
@@ -1020,7 +1020,7 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
   long numSamples = store->videoSamples.size();
   long numTimes = store->videoTimes.size();
   if (numSamples != numTimes) {
-    dbg_printf("WebM Import - FinishAddingVideoBlocks - ERROR - parallel vectors with different sizes. numSamples=%d, numTimes=%d\n", numSamples, numTimes);
+    dbg_printf("WebM Import - FinishAddingVideoBlocks - ERROR - parallel vectors with different sizes. numSamples=%ld, numTimes=%ld\n", numSamples, numTimes);
     // try to recover ****
   }
   long numSamplesToAdd = 0;
@@ -1031,7 +1031,7 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
   else
     numSamplesToAdd = (numSamples - 1);    // try deferring the last block in the cache
 
-  dbg_printf("WebM Import - FinishAddingVideoBlocks - numSamples = %d, numTimes = %d, numSamplesToAdd=%ld, lastTime_ns = %lld\n", numSamples, numTimes, numSamplesToAdd, lastTime_ns);
+  dbg_printf("WebM Import - FinishAddingVideoBlocks - numSamples = %ld, numTimes = %ld, numSamplesToAdd=%ld, lastTime_ns = %lld\n", numSamples, numTimes, numSamplesToAdd, lastTime_ns);
 
   long long blockDuration_ns = 0;
   for (long i = 0; i < numSamplesToAdd; ++i) {
@@ -1049,14 +1049,14 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
     store->videoSamples[i].durationPerSample = blockDuration_qt;  // TimeValue, count of units, in media's time scale.
     accSectionDuration_qt += blockDuration_qt;    // accumulate duration of section in media time scale
 
-    dbg_printf("\t\t\tV i=%d, Time=%lld, Duration_ns=%lld, Duration_qt=%ld, mediaTimeScale=%ld\n", i, store->videoTimes[i], blockDuration_ns, store->videoSamples[i].durationPerSample, mediaTimeScale);
+    dbg_printf("\t\t\tV i=%ld, Time=%lld, Duration_ns=%lld, Duration_qt=%ld, mediaTimeScale=%ld\n", i, store->videoTimes[i], blockDuration_ns, store->videoSamples[i].durationPerSample, mediaTimeScale);
     // Alternatively, we can call AddMediaSampleReference() here inside loop, for each block. Supposedly more efficient to call it once after loop, specifying all blocks.
   }
 
   //
   // Add array of sample references to Media all at once
   //
-  dbg_printf("BEFORE AddMediaSampleReferences() the media duration is: %d\n", GetMediaDuration(store->movieVideoMedia));
+  dbg_printf("BEFORE AddMediaSampleReferences() the media duration is: %ld\n", GetMediaDuration(store->movieVideoMedia));
   if (numSamplesToAdd > 0) {
     SampleReferencePtr sampleRefs = &store->videoSamples.front(); // &store->videoSamples[0];
     err = AddMediaSampleReferences(store->movieVideoMedia, (SampleDescriptionHandle)store->vp8DescHand, numSamplesToAdd, sampleRefs, NULL);
@@ -1065,7 +1065,7 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
     }
     store->videoCount += numSamplesToAdd;
   }
-  dbg_printf("AFTER AddMediaSampleReferences() the media duration is: %d\n", GetMediaDuration(store->movieVideoMedia));
+  dbg_printf("AFTER AddMediaSampleReferences() the media duration is: %ld\n", GetMediaDuration(store->movieVideoMedia));
 
   //
   // Insert Media into Track
@@ -1088,7 +1088,7 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
   err = InsertMediaIntoTrack(store->movieVideoTrack, trackStart, mediaTime, mediaDuration, fixed1);
   if (err)
     dbg_printf("InsertMediaIntoTrack() FAIL with err = %d\n", err);
-  dbg_printf("InsertMediaIntoTrack(videoTrack, trackStart=%d, mediaTime=%d, mediaDuration=%d,)\n", trackStart, mediaTime, mediaDuration);
+  dbg_printf("InsertMediaIntoTrack(videoTrack, trackStart=%ld, mediaTime=%ld, mediaDuration=%ld,)\n", trackStart, mediaTime, mediaDuration);
   store->videoMaxLoaded += mediaDuration;
 
   //
@@ -1098,7 +1098,7 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
   store->videoSamples.erase(store->videoSamples.begin(), store->videoSamples.begin()+numSamplesToAdd);  // stl vector.erase(first, last) will not erase last. Range is [first,last).
   store->videoTimes.erase(store->videoTimes.begin(), store->videoTimes.begin()+numSamplesToAdd);
 
-  dbg_printf("FinishAddingVideoBlocks - at end of func, size of video sample vector is: %d\n", store->videoSamples.size());
+  dbg_printf("FinishAddingVideoBlocks - at end of func, size of video sample vector is: %ld\n", store->videoSamples.size());
   dbg_printf("store->videoTimes[0] = %lld\n", store->videoTimes[0]);
   dbg_printf("store->videoSamples[0].durationPerSample = %ld\n", store->videoSamples[0].durationPerSample);
 
@@ -1139,7 +1139,7 @@ void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::Segme
   dbg_printf("\tVersion\t\t: %lld\n", ebmlHeader->m_version);
   dbg_printf("\tMaxIDLength\t: %lld\n", ebmlHeader->m_maxIdLength);
   dbg_printf("\tMaxSizeLength\t: %lld\n", ebmlHeader->m_maxSizeLength);
-  dbg_printf("\tDocType\t: %lld\n", ebmlHeader->m_docType);
+  dbg_printf("\tDocType\t: %s\n", ebmlHeader->m_docType);
 
   // Segment
   // const wchar_t* const title = utf8towcs(webmSegmentInfo->GetTitleAsUTF8());
@@ -1174,24 +1174,24 @@ void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::Segme
     dbg_printf("\tTrack Type\t\t: %ld\n", trackType);
     dbg_printf("\tTrack Number\t\t: %ld\n", trackNum);
     if (codecID != NULL)
-      dbg_printf("\tCodec Id\t\t: %ls\n", codecID);
+      dbg_printf("\tCodec Id\t\t: %s\n", codecID);
     if (codecName != NULL)
-      dbg_printf("\tCodec Name\t\t: '%s'\n", codecName);
+      dbg_printf("\tCodec Name\t\t: '%ls'\n", codecName);
 
     if (trackType == VIDEO_TRACK) {
       const mkvparser::VideoTrack* const webmVideoTrack = static_cast<const mkvparser::VideoTrack* const>(webmTrack);
       long long width = webmVideoTrack->GetWidth();
       long long height = webmVideoTrack->GetHeight();
       double rate = webmVideoTrack->GetFrameRate();
-      dbg_printf("\t\twidth = %ld\n", width);
-      dbg_printf("\t\theight = %ld\n", height);
+      dbg_printf("\t\twidth = %lld\n", width);
+      dbg_printf("\t\theight = %lld\n", height);
       dbg_printf("\t\tframerate = %7.3f\n", rate);
     }
 
     if (trackType == AUDIO_TRACK) {
       const mkvparser::AudioTrack* const webmAudioTrack = static_cast<const mkvparser::AudioTrack* const>(webmTrack);
       dbg_printf("\t\tAudio Track Sampling Rate: %7.3f\n", webmAudioTrack->GetSamplingRate());
-      dbg_printf("\t\tAudio Track Channels: %d\n", webmAudioTrack->GetChannels());
+      dbg_printf("\t\tAudio Track Channels: %lld\n", webmAudioTrack->GetChannels());
       dbg_printf("\t\tAudio Track BitDepth: %lld\n", webmAudioTrack->GetBitDepth());
 
     }
@@ -1209,17 +1209,17 @@ void DumpWebMGlobals(WebMImportGlobals store)
     // DEBUG PRINT THE GLOBALS
   if (store) {
     dbg_printf("WebMImportGlobals:\n");
-    dbg_printf("\t self = \t%xd\n", store->self);
-    dbg_printf("\t webmSegment = \t%xd\n", store->webmSegment);
-    dbg_printf("\t webmCluster = \t%xd\n", store->webmCluster);
-    dbg_printf("\t webmTracks = \t%xd\n", store->webmTracks);
+    dbg_printf("\t self = \t%p\n", store->self);
+    dbg_printf("\t webmSegment = \t%p\n", store->webmSegment);
+    dbg_printf("\t webmCluster = \t%p\n", store->webmCluster);
+    dbg_printf("\t webmTracks = \t%p\n", store->webmTracks);
     dbg_printf("\t segmentDuration = \t%lld\n",store->segmentDuration);
 
     dbg_printf("\t audioSampleRate = \t%ld\n", store->audioSampleRate);
 
     dbg_printf("\t fileSize = \t%ld\n", store->fileSize);
-    dbg_printf("\t videoSamples size = \t%d\n", store->videoSamples.size());
-    dbg_printf("\t videoTimes size = \t%d\n", store->videoTimes.size());
+    dbg_printf("\t videoSamples size = \t%ld\n", store->videoSamples.size());
+    dbg_printf("\t videoTimes size = \t%ld\n", store->videoTimes.size());
     dbg_printf("\t videoMaxLoaded = \t%ld\n", store->videoMaxLoaded);
     dbg_printf("\t audioMaxLoaded = \t%ld\n", store->audioMaxLoaded);
 
