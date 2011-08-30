@@ -79,9 +79,6 @@ public:
   long bufEndFilePos;     // file position already read info buf so far
 
 private:
-  //std::queue<unsigned char> m_buffer;
-  //std::deque<unsigned char> m_buffer;
-  //size_t m_chunksize;
   long long m_previousReadPos;
 
   DataHCompletionUPP  read_completion_cb;
