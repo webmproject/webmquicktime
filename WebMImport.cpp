@@ -70,10 +70,25 @@ typedef struct {
   long loadState;                         // kMovieLoadStateLoading, ... kMovieLoadStateComplete
   long videoMaxLoaded;                    // total duration of video blocks already inserted into QT Track, expressed in video media's time scale.
   long audioMaxLoaded;                    // total duration of audio blocks already inserted into QT Track, expressed in audio media's time scale.
+
+  // last time we added samples, (in ~60/s ticks)
+  unsigned long addSamplesLast;
+
+  Boolean usingIdles;
+
   MkvBufferedReaderQT* reader;            // reader object passed to parser
 } WebMImportGlobalsRec, *WebMImportGlobals;
 
 static const long long ns_per_sec = 1000000000;
+
+// minimum number of seconds between playhead and the end of added
+// data we should maintain
+static const long kMinPlayheadDistance = 5;
+// minimum interval for considering adding samples (in ~60/s ticks)
+static const long kAddSamplesCheckTicks = 30;
+// normal interval for adding samples (in ~60/s ticks)
+static const long kAddSamplesNormalTicks = 90;
+
 enum { VIDEO_TRACK = 1, AUDIO_TRACK = 2 };    // track types
 
 #define MOVIEIMPORT_BASENAME() WebMImport
@@ -106,6 +121,7 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
 OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns);
 OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::VideoTrack* webmVideoTrack);
 OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns);
+static Boolean ShouldAddSamples(WebMImportGlobals store);
 void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::SegmentInfo* webmSegmentInfo, const mkvparser::Tracks* webmTracks);
 void DumpWebMGlobals(WebMImportGlobals store);
 
@@ -223,6 +239,9 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
   store->vp8DescHand = NULL;
   store->loadState = kMovieLoadStateLoading;
   store->videoMaxLoaded = 0;
+
+  store->addSamplesLast = 0;
+
   store->reader = NULL;
   ComponentInstance dataHandler = 0;
   const long long ns_per_sec = 1000000000;  // conversion factor, ns to sec
@@ -410,6 +429,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     // IDLING IMPORTER
     //
     dbg_printf("IDLING IMPORTER\n");
+    store->usingIdles = true;
 
     // create placeholder track
     // ****
@@ -431,6 +451,7 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     // NON-IDLING IMPORTER
     //
     dbg_printf("NON-IDLING IMPORTER\n");
+    store->usingIdles = false;
 
     store->webmCluster = NULL;
 
@@ -654,9 +675,14 @@ OSErr AddCluster(WebMImportGlobals store, const mkvparser::Cluster* webmCluster,
     webmBlockEntry = webmCluster->GetNext(webmBlockEntry);
   } // end block loop
 
-  FinishAddingVideoBlocks(store, lastTime_ns);    // or AddSamplesToTrack() for video, or make it general and pass in audio or video media, etc.
-  FinishAddingAudioBlocks(store, lastTime_ns);
-  store->loadState = kMovieLoadStatePlayable;
+  if (!store->usingIdles || ShouldAddSamples(store)) {
+    // TODO: consider parameterizing and merging into one the
+    // following two, very similar, functions?
+    FinishAddingVideoBlocks(store, lastTime_ns);
+    FinishAddingAudioBlocks(store, lastTime_ns);
+    store->loadState = kMovieLoadStatePlayable;
+    store->addSamplesLast = TickCount();
+  }
 
 #if USE_PARSE_HEADERS
   long long ret = store->webmSegment->LoadCluster();
@@ -1103,6 +1129,51 @@ OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns)
   dbg_printf("store->videoSamples[0].durationPerSample = %ld\n", store->videoSamples[0].durationPerSample);
 
   return err;
+}
+
+
+//-----------------------------------------------------------------------------
+// ShouldAddSamples
+// Here we decide if it's OK at the moment to add samples.
+//
+// Adding sample references to QuickTime movie structures is an
+// expensive operation so we don't want to do it too often, especially
+// if the movie is currently playing.
+//
+static Boolean ShouldAddSamples(WebMImportGlobals store) {
+  Boolean ret = false;
+  unsigned long now = TickCount();
+  TimeScale movie_timescale = GetMovieTimeScale(store->movie);
+  TimeRecord media_tr;
+
+  media_tr.value.hi = 0;
+  if (store->movieVideoTrack) {
+    media_tr.value.lo = store->videoMaxLoaded;
+    media_tr.scale = GetMediaTimeScale(store->movieVideoMedia);
+  } else {
+    media_tr.value.lo = store->audioMaxLoaded;
+    media_tr.scale = GetMediaTimeScale(store->movieAudioMedia);
+  }
+  media_tr.base = NULL;
+  ConvertTimeScale(&media_tr, movie_timescale);
+
+  if ((store->addSamplesLast + kAddSamplesCheckTicks < now) &&
+      GetMovieRate(store->movie) != 0) {
+    // it's been at least kAddSamplesCheckTicks since we last added samples
+    // and the movie is currently playing
+
+    if ((media_tr.value.lo - GetMovieTime(store->movie, NULL)) <
+        (movie_timescale * kMinPlayheadDistance)) {
+      // playhead is near the end of already added data, let's add more
+      ret = true;
+    }
+  } else if (store->addSamplesLast + kAddSamplesNormalTicks < now) {
+    // movie is not playing and kAddSamplesNormalTicks passed since
+    // last we added - OK to add more
+    ret = true;
+  }
+
+  return ret;
 }
 
 
