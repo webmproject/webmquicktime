@@ -73,8 +73,12 @@ typedef struct {
 
   // last time we added samples, (in ~60/s ticks)
   unsigned long addSamplesLast;
+  // ticks at import start
+  unsigned long startTicks;
 
   Boolean usingIdles;
+  // placeholder track for visualizing progressive importing
+  Track placeholderTrack;
 
   MkvBufferedReaderQT* reader;            // reader object passed to parser
 } WebMImportGlobalsRec, *WebMImportGlobals;
@@ -122,6 +126,8 @@ OSErr FinishAddingAudioBlocks(WebMImportGlobals store, long long lastTime_ns);
 OSErr AddVideoBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, long long blockTime_ns, const mkvparser::VideoTrack* webmVideoTrack);
 OSErr FinishAddingVideoBlocks(WebMImportGlobals store, long long lastTime_ns);
 static Boolean ShouldAddSamples(WebMImportGlobals store);
+static ComponentResult CreatePlaceholderTrack(WebMImportGlobals store);
+static void RemovePlaceholderTrack(WebMImportGlobals store);
 void DumpWebMDebugInfo(mkvparser::EBMLHeader* ebmlHeader, const mkvparser::SegmentInfo* webmSegmentInfo, const mkvparser::Tracks* webmTracks);
 void DumpWebMGlobals(WebMImportGlobals store);
 
@@ -430,9 +436,10 @@ pascal ComponentResult WebMImportDataRef(WebMImportGlobals store, Handle dataRef
     //
     dbg_printf("IDLING IMPORTER\n");
     store->usingIdles = true;
+    store->placeholderTrack = NULL;
+    store->startTicks = TickCount();
 
-    // create placeholder track
-    // ****
+    CreatePlaceholderTrack(store); // ignore return value, not critical
 
     //
     // WebM Cluster - add one cluster
@@ -598,6 +605,8 @@ pascal ComponentResult WebMImportIdle(WebMImportGlobals store, long inFlags, lon
     if (store->audioSamples.size() > 0)
       FinishAddingAudioBlocks(store, store->segmentDuration);
 
+    RemovePlaceholderTrack(store);
+
     // set flags to indicate we are done.
     *outFlags |= movieImportResultComplete;
     store->loadState = kMovieLoadStateComplete;
@@ -629,6 +638,48 @@ pascal ComponentResult WebMImportGetLoadState(WebMImportGlobals store, long* imp
   return noErr;
 }
 
+
+//-----------------------------------------------------------------------------
+// Estimates the remaining time to fully import the file
+// (seems to be needed to properly visualize progressive imports)
+//
+pascal ComponentResult WebMImportEstimateCompletionTime(
+    WebMImportGlobals store, TimeRecord *time) {
+
+  if (time == NULL) {
+    return paramErr;
+  }
+
+  if (store->segmentDuration <= 0) {
+    time->value = SInt64ToWide(S64Set(0));
+    time->scale = 0;
+  } else {
+    TimeScale media_timescale;
+    long loaded;
+    unsigned long timeUsed = TickCount() - store->startTicks;
+
+    if (store->movieVideoTrack) {
+      media_timescale = GetMediaTimeScale(store->movieVideoMedia);
+      loaded = store->videoMaxLoaded;
+    } else {
+      media_timescale = GetMediaTimeScale(store->movieAudioMedia);
+      loaded = store->audioMaxLoaded;
+    }
+
+    long duration = (double)store->segmentDuration / ns_per_sec *
+      media_timescale;
+    long estimate = timeUsed * (duration - loaded) / loaded;
+
+    dbg_printf("EstimateCompletionTime(): %ld (%.3f)\n", estimate,
+               (double)estimate / 60);
+
+    time->value = SInt64ToWide(S64Set(estimate));
+    time->scale = 60; // roughly TickCount()'s resolution
+  }
+
+  time->base  = NULL; // no time base, this time record is a duration
+  return noErr;
+}
 
 
 #pragma mark -
@@ -1174,6 +1225,85 @@ static Boolean ShouldAddSamples(WebMImportGlobals store) {
   }
 
   return ret;
+}
+
+
+//-----------------------------------------------------------------------------
+// CreatePlaceholderTrack
+// Create and add to the movie a disabled track containing a single
+// sample reference the duration of the movie length. In our component
+// the movie length estimate is the segment duration if defined,
+// otherwise no placeholder track is created.
+//
+static ComponentResult CreatePlaceholderTrack(WebMImportGlobals store) {
+  ComponentResult err = noErr;
+  Track track = NULL;
+  Media media = NULL;
+  SampleDescriptionHandle sample_desc;
+
+  if (store->segmentDuration <= 0) {
+    // no placeholder tracks for live streams
+    return err;
+  }
+
+  sample_desc = (SampleDescriptionHandle)
+    NewHandleClear(sizeof(SampleDescription));
+
+  if (sample_desc == NULL)
+    err = MemError();
+
+  if (!err) {
+    (*sample_desc)->descSize = sizeof(SampleDescriptionPtr);
+    (*sample_desc)->dataFormat = BaseMediaType;
+
+    track = NewMovieTrack(store->movie, 0, 0, 0); // dimensionless and mute
+    if (track != NULL) {
+      TimeScale movie_timescale = GetMovieTimeScale(store->movie);
+      long duration = (double)store->segmentDuration / ns_per_sec *
+        movie_timescale;
+
+      SetTrackEnabled(track, false);
+      media = NewTrackMedia(track, BaseMediaType, movie_timescale,
+                            NewHandle(0), NullDataHandlerSubType);
+
+      if (media != NULL) {
+        // add a single sample, length of "duration"
+        err = AddMediaSampleReference(media, 0, 1, duration, sample_desc,
+                                      1, 0, NULL);
+
+        if (!err)
+          err = InsertMediaIntoTrack(track, 0, 0, duration, fixed1);
+        if (!err) {
+          if (store->placeholderTrack != NULL)
+            DisposeMovieTrack(store->placeholderTrack);
+          store->placeholderTrack = track;
+        } else {
+          DisposeMovieTrack(track);
+        }
+      } else {
+        err = GetMoviesError();
+        DisposeMovieTrack(track);
+      }
+    } else {
+      err = GetMoviesError();
+    }
+
+    DisposeHandle((Handle) sample_desc);
+  }
+
+  return err;
+}
+
+
+//-----------------------------------------------------------------------------
+// RemovePlaceholderTrack
+// Remove the placeholder track, if it exists.
+//
+static void RemovePlaceholderTrack(WebMImportGlobals store) {
+  if (store->placeholderTrack) {
+    DisposeMovieTrack(store->placeholderTrack);
+    store->placeholderTrack = NULL;
+  }
 }
 
 
