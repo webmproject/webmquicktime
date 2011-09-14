@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFX//+i8\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-14T20:37:25Z",
+      "side": 1,
+      "message": "nit: lose the blank line",
+      "revId": "927c7e239fd614fb06705c494b84ee2e7983c9b6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+i0\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-14T20:37:25Z",
+      "side": 1,
+      "message": "ditto on the blank line, and please add a brief comment about what |usingIdles| does.",
+      "revId": "927c7e239fd614fb06705c494b84ee2e7983c9b6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+zM\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 244,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-14T20:37:25Z",
+      "side": 1,
+      "message": "What\u0027s the purpose of the extra whitespace here?  Emphasis?",
+      "revId": "927c7e239fd614fb06705c494b84ee2e7983c9b6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+zI\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 679,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-14T20:37:25Z",
+      "side": 1,
+      "message": "TODO should be TODO(email address)",
+      "revId": "927c7e239fd614fb06705c494b84ee2e7983c9b6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+y8\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1149,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-14T20:37:25Z",
+      "side": 1,
+      "message": "You should be able to get rid of the 0 assignment here, and the NULL assignment to media_tr.base if you change the declaration to:\n\n  TimeRecord media_tr \u003d {0};",
+      "revId": "927c7e239fd614fb06705c494b84ee2e7983c9b6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+kI\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1156,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-14T20:37:25Z",
+      "side": 1,
+      "message": "whitespace before/after conditionals and closing brackets isn\u0027t required, nor is it impermissible.  The only thing I care about here is consistency.\n\nSo, please collapse the whitespace, or always wrap conditional blocks with a line of whitespace before the first condition, and after the closing brace.\n\ni.e:\n\n  int x \u003d 1;\n\n  if (x) {\n    ...\n  } else {\n    ...\n  }\n\n  foo();\n\nOR\n\n  int x \u003d 1;\n  if (x) {\n    ...\n  } else {\n  }\n  foo();",
+      "revId": "927c7e239fd614fb06705c494b84ee2e7983c9b6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
