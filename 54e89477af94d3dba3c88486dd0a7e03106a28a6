@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFX//+UU\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-15T00:12:20Z",
+      "side": 1,
+      "message": "Please add a brief comment describing the variable (i.e. \"Ticks at import start\")",
+      "revId": "54e89477af94d3dba3c88486dd0a7e03106a28a6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+Tk\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-15T00:12:20Z",
+      "side": 1,
+      "message": "This variable name isn\u0027t the most readable-- for example, w/o the above comment I can see someone thinking it means pointer to hTrack.  \n\nAlso:\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#General_Naming_Rules\n\nplaceholder_track is preferred; in the name of consistency w/existing members, placeholderTrack would be fine as well.",
+      "revId": "54e89477af94d3dba3c88486dd0a7e03106a28a6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+T4\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-15T00:12:20Z",
+      "side": 1,
+      "message": "Add description comments...",
+      "revId": "54e89477af94d3dba3c88486dd0a7e03106a28a6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+Tg\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 646,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-15T00:12:20Z",
+      "side": 1,
+      "message": "Since external callers use this you should confirm that time is non-null before use.  QuickTime/Apple apps aren\u0027t going to pass you a NULL pointer, but other people might.",
+      "revId": "54e89477af94d3dba3c88486dd0a7e03106a28a6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+Sg\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1230,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-15T00:12:20Z",
+      "side": 1,
+      "message": "Same naming issue as noted w/phTrack; sample_desc/sampleDesc would be fine...",
+      "revId": "54e89477af94d3dba3c88486dd0a7e03106a28a6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//+QY\u003d",
+        "filename": "WebMImportDispatch.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-15T00:12:20Z",
+      "side": 1,
+      "message": "Correct me if I\u0027m wrong, but this change means that the function was previously invisible to QT... odd that it was even implemented.",
+      "revId": "54e89477af94d3dba3c88486dd0a7e03106a28a6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
