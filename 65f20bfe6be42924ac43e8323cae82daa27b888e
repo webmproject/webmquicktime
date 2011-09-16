@@ -53,6 +53,23 @@
     },
     {
       "key": {
+        "uuid": "AAAAFX//9Bo\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 979,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2011-09-16T13:37:32Z",
+      "side": 1,
+      "message": "With this code it looks like sample_duration could overlap with a start time if there were enough samples and the remainders were big enough.\n\nWhy not just have the sample_duration match the rounded start time of the next block - rounded start time of the current block? That way the scaled time will always exactly match.",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFX//9F4\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
