@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFX//8o0\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 947,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T22:13:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFX//87I\u003d",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFX//870\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2011-09-16T17:13:17Z",
       "side": 1,
       "message": "const?",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//8oo\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 948,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T22:13:25Z",
+      "side": 1,
+      "message": "Not needed any more.",
+      "parentUuid": "AAAAFX//870\u003d",
       "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFX//8ok\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 957,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T22:13:25Z",
+      "side": 1,
+      "message": "Moved even further down.",
+      "parentUuid": "AAAAFX//87E\u003d",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFX//874\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 5
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFX//8oc\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 962,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T22:13:25Z",
+      "side": 1,
+      "message": "I forgot the values are rounded anyway, so any precision difference is insignificant here.\n\nFactored the scaling factor out of the loop, as you suggested.",
+      "parentUuid": "AAAAFX//874\u003d",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFX//87A\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 5
@@ -81,6 +153,24 @@
       "writtenOn": "2011-09-16T17:13:17Z",
       "side": 1,
       "message": "Ditto on the rewrap; might as well use const current_tickrate here as well...",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//8oY\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 970,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T22:13:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFX//87A\u003d",
       "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
