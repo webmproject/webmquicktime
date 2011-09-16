@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFX//9aE\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T04:18:52Z",
+      "side": 1,
+      "message": "nit: could use a brief comment (i.e. // sample has no duration)",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//9Fw\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 939,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T04:18:52Z",
+      "side": 1,
+      "message": "This function might be better named AddSampleRefsToQtMedia()... since that seems to be what it\u0027s doing after the time scaling. :)\n\nI know you didn\u0027t name it originally-- I just think it\u0027s more readable with a name closer to the end result.  Suggested name also conveys the same information as the first line of the comment at all call sites.",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//9GA\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 971,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T04:18:52Z",
+      "side": 1,
+      "message": "Might want to drop the first/second/last from the comments.  It\u0027s no fun going back through to change them when you end up adding something later (for example).\n\nAnd a nit:\n\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Punctuation,_Spelling_and_Grammar",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//9F4\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1005,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T04:18:52Z",
+      "side": 1,
+      "message": "Same nit.",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//9F0\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1025,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T04:18:52Z",
+      "side": 1,
+      "message": "Please reword the last bit (i.e. erase consumed samples/times from vectors).\n\nAlso, same nit again... :)",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//9Fo\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1033,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T04:18:52Z",
+      "side": 1,
+      "message": "Same name suggestion applies to both functions.  Also: brief comments for each... though they\u0027re probably overkill if post rename.",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
