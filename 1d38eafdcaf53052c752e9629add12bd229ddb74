@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFX//87I\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 947,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T17:13:17Z",
+      "side": 1,
+      "message": "media_start should probably be const, w/declaration deferred until assignment...",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//870\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 948,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T17:13:17Z",
+      "side": 1,
+      "message": "const?",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//87E\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 957,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T17:13:17Z",
+      "side": 1,
+      "message": "I.e. declare media_start here as a const TimeValue.",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//874\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 962,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T17:13:17Z",
+      "side": 1,
+      "message": "Please rewrap for readability:\n\n    sample_duration \u003d \n        lround((double) times[i + 1] / ns_per_sec * media_timescale) -\n        lround((double) times[i] / ns_per_sec * media_timescale);\n\nAlso, for brevity and a little less work in the loop, why not do this before entering the loop:\n\n  const TimeScale current_tickrate \u003d ns_per_sec * media_timescale;\n\nThen use current_tickrate in place of \"ns_per_sec * media_timescale\" so you end up with:\n\n    sample_duration \u003d \n        lround((double) times[i + 1] / current_tickrate) -\n        lround((double) times[i] / current_tickrate);\n\nFeel free to use a name other than current_tickrate-- just using it for demonstration purposes.",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//87A\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 970,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-16T17:13:17Z",
+      "side": 1,
+      "message": "Ditto on the rewrap; might as well use const current_tickrate here as well...",
+      "revId": "1d38eafdcaf53052c752e9629add12bd229ddb74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
