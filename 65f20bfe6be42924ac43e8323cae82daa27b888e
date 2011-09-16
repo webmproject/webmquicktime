@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFX//9AY\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T14:59:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFX//9aE\u003d",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFX//9Fw\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2011-09-16T04:18:52Z",
       "side": 1,
       "message": "This function might be better named AddSampleRefsToQtMedia()... since that seems to be what it\u0027s doing after the time scaling. :)\n\nI know you didn\u0027t name it originally-- I just think it\u0027s more readable with a name closer to the end result.  Suggested name also conveys the same information as the first line of the comment at all call sites.",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//9AU\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 939,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T14:59:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFX//9Fw\u003d",
       "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFX//9AQ\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 971,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T14:59:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFX//9GA\u003d",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFX//9Bo\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -64,6 +118,24 @@
       "writtenOn": "2011-09-16T13:37:32Z",
       "side": 1,
       "message": "With this code it looks like sample_duration could overlap with a start time if there were enough samples and the remainders were big enough.\n\nWhy not just have the sample_duration match the rounded start time of the next block - rounded start time of the current block? That way the scaled time will always exactly match.",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//8/s\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 979,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T14:59:39Z",
+      "side": 1,
+      "message": "You\u0027re right, let me change that.",
+      "parentUuid": "AAAAFX//9Bo\u003d",
       "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFX//9AM\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1005,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T14:59:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFX//9F4\u003d",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFX//9F0\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -104,6 +194,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFX//9AI\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1025,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T14:59:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFX//9F0\u003d",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFX//9Fo\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -115,6 +223,24 @@
       "writtenOn": "2011-09-16T04:18:52Z",
       "side": 1,
       "message": "Same name suggestion applies to both functions.  Also: brief comments for each... though they\u0027re probably overkill if post rename.",
+      "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFX//9AE\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1033,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-09-16T14:59:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFX//9Fo\u003d",
       "revId": "65f20bfe6be42924ac43e8323cae82daa27b888e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
