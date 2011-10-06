@@ -924,6 +924,28 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
 
 
 //-----------------------------------------------------------------------------
+// InterpolateDurations
+// Divide given duration equally between given samples.
+//
+// Also, set mediaSampleNotSync on all but the first sample in the
+// given range.
+// Note, the inclusive [first; last] range of samples to operate on
+// should contain at least two elements.
+//
+static void InterpolateDurations(SampleRefVec &samples, TimeValue duration,
+                                 long first, long last) {
+  long inter_duration = duration / (last - first + 1);
+  samples[first].durationPerSample = inter_duration;
+  for (long i = first + 1; i < last; ++i) {
+    samples[i].durationPerSample = inter_duration;
+    samples[i].sampleFlags |= mediaSampleNotSync;
+  }
+  samples[last].durationPerSample = duration - (last - first) * inter_duration;
+  samples[last].sampleFlags |= mediaSampleNotSync;
+}
+
+
+//-----------------------------------------------------------------------------
 // AddSampleRefsToQTMedia
 // Add some sample references to the given QuickTime media and track.
 //
@@ -931,6 +953,12 @@ OSErr AddAudioBlock(WebMImportGlobals store, const mkvparser::Block* webmBlock, 
 // positive values, here we'll calculate any missing durations (from
 // the timestamp of the next-in-queue block or the last_time
 // argument).
+// The runs of samples with the same timestamp (e.g. multiple frames
+// in blocks using lacing) will have durations approximated as if they
+// were spread equidistantly between the two samples with known
+// different timestamps at the ends of the run; "not sync" flag set on
+// all the samples in the run but first to avoid A/V desynchronization
+// when seeking.
 // A positive value for the argument last_time should be passed if the
 // timestamp of the _end_ of the last block (in the samples+times pair
 // of vectors) is known, otherwise adding of the last block might be
@@ -947,6 +975,7 @@ static OSErr AddSampleRefsToQTMedia(Media media, Track track,
   TimeValue media_duration = 0, sample_duration = 0;
   const double scaling_factor = (double) GetMediaTimeScale(media) / ns_per_sec;
   long num_samples = samples.size() - 1;
+  long last_known_index = -1;
 
   if (num_samples < 0)
     return err;
@@ -958,8 +987,17 @@ static OSErr AddSampleRefsToQTMedia(Media media, Track track,
     sample_duration =
         lround(times[i + 1] * scaling_factor) -
         lround(times[i] * scaling_factor);
-    samples[i].durationPerSample = sample_duration;
-    media_duration += sample_duration;
+    if (sample_duration == 0) {
+      if (last_known_index == -1)
+        last_known_index = i;
+    } else if (last_known_index != -1) {
+      InterpolateDurations(samples, sample_duration, last_known_index, i);
+      media_duration += sample_duration;
+      last_known_index = -1;
+    } else {
+      samples[i].durationPerSample = sample_duration;
+      media_duration += sample_duration;
+    }
   }
 
   if (last_time > 0) {
@@ -967,7 +1005,13 @@ static OSErr AddSampleRefsToQTMedia(Media media, Track track,
         lround(last_time * scaling_factor) -
         lround(times[num_samples] * scaling_factor);
     if (sample_duration > 0) {
-      samples[num_samples].durationPerSample = sample_duration;
+      if (last_known_index != -1) {
+        InterpolateDurations(samples, sample_duration, last_known_index,
+                             num_samples);
+        last_known_index = -1;
+      } else {
+        samples[num_samples].durationPerSample = sample_duration;
+      }
       media_duration += sample_duration;
       num_samples += 1;
     } else {
@@ -976,6 +1020,13 @@ static OSErr AddSampleRefsToQTMedia(Media media, Track track,
                  samples[num_samples].dataOffset, times[num_samples],
                  last_time);
     }
+  }
+
+  if (last_known_index != -1) {
+    // We had some same-timestamp samples at the end of the vector -
+    // truncate the range of samples that can be added to QT
+    // structures.
+    num_samples = last_known_index;
   }
 
   if (num_samples == 0) {
