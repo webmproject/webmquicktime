@@ -1,6 +1,6 @@
 [submodule "external/libvpx"]
 	path = external/libvpx
-	url = git://review.webmproject.org/libvpx.git
+	url = http://git.chromium.org/webm/libvpx.git
 [submodule "external/libwebm"]
 	path = external/libwebm
-	url = git://review.webmproject.org/libwebm.git
+	url = http://git.chromium.org/webm/libwebm.git
