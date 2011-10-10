@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFn//0wA\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 936,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2011-10-10T22:35:56Z",
+      "side": 1,
+      "message": "This is an inclusive range.  Is there an implied precondition that last \u003e\u003d first?",
+      "revId": "a99972750269e6225ffc5ea31bd61479c4a81fd0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//0wQ\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 937,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2011-10-10T22:35:56Z",
+      "side": 1,
+      "message": "Should be declared as a const long.",
+      "revId": "a99972750269e6225ffc5ea31bd61479c4a81fd0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//0wE\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 944,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2011-10-10T22:35:56Z",
+      "side": 1,
+      "message": "Suppose last \u003d\u003d first (but perhaps this case cannot occur).  What value should the mediaSampleNotSync bit have?",
+      "revId": "a99972750269e6225ffc5ea31bd61479c4a81fd0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
