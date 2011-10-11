@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//0jU\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 936,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-11T09:01:20Z",
+      "side": 1,
+      "message": "Well, I hoped the comment in the function description would be enough to indicate the precondition is actually last \u003e first - it doesn\u0027t really make sense to call this function otherwise.",
+      "parentUuid": "AAAAFn//0wA\u003d",
+      "revId": "a99972750269e6225ffc5ea31bd61479c4a81fd0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//0wQ\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//0jY\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 937,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-11T09:01:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//0wQ\u003d",
+      "revId": "a99972750269e6225ffc5ea31bd61479c4a81fd0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//0wE\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2011-10-10T22:35:56Z",
       "side": 1,
       "message": "Suppose last \u003d\u003d first (but perhaps this case cannot occur).  What value should the mediaSampleNotSync bit have?",
+      "revId": "a99972750269e6225ffc5ea31bd61479c4a81fd0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//0jQ\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 944,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-11T09:01:20Z",
+      "side": 1,
+      "message": "Last should be strictly greater than first.",
+      "parentUuid": "AAAAFn//0wE\u003d",
       "revId": "a99972750269e6225ffc5ea31bd61479c4a81fd0",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
