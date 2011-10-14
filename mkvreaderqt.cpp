@@ -18,76 +18,101 @@ extern "C" {
 #include "log.h"
 }
 
+
 static void ReadCompletion(Ptr request, long refcon, OSErr readErr);
 
 
-
-//--------------------------------------------------------------------------------
-MkvReaderQT::MkvReaderQT() :
-  m_length(0), m_dataRef(NULL), m_dataHandler(NULL)
-{
+//-----------------------------------------------------------------------------
+MkvReaderQT::MkvReaderQT()
+    : m_length(0), m_dataHandler(NULL), is_streaming_(false) {
 }
 
-//--------------------------------------------------------------------------------
-MkvReaderQT::~MkvReaderQT()
-{
+
+//-----------------------------------------------------------------------------
+MkvReaderQT::~MkvReaderQT() {
   Close();
 }
 
-//--------------------------------------------------------------------------------
-int MkvReaderQT::Open(Handle dataRef, OSType dataRefType)
-{
+
+//-----------------------------------------------------------------------------
+// MkvReaderQT::Open
+// Find and open an appropriate data handler for the given data
+// reference and query its capabilities and optionally file size.
+//
+int MkvReaderQT::Open(Handle dataRef, OSType dataRefType, bool query_size) {
+  assert(!m_dataHandler);
+
   if (dataRef == NULL)
-    return -11;
-
-  if ((m_dataRef) || (m_dataHandler))
-    return -2;
-
-  m_dataRef = dataRef;
+    return paramErr;
 
   long fileSize = 0;
 
-  // Retrieve the best data handler component to use with the given data reference, for read purpoases.
-  // Then open the returned component using standard Component Manager calls.
+  // Retrieve the best data handler component to use with the given
+  // data reference, for read purpoases.  Then open the returned
+  // component using standard Component Manager calls.
   OSType err;
   ComponentInstance dataHandler = 0;
-  err = OpenAComponent(GetDataHandler(dataRef, dataRefType, kDataHCanRead), &dataHandler);
-  if (err) return -3;
+  err = OpenAComponent(GetDataHandler(dataRef, dataRefType, kDataHCanRead),
+                       &dataHandler);
+  if (err) return err;
 
   // Provide a data reference to the data handler.
   // Then you may start reading and/or writing
   // movie data from that data reference.
   err = DataHSetDataRef(dataHandler, dataRef);
-  if (err) return -4;
+  if (err) return err;
 
   // Open a read path to the current data reference.
-  // You need to do this before your component can read data using a data handler component.
+  // You need to do this before your component can read data using a
+  // data handler component.
   err = DataHOpenForRead(dataHandler);
-  if (err) return -5;
+  if (err) return err;
 
-  // Get the size, in bytes, of the current data reference.
-  // This is functionally equivalent to the File Manager's GetEOF function.
-  err = DataHGetFileSize(dataHandler, &fileSize);
-  if (err) return -6;
-  m_length = fileSize;
+  is_streaming_ = (dataRefType == URLDataHandlerSubType);
+  UInt32 flags;
+  err = DataHGetInfoFlags(dataHandler, &flags);
+  if (!err && (flags & kDataHInfoFlagNeverStreams))
+    is_streaming_ = false;
+  err = noErr;
 
-  // dbg_printf("[WebM Import] DataHGetFileSize = %d\n", fileSize);
+  m_length = -1;
+
+  if (query_size) {
+    // Get the size, in bytes, of the current data reference.
+    // This is functionally equivalent to the File Manager's GetEOF function.
+    dbg_printf("[WebM Import] DataHGetFileSize ()...\n");
+    err = DataHGetFileSize(dataHandler, &fileSize);
+    if (!err)
+      m_length = fileSize;
+
+    dbg_printf("[WebM Import] file size = %ld (err: %ld)\n", fileSize, err);
+  }
 
   m_dataHandler = dataHandler;
-  return 0;
+  return noErr;
 }
 
-//--------------------------------------------------------------------------------
-void MkvReaderQT::Close()
-{
-  // ****
+
+//-----------------------------------------------------------------------------
+// MkvReaderQT::Close
+// Release the data handler component.
+//
+void MkvReaderQT::Close() {
+  if (m_dataHandler) {
+    CloseComponent(m_dataHandler);
+    m_dataHandler = NULL;
+  }
 }
 
-//--------------------------------------------------------------------------------
-int MkvReaderQT::Read(long long position, long length, unsigned char* buffer)
-{
+
+//-----------------------------------------------------------------------------
+// MkvReaderQT::Read
+// Pass the read request to the data handler component, synchronously.
+//
+int MkvReaderQT::Read(long long position, long length, unsigned char* buffer) {
   // sanity checks
-  if ((m_dataRef == NULL) || (position < 0) || (length < 0) || (position >= m_length))
+  if ((m_dataHandler == NULL) || (position < 0) || (length < 0) ||
+      (m_length >= 0 && position >= m_length))
     return -1;
 
   if (length == 0)
@@ -96,33 +121,23 @@ int MkvReaderQT::Read(long long position, long length, unsigned char* buffer)
   if (length != 1)
     dbg_printf("MkvReaderQT::Read() len = %ld\n", length);
 
-  // seek and read
-  // This function provides both a synchronous and an asynchronous read interface. Synchronous read operations
-  // work like the DataHGetData function--the data handler component returns control to the client program only
-  // after it has serviced the read request. Asynchronous read operations allow client programs to schedule read
-  // requests in the context of a specified QuickTime time base. The DataHandler queues the request and immediately
-  // returns control to the caller. After the component actually reads the data, it calls the completion function -
-  // calling of the completion will occurs in DataHTask. Not all data handlers support scheduling, if they don't
-  // they'll complete synchronously and then call the completion function. Additionally as a note, some DataHandlers
-  // support 64-bit file offsets, for example DataHScheduleData64, we're not using this call here but you could use
-  // 64-bit versions first, and if they fail fall back to the older calls.
+  // Schedule a synchronous read operation (no refcon, schdule record
+  // nor completion callback specified).
   OSType err;
-  err = DataHScheduleData(m_dataHandler,  // DataHandler Component Instance
-                          (Ptr)buffer,  // Specifies the location in memory that is to receive the data
-                          position,     // Offset in the data reference from which you want to read
-                          length,       // The number of bytes to read
-                          0,            // refCon
-                          NULL,         // pointer to a schedule record - NULL for Synchronous operation
-                          NULL);        // pointer to a data-handler completion function - NULL for Syncronous operation
+  err = DataHScheduleData(m_dataHandler, (Ptr) buffer, position, length,
+                          0, NULL, NULL);
   if (err)
     return -2;
 
   return 0;
 }
 
-//--------------------------------------------------------------------------------
-int MkvReaderQT::Length(long long* total, long long* available)
-{
+
+//-----------------------------------------------------------------------------
+// MkvReaderQT::Length
+// Return the file size (-1 if not known) as both total and available lengths.
+//
+int MkvReaderQT::Length(long long* total, long long* available) {
   if (total)
     *total = m_length;
 
@@ -133,129 +148,174 @@ int MkvReaderQT::Length(long long* total, long long* available)
 }
 
 
-
-//--------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// MkvReaderQT::is_streaming
+// Is our data actually a network stream?
 //
-MkvBufferedReaderQT::MkvBufferedReaderQT() :
-  bufDataSize(0), bufStartFilePos(0), bufCurFilePos(0), bufEndFilePos(0), m_PendingReadSize(0)
-{
+bool MkvReaderQT::is_streaming() const {
+  return is_streaming_;
+}
+
+
+//-----------------------------------------------------------------------------
+MkvBufferedReaderQT::MkvBufferedReaderQT()
+    : bufDataSize(0), bufStartFilePos(0), bufCurFilePos(0), bufEndFilePos(0),
+      m_PendingReadSize(0), chunk_size_(kReadChunkSize), eos_(false) {
   bufDataMax = sizeof(buf);
-  m_previousReadPos = 0;
 }
 
-//--------------------------------------------------------------------------------
-MkvBufferedReaderQT::~MkvBufferedReaderQT()
-{
-  // ****
+
+//-----------------------------------------------------------------------------
+MkvBufferedReaderQT::~MkvBufferedReaderQT() {
 }
 
-//--------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::Open
+// In addition to base class's implementation, prepare a callback
+// handle to use with asynchronous read requests.
 //
-int MkvBufferedReaderQT::Read(long long requestedPos, long requestedLen, unsigned char* outbuf)
-{
-  // **** NOTE - any dbg_print() in this function has big impact on runtime performance.
-  m_previousReadPos = requestedPos;
+int MkvBufferedReaderQT::Open(Handle dataRef, OSType dataRefType,
+                              bool query_size) {
+  int status = MkvReaderQT::Open(dataRef, dataRefType, query_size);
+  if (!status)
+    read_completion_cb = NewDataHCompletionUPP(ReadCompletion);
 
+  return status;
+}
+
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::Close
+// In addition to base class's implementation, release the callback
+// handle.
+//
+void MkvBufferedReaderQT::Close() {
+  MkvReaderQT::Close();
+  if (read_completion_cb) {
+    DisposeDataHCompletionUPP(read_completion_cb);
+    read_completion_cb = NULL;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::Read
+// Serve the read request if the internal buffer already contains the
+// requested data. Return E_BUFFER_NOT_FULL otherwise.
+//
+int MkvBufferedReaderQT::Read(long long requestedPos, long requestedLen,
+                              unsigned char* outbuf) {
+  // NOTE: any dbg_printf() in this function has big impact on runtime
+  // performance.
   if ((requestedPos < bufStartFilePos) ||
       (requestedPos >= bufEndFilePos) ||
       ((requestedPos + requestedLen) > bufEndFilePos)) {
-    // non-contiguous read, miss
-    dbg_printf("\tNON-CONTIGUOUS READ, CACHE MISS requestedPos = %lld, requestedLen = %ld [%ld - %ld - %ld]\n", requestedPos, requestedLen, bufStartFilePos, bufCurFilePos, bufEndFilePos);
-    int err = this->MkvReaderQT::Read(requestedPos, requestedLen, outbuf);
-    return err;
+    // Practically, shouldn't happen - we're accurately reporting the
+    // amount of available data and it never decreases...
+    return mkvparser::E_BUFFER_NOT_FULL;
   }
 
   // read from buffer
-  if (requestedLen > 0) {
-    for (long i=0; i < requestedLen; i++) {
-      outbuf[i] = buf[requestedPos - bufStartFilePos + i];
-    }
-    bufCurFilePos = (requestedPos + requestedLen);
+  if (requestedLen == 1) {
+    outbuf[0] = buf[requestedPos - bufStartFilePos];
+  } else if (requestedLen > 1) {
+    memcpy(outbuf, buf + requestedPos - bufStartFilePos, requestedLen);
   }
+
+  bufCurFilePos = requestedPos + requestedLen;
+  return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::Length
+// Return the file size (-1 if not known) as the total length and the
+// end of buffered data as the available length.
+//
+int MkvBufferedReaderQT::Length(long long* total, long long* available) {
+  if (total)
+    *total = m_length;
+
+  if (available)
+    *available = bufEndFilePos;
 
   return 0;
 }
 
-//--------------------------------------------------------------------------------
-void MkvBufferedReaderQT::ReadAsync(MkvBufferedReaderQT* reader, long requestedLen)
-{
-  if (reader->m_PendingReadSize != 0) {
-    // if an async read is already pending, nop and return now.
-    return;
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::RequestFillBuffer
+// Request an asynchronous read, of the given size, from the file into
+// the internal buffer.
+//
+int MkvBufferedReaderQT::RequestFillBuffer(long request_size) {
+  if (m_PendingReadSize != 0) {
+    // The previous request is still pending - ignore the current one.
+    return 0;
   }
 
-  dbg_printf("ReadAsync...\n");
-  dbg_printf("MkvBufferedReaderQT::buf %ld [%ld - %ld - %ld] %ld\n", reader->bufDataSize, reader->bufStartFilePos, reader->bufCurFilePos, reader->bufEndFilePos, reader->bufDataMax);
+  dbg_printf("RequestFillBuffer...\n");
+  dbg_printf("MkvBufferedReaderQT::buf %ld [%ld - %ld - %ld] %ld\n",
+             bufDataSize, bufStartFilePos, bufCurFilePos, bufEndFilePos,
+             bufDataMax);
 
-  if (reader->read_completion_cb == NULL)
-    reader->read_completion_cb = NewDataHCompletionUPP(ReadCompletion);
-
-  // if requested size wouldn't fit into available space in buffer, and currently consumed more than 3/4 of data in buffer, then compact the buffer.
-  if ((reader->bufDataSize + requestedLen > reader->bufDataMax) &&
-      ((reader->bufCurFilePos - reader->bufStartFilePos) > (reader->bufEndFilePos - reader->bufStartFilePos) * 0.75)) {
-    reader->CompactBuffer(requestedLen);
+  if (m_length >= 0 && (bufEndFilePos + request_size > m_length)) {
+    request_size = m_length - bufEndFilePos;
   }
 
-  if (reader->bufDataSize + requestedLen <= reader->bufDataMax) {
-    wide ofst;
-    ofst.hi = 0;
-    ofst.lo = reader->bufEndFilePos;
-    reader->m_PendingReadSize = requestedLen;
-    reader->readErr = DataHReadAsync(reader->m_dataHandler, reader->buf + reader->bufDataSize, requestedLen, &ofst, reader->read_completion_cb, (long)reader);
+  // if requested size wouldn't fit into available space in buffer,
+  // and currently consumed more than 3/4 of data in buffer, then
+  // compact the buffer.
+  if ((bufDataSize + request_size > bufDataMax) &&
+      ((bufCurFilePos - bufStartFilePos) >
+       (bufEndFilePos - bufStartFilePos) * 0.75)) {
+    CompactBuffer(request_size);
   }
-  else {
-    dbg_printf("MkvBufferedReaderQT::ReadAsync() FAIL - BUFFER FULL. bufDataSize=%ld, consumed=%ld\n", reader->bufDataSize, (reader->bufCurFilePos - reader->bufStartFilePos));
-    reader->m_PendingReadSize = 0;
-    DataHTask(reader->m_dataHandler);
-    //ReadCompletion(NULL, (long)reader, noErr);  // **** maybe wait, and then call comletion, just to keep pump going...
+
+  if (bufDataSize + request_size > bufDataMax) {
+    // Still not enough available buffer space.
+    // Here we could resize the buffer if it was dynamically
+    // allocated. But since it's not - just indicate the error condition.
+    return kFillBufferNotEnoughSpace;
   }
+
+  wide ofst;
+  ofst.hi = 0;
+  ofst.lo = bufEndFilePos;
+  m_PendingReadSize = request_size;
+  readErr = DataHReadAsync(m_dataHandler, buf + bufDataSize, request_size,
+                           &ofst, read_completion_cb, (long) this);
+  dbg_printf("MkvBufferedReaderQT::RequestFillBuffer() scheduled %ld bytes"
+             " @ %ld, error=%d\n", request_size, bufEndFilePos, readErr);
+  if (readErr)
+    m_PendingReadSize = 0;
+  return readErr;
 }
 
 
-//--------------------------------------------------------------------------------
-void MkvBufferedReaderQT::InitBuffer()
-{
-  if ((m_PendingReadSize == 0) && (bufDataSize == 0) && (bufEndFilePos == 0)) {
-    dbg_printf("InitBuffer (sync) ...");
-    long requestedLen = kReadChunkSize * 16;   // **** try larger initial chunk
-    m_PendingReadSize = requestedLen;
-    int err = this->MkvReaderQT::Read(0, requestedLen, buf);
-
-    ReadCompletion(NULL, (long)this, err);
-
-  }
-  else {
-    dbg_printf("InitBuffer FAIL.");
-  }
+//-----------------------------------------------------------------------------
+// Same as above, just with a previously set request size.
+int MkvBufferedReaderQT::RequestFillBuffer() {
+  return RequestFillBuffer(chunk_size_);
 }
 
 
-//--------------------------------------------------------------------------------
-static void ReadCompletion(Ptr request, long refcon, OSErr readErr)
-{
-  MkvBufferedReaderQT* reader = (MkvBufferedReaderQT*)refcon;
-  reader->readErr = readErr;
-  reader->bufEndFilePos += reader->m_PendingReadSize; // incr file position by amount that was just read into buf
-  reader->bufDataSize += reader->m_PendingReadSize; // incr size of data in buf
-  reader->m_PendingReadSize = 0;
-
-  dbg_printf("...ReadCompletion (filePos=%ld)\n", reader->bufEndFilePos);
-
-
-  long readSize = kReadChunkSize; // MkvBufferedReaderQT::kDefaultChunkSize;
-  MkvBufferedReaderQT::ReadAsync(reader);   // , readSize);  use default arg
-}
-
-
-//--------------------------------------------------------------------------------
-void MkvBufferedReaderQT::CompactBuffer(long requestedSize)
-{
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::CompactBuffer
+// Free some space in the buffer by removing part of the already
+// consumed data.
+//
+void MkvBufferedReaderQT::CompactBuffer(long requestedSize) {
   long remainingDataSize = (bufDataMax - bufDataSize);
   long consumedDataSize = (bufCurFilePos - bufStartFilePos);
-  long killDataSize = (consumedDataSize > kReadChunkSize) ? (consumedDataSize - kReadChunkSize) : (consumedDataSize * 0.50);   //* 0.5;   // 0.66;  // / 2;
+  long killDataSize =
+      (consumedDataSize > kReadChunkSize) ?
+      (consumedDataSize - kReadChunkSize) : (consumedDataSize * 0.50);
   if (requestedSize > remainingDataSize) {
     if (killDataSize > (requestedSize - remainingDataSize)) {
-      dbg_printf("CompactBuffer() consumedDataSize=%ld, killDataSize=%ld\n", consumedDataSize, killDataSize);
+      dbg_printf("CompactBuffer() consumedDataSize=%ld, killDataSize=%ld\n",
+                 consumedDataSize, killDataSize);
       memmove(&buf[0], &buf[killDataSize], (bufDataSize - killDataSize));
       bufDataSize -= killDataSize;
       bufStartFilePos += killDataSize;
@@ -266,4 +326,79 @@ void MkvBufferedReaderQT::CompactBuffer(long requestedSize)
   }
   else
     dbg_printf("CompactBuffer() NOP, don't need to compact at this time.\n");
+}
+
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::TaskDataHandler
+// Give the data handler some CPU time to handle the asynchronous requests.
+//
+void MkvBufferedReaderQT::TaskDataHandler() {
+  DataHTask(m_dataHandler);
+}
+
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::set_chunk_size
+// Set the default read chunk size if it doesn't exceed the set maximum.
+//
+long MkvBufferedReaderQT::set_chunk_size(long size) {
+  chunk_size_ = size < kMaxReadChunkSize ? size : kMaxReadChunkSize;
+  return chunk_size_;
+}
+
+
+long MkvBufferedReaderQT::chunk_size() const {
+  return chunk_size_;
+}
+
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::RequestPending
+// Is an asynchronous fill buffer request already pending?
+//
+bool MkvBufferedReaderQT::RequestPending() const {
+  return (m_PendingReadSize != 0);
+}
+
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::eos
+// Has the end of data been reached?
+//
+bool MkvBufferedReaderQT::eos() const {
+  return eos_ || bufEndFilePos == m_length;
+}
+
+
+//-----------------------------------------------------------------------------
+// MkvBufferedReaderQT::ReadCompleted
+// Handle one completed asynchronous read request.
+//
+void MkvBufferedReaderQT::ReadCompleted(Ptr request, OSErr read_error) {
+  if (read_error) {
+    if (read_error == eofErr)
+      eos_ = true;
+    else
+      readErr = read_error;
+  } else {
+    bufEndFilePos += m_PendingReadSize; // incr file position by amount
+                                        // that was just read into buf
+    bufDataSize += m_PendingReadSize;   // incr size of data in buf
+  }
+
+  m_PendingReadSize = 0;
+  dbg_printf("...ReadCompletion (filePos=%ld) [ptr=%p] = %d\n", bufEndFilePos,
+             request, read_error);
+}
+
+
+//-----------------------------------------------------------------------------
+// ReadCompletion
+// C -> C++ wrapper to be able to pass callback to QuickTime data
+// handler on asynchronous read requests.
+//
+static void ReadCompletion(Ptr request, long refcon, OSErr read_error) {
+  MkvBufferedReaderQT* reader = (MkvBufferedReaderQT*) refcon;
+  reader->ReadCompleted(request, read_error);
 }
