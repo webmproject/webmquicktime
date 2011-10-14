@@ -22,34 +22,44 @@
 #include <QuickTime/QuickTime.h>
 #include <queue>
 
+
 #define kReadBufferMaxSize  (4*1024*1024)
 #define kReadChunkSize        (32*1024)
+static const long kMaxReadChunkSize = 1 * 1024 * 1024;
+
+// Status codes for RequestFillBuffer() method.
+enum {
+  kFillBufferNotEnoughSpace = 1,
+};
+
 
 //
 // MkvReaderQT
-// Subclass of IMkvReader that knows about QuickTime dataRef and dataHandler objects, rather than plain file io.
+// Subclass of IMkvReader that knows about QuickTime dataRef and
+// dataHandler objects, rather than plain file io.
 //
-class MkvReaderQT : public mkvparser::IMkvReader
-{
-  MkvReaderQT(const MkvReaderQT&);
-  MkvReaderQT& operator=(const MkvReaderQT&);
-public:
+class MkvReaderQT : public mkvparser::IMkvReader {
+ public:
   MkvReaderQT();
   virtual ~MkvReaderQT();
 
-  int Open(Handle dataRef, OSType dataRefType);
-  void Close();
-  bool IsOpen() const;
+  virtual int Open(Handle dataRef, OSType dataRefType, bool query_size = true);
+  virtual void Close();
 
   virtual int Read(long long position, long length, unsigned char* buffer);
   virtual int Length(long long* total, long long* available);
 
-  DataHandler m_dataHandler;  // ComponentInstance
+  bool IsStreaming() const;
 
-private:
+ protected:
   long long m_length;
-  Handle m_dataRef; // might not need to store this after open()
+  DataHandler m_dataHandler;  // ComponentInstance
+  // Is the data coming from network, as opposed to local disk?
+  bool data_is_stream_;
 
+ private:
+  MkvReaderQT(const MkvReaderQT&);
+  MkvReaderQT& operator=(const MkvReaderQT&);
 };
 
 
@@ -57,19 +67,34 @@ private:
 // MkvBufferedReaderQT
 // Subclass of MkvReaderQT that uses async io to fill buffer.
 //
-class MkvBufferedReaderQT : public MkvReaderQT
-{
-  MkvBufferedReaderQT(const MkvBufferedReaderQT&);
-  MkvBufferedReaderQT& operator=(const MkvBufferedReaderQT&);
-public:
+class MkvBufferedReaderQT : public MkvReaderQT {
+ public:
   MkvBufferedReaderQT();
   virtual ~MkvBufferedReaderQT();
-  virtual int Read(long long position, long length, unsigned char* buffer);
-  void InitBuffer();
-  static void ReadAsync(MkvBufferedReaderQT* reader, long requestedLen = kReadChunkSize); //or kReadChunkSize
-  void CompactBuffer(long requestedSize = 0);
 
-  long m_PendingReadSize; // size requested by ReadAsync, nonzero if async read still outstanding.
+  virtual int Open(Handle dataRef, OSType dataRefType, bool query_size = true);
+  virtual void Close();
+
+  virtual int Read(long long position, long length, unsigned char* buffer);
+  virtual int Length(long long* total, long long* available);
+
+  int RequestFillBuffer(long request_size);
+  int RequestFillBuffer();
+  void CompactBuffer(long requestedSize = 0);
+  void TaskDataHandler();
+  long SetChunkSize(long chunk_size);
+  long GetChunkSize() const;
+  bool RequestPending() const;
+  bool EOS() const;
+  void ReadCompleted(Ptr request, OSErr read_error);
+
+ private:
+  MkvBufferedReaderQT(const MkvBufferedReaderQT&);
+  MkvBufferedReaderQT& operator=(const MkvBufferedReaderQT&);
+
+  // Size requested by RequestFillBuffer, nonzero if async read still
+  // outstanding.
+  long m_PendingReadSize;
   OSErr readErr;          // async read will set this
   unsigned char buf[kReadBufferMaxSize];
   long bufDataSize;       // size of data in buf
@@ -77,12 +102,11 @@ public:
   long bufStartFilePos;   // long long
   long bufCurFilePos;
   long bufEndFilePos;     // file position already read info buf so far
-
-private:
-  long long m_previousReadPos;
-
+  // Number of bytes to read at once.
+  long chunk_size_;
+  // Has the end of data been reached?
+  bool eos_;
   DataHCompletionUPP  read_completion_cb;
-
 };
 
 #endif
