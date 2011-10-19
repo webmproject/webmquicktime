@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wKo\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wik\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wgU\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2011-10-19T21:29:16Z",
       "side": 1,
       "message": "General comment: consider using stdint.h types, or adding a basic_types.h that defines types that agree with the style guide.\n\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Integer_Types\n\nAdding a TODO is fine. With this is turning into a rewrite it seems like the correct thing to do.",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wJM\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "The Carbon and QuickTime includes below define some types that QuickTime interface is using. But I guess some more type discipline wouldn\u0027t hurt so adding a TODO as you suggested.",
+      "parentUuid": "AAAAFn//wgU\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -71,6 +107,42 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wIQ\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wgk\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wIU\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wic\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wgg\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -82,6 +154,24 @@
       "writtenOn": "2011-10-19T21:29:16Z",
       "side": 1,
       "message": "http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Punctuation,_Spelling_and_Grammar",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wIM\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wgg\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -105,6 +195,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wIY\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wYU\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wiQ\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -116,6 +224,24 @@
       "writtenOn": "2011-10-19T14:29:22Z",
       "side": 1,
       "message": "nit: 80 chars",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wII\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wiQ\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -139,6 +265,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wIE\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wYI\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wf4\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -150,6 +294,24 @@
       "writtenOn": "2011-10-19T21:29:16Z",
       "side": 1,
       "message": "You don\u0027t need the extra copy of the function name. Applies throughout the patch.",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wHs\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wf4\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -173,6 +335,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wHk\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 255,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wf0\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wgM\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -184,6 +364,24 @@
       "writtenOn": "2011-10-19T21:29:16Z",
       "side": 1,
       "message": "nit: four space indent on continued line.\n\nbikeshed: I prefer break at the \u0027?\u0027:\n\n  const Track track \u003d store-\u003emovieVideoTrack ? \n      store-\u003emovieVideoTrack : store-\u003emovieAudioTrack;\n\nI just think it\u0027s easier to read.",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wHM\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done\n\n(Note: Aligning with the first character after the equal sign is what the Emacs style file attached to the Google C++ Style Guide does.)",
+      "parentUuid": "AAAAFn//wgM\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -207,6 +405,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wHI\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 294,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wfw\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wgE\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -218,6 +434,24 @@
       "writtenOn": "2011-10-19T21:29:16Z",
       "side": 1,
       "message": "const int status \u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wHA\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wgE\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -241,6 +475,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wG0\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wNY\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wUs\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -258,6 +510,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wGk\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 562,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "I do prefer explicit over implicit.\nLeaving as it is, then.",
+      "parentUuid": "AAAAFn//wUs\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wUg\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -269,6 +539,24 @@
       "writtenOn": "2011-10-19T21:29:16Z",
       "side": 1,
       "message": "align:\n  x \u003d f(arg1, arg2\n        argN);",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wGg\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 586,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done\n\n(Overlooked that one somehow.)",
+      "parentUuid": "AAAAFn//wUg\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -345,6 +633,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wGQ\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 646,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "That was my impression too - a required \"out\" type argument that isn\u0027t actually used by the importer code here.",
+      "parentUuid": "AAAAFn//wS8\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wM4\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -356,6 +662,24 @@
       "writtenOn": "2011-10-19T21:29:16Z",
       "side": 1,
       "message": "nit: 80",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wGM\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 826,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wM4\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -379,6 +703,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wGI\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 840,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wM0\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wMw\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -396,6 +738,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wGE\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 845,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wMw\u003d",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//wMk\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 2
@@ -407,6 +767,24 @@
       "writtenOn": "2011-10-19T21:29:16Z",
       "side": 1,
       "message": "nit: 80",
+      "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wGA\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1072,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T23:02:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//wMk\u003d",
       "revId": "6202eb1c16d37d52347f08f66509e809e9ab4fbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
