@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wkU\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 278,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Oops, you\u0027re absolutely right.\nFixed + rearranged this part a bit.",
+      "parentUuid": "AAAAFn//w+U\u003d",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//w7g\u003d",
         "filename": "mkvreaderqt.cpp",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2011-10-19T00:13:46Z",
       "side": 1,
       "message": "Status code enum?",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wkE\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w7g\u003d",
       "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wkA\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w7k\u003d",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//w7c\u003d",
         "filename": "mkvreaderqt.cpp",
         "patchSetId": 1
@@ -64,6 +118,24 @@
       "writtenOn": "2011-10-19T00:13:46Z",
       "side": 1,
       "message": "Ditto.",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wj4\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w7c\u003d",
       "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wj0\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w7Y\u003d",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//w7U\u003d",
         "filename": "mkvreaderqt.cpp",
         "patchSetId": 1
@@ -98,6 +188,24 @@
       "writtenOn": "2011-10-19T00:13:46Z",
       "side": 1,
       "message": "kNoError? :)\n\nThere\u0027s more of these throughout the file. I\u0027ll stop nagging them...",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wjw\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done\n\nAs for the remaining ones - there are 2 left, both in the IMkvReader::Read() implementation. Can\u0027t find any status codes definition in libwebm that could be used for those...",
+      "parentUuid": "AAAAFn//w7U\u003d",
       "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wkQ\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Umm...?\n\nhttp://codepad.org/7lWdkhnd\n\nYes, my browser displays the code review in a strange, not-really-fixed-width font, too. ;)",
+      "parentUuid": "AAAAFn//w5c\u003d",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//w70\u003d",
         "filename": "mkvreaderqt.hpp",
         "patchSetId": 1
@@ -132,6 +258,24 @@
       "writtenOn": "2011-10-19T00:13:46Z",
       "side": 1,
       "message": "While we\u0027re in here, for consistency: \nstatic const long for each constant declaration\n\nOr, just save for another commit.",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wjk\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w70\u003d",
       "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -155,6 +299,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wjg\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w7o\u003d",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//w7w\u003d",
         "filename": "mkvreaderqt.hpp",
         "patchSetId": 1
@@ -166,6 +328,24 @@
       "writtenOn": "2011-10-19T00:13:46Z",
       "side": 1,
       "message": "This should be defined in MkvBufferedReaderQT... is there a reason you need it to be defined globally?",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wjc\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w7w\u003d",
       "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -189,6 +369,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wjY\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w4A\u003d",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//w4E\u003d",
         "filename": "mkvreaderqt.hpp",
         "patchSetId": 1
@@ -200,6 +398,24 @@
       "writtenOn": "2011-10-19T00:13:46Z",
       "side": 1,
       "message": "How about a rename to is_streaming_?",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wjU\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w4E\u003d",
       "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -223,6 +439,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wjQ\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w7s\u003d",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//w3o\u003d",
         "filename": "mkvreaderqt.hpp",
         "patchSetId": 1
@@ -240,6 +474,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//wi0\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//w3o\u003d",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//w3w\u003d",
         "filename": "mkvreaderqt.hpp",
         "patchSetId": 1
@@ -251,6 +503,24 @@
       "writtenOn": "2011-10-19T00:13:46Z",
       "side": 1,
       "message": "eos()",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//wjM\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-19T13:54:07Z",
+      "side": 1,
+      "message": "Done\n\n(not a pure accessor but I don\u0027t mind)",
+      "parentUuid": "AAAAFn//w3w\u003d",
       "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
