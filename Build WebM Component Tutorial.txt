@@ -23,7 +23,7 @@ Getting source code and dependencies
 
 Get the component source code (issue from command line):
 
- > git clone git://review.webmproject.org/webmquicktime.git webmquicktime
+ > git clone http://git.chromium.org/webm/webmquicktime.git webmquicktime
  > cd webmquicktime
 
 Pull the dependencies (from within the cloned repository):
