@@ -1,0 +1,259 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFn//w+U\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 278,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "Isn\u0027t this a complicated way of writing: \n\n  *outFlags \u003d 0;\n\nhttp://codepad.org/dC64wzKN\n\nOTOH, if just turning off the movieImportResultNeedIdles bit:\n\n  *outFlags \u0026\u003d ~movieImportResultNeedIdles;",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w7g\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "Status code enum?",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w7k\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "Ditto.",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w7c\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "Ditto.",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w7Y\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "Ditto.",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w7U\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "kNoError? :)\n\nThere\u0027s more of these throughout the file. I\u0027ll stop nagging them...",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w5c\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "\u003e80 col; wrap please",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w70\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "While we\u0027re in here, for consistency: \nstatic const long for each constant declaration\n\nOr, just save for another commit.",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w7o\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "TBH, all of these should probably be static const members of the class(es) they\u0027re used with. Ditto w/saving it...",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w7w\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "This should be defined in MkvBufferedReaderQT... is there a reason you need it to be defined globally?",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w4A\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "is_streaming()\n\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#General_Naming_Rules\n\nOr, data_is_stream(), but see next comment...",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w4E\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "How about a rename to is_streaming_?",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w7s\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "Here:\n  enum {\n    kFillBufferNotEnoughSpace \u003d 1,\n  };",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w3o\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "Methods need brief comments. I.e. Opens handle, sets streaming flag, and returns kSuccess.",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//w3w\u003d",
+        "filename": "mkvreaderqt.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-19T00:13:46Z",
+      "side": 1,
+      "message": "eos()",
+      "revId": "c14c72ef244e64216501fe77e9adf82b2ef7eda1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
