@@ -1,0 +1,208 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFn//u2g\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "Another general comment: tons of lint errors in here; you might want to grab cpplint.py. It\u0027s mostly use of long, though.",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//u2o\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "lint: include order; should be before mkvparser.\n\nAlso, the extern \"C\" stuff should be in log.h:\n\n  // top\n  #ifdef __cplusplus\n  extern \"C\" {\n  #endif\n\n  // bottom\n  #ifdef __cplusplus\n  }  // extern \"C\"\n  #endif",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//u2c\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "nit/lint: two spaces before comment, but it can probably be removed",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//ujU\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "So... odd that Apple doesn\u0027t have the extern \"C\" in the files...",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//vtA\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "Remove the second line: it\u0027s talking about a function deprecated since 10.4.\nhttp://developer.apple.com/library/mac/#documentation/Carbon/Reference/File_Manager/DeprecationAppendix/AppendixADeprecatedAPI.html#//apple_ref/c/func/GetEOF",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//vg0\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "Readability.\n\nLog the failure and return err directly, or define a kReadFailed in MkvReaderQT... i.e.:\n\n  enum {\n    kReadFailed \u003d -2,\n    kSuccess \u003d 0\n  }\n\nUse kSuccess for 0\u0027s. Yeah, 0 usually means success, but being explicit never makes the code harder to read.\n\nRe my earlier comment about constants-- it\u0027s great that there are QT API values that work (i.e. noErr/paramErr), but user\u0027s of this class don\u0027t necessarily know about them. It\u0027s nicer to have a known set of possible return codes visible in the class definition.\n\nOf course, this is a class used to implement the reader object for use w/QT, so my argument is a bit weak given than you\u0027re calling this from a QT component.. :)",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//vgc\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "Remove redundant copy of function name.",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//vgY\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "Ditto, and more below that I\u0027m not pointing out for brevity\u0027s sake.",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//vgM\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "Remove this comment.",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//u3c\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "offset; ofst is somewhat obvious, but in direct violation of naming rules.",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//u3M\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "perens around condition",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//u3Y\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 402,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-21T22:40:33Z",
+      "side": 1,
+      "message": "http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Casting",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
