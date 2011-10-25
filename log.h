@@ -8,8 +8,12 @@
 
 
 
-#ifndef LOG_H
-#define LOG_H
+#ifndef LOG_H_
+#define LOG_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 #include <QuickTime/QuickTime.h>
@@ -21,5 +25,8 @@ void dbg_dumpBytes(unsigned char *bytes, int size);
 void dbg_dumpAtom(QTAtomContainer container);
 
 
+#ifdef __cplusplus
+}  // extern "C"
 #endif
 
+#endif  // LOG_H_
