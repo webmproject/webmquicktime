@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//t6o\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Ran cpplint.py on this file, fixed some of the format and whitespace errors.\n\nLeaving the type and cast changes to be done in a separate commit.",
+      "parentUuid": "AAAAFn//u2g\u003d",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//u2o\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2011-10-21T22:40:33Z",
       "side": 1,
       "message": "lint: include order; should be before mkvparser.\n\nAlso, the extern \"C\" stuff should be in log.h:\n\n  // top\n  #ifdef __cplusplus\n  extern \"C\" {\n  #endif\n\n  // bottom\n  #ifdef __cplusplus\n  }  // extern \"C\"\n  #endif",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//uBY\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "OK, put the extern \"C\" stuff in log.h.\n\nBut I\u0027m confused about the log.h order - the style guide states the project \"local\" header files are last, no?\n\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml?showone\u003dNames_and_Order_of_Includes#Names_and_Order_of_Includes\n\ncpplint.py complains about the next group of includes (line 154) but those are used for generating the dispatcher, so that\u0027s a special case.",
+      "parentUuid": "AAAAFn//u2o\u003d",
       "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//uCo\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//u2c\u003d",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//ujU\u003d",
         "filename": "WebMImport.cpp",
         "patchSetId": 4
@@ -64,6 +118,24 @@
       "writtenOn": "2011-10-21T22:40:33Z",
       "side": 1,
       "message": "So... odd that Apple doesn\u0027t have the extern \"C\" in the files...",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//uCI\u003d",
+        "filename": "WebMImport.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Well, it\u0027s not needed for Objective-C, right?",
+      "parentUuid": "AAAAFn//ujU\u003d",
       "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//t5E\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//vtA\u003d",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//vg0\u003d",
         "filename": "mkvreaderqt.cpp",
         "patchSetId": 4
@@ -98,6 +188,24 @@
       "writtenOn": "2011-10-21T22:40:33Z",
       "side": 1,
       "message": "Readability.\n\nLog the failure and return err directly, or define a kReadFailed in MkvReaderQT... i.e.:\n\n  enum {\n    kReadFailed \u003d -2,\n    kSuccess \u003d 0\n  }\n\nUse kSuccess for 0\u0027s. Yeah, 0 usually means success, but being explicit never makes the code harder to read.\n\nRe my earlier comment about constants-- it\u0027s great that there are QT API values that work (i.e. noErr/paramErr), but user\u0027s of this class don\u0027t necessarily know about them. It\u0027s nicer to have a known set of possible return codes visible in the class definition.\n\nOf course, this is a class used to implement the reader object for use w/QT, so my argument is a bit weak given than you\u0027re calling this from a QT component.. :)",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//t3Q\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Defined and used the status codes, in Read() and Length().\n\nAs for the the QT API status codes - they are not, and should not be, used in mkvparser facing methods, as it makes no sense - on that I agree with you.\n\nHowever, in the methods facing WebMImport component the QT API error codes are passed directly because I though it makes more sense to allow the deeper nested error conditions propagate, through the layer of the WebMImport component, back to QT, as it can (might?) recognize some of them and provide some plain text error messages. The alternative is to define a lot of status codes here and use them, just to have the WebMImporter translate it back to QT status codes, most probably doing a bad job at it because QT API doesn\u0027t specify which errors exactly can occur in which function.\n\nThis is a very specific class after all, not at all designed to be re-useable and hide the fact that it uses OSX data handler components to get to the data - just the opposite.",
+      "parentUuid": "AAAAFn//vg0\u003d",
       "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//t6M\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//vgc\u003d",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//vgY\u003d",
         "filename": "mkvreaderqt.cpp",
         "patchSetId": 4
@@ -132,6 +258,24 @@
       "writtenOn": "2011-10-21T22:40:33Z",
       "side": 1,
       "message": "Ditto, and more below that I\u0027m not pointing out for brevity\u0027s sake.",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//t6E\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//vgY\u003d",
       "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -155,6 +299,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//t6A\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//vgM\u003d",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//u3c\u003d",
         "filename": "mkvreaderqt.cpp",
         "patchSetId": 4
@@ -166,6 +328,24 @@
       "writtenOn": "2011-10-21T22:40:33Z",
       "side": 1,
       "message": "offset; ofst is somewhat obvious, but in direct violation of naming rules.",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//t54\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//u3c\u003d",
       "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -189,6 +369,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//t50\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//u3M\u003d",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//u3Y\u003d",
         "filename": "mkvreaderqt.cpp",
         "patchSetId": 4
@@ -200,6 +398,24 @@
       "writtenOn": "2011-10-21T22:40:33Z",
       "side": 1,
       "message": "http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Casting",
+      "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//t5o\u003d",
+        "filename": "mkvreaderqt.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 402,
+      "author": {
+        "id": 1000896
+      },
+      "writtenOn": "2011-10-25T00:47:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//u3Y\u003d",
       "revId": "219b9434b55edcffd1a93673fdc7e91b249055fb",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
