@@ -1,0 +1,114 @@
+<?xml version="1.0" standalone="yes"?>
+<object class="NSIBObjectData">
+  <string name="targetFramework">IBCarbonFramework</string>
+  <object name="rootObject" class="NSCustomObject" id="1">
+    <string name="customClass">NSApplication</string>
+  </object>
+  <array count="8" name="allObjects">
+    <object class="IBCarbonWindow" id="166">
+      <string name="windowRect">166 334 288 756 </string>
+      <string name="title">Ogg Exporter Settings</string>
+      <object name="rootControl" class="IBCarbonRootControl" id="167">
+        <string name="bounds">0 0 122 422 </string>
+        <string name="viewFrame">0 0 422 122 </string>
+        <array count="6" name="subviews">
+          <object class="IBCarbonButton" id="182">
+            <string name="bounds">21 90 41 182 </string>
+            <string name="viewFrame">90 21 92 20 </string>
+            <ostype name="controlSignature">XiOE</ostype>
+            <int name="controlID">3</int>
+            <string name="title">Settings…</string>
+            <ostype name="command">OEcv</ostype>
+            <object name="layoutInfo" class="IBCarbonHILayoutInfo">
+              <int name="bindingLeftKind">1</int>
+            </object>
+          </object>
+          <object class="IBCarbonButton" id="183">
+            <string name="bounds">53 90 73 182 </string>
+            <string name="viewFrame">90 53 92 20 </string>
+            <ostype name="controlSignature">XiOE</ostype>
+            <int name="controlID">4</int>
+            <string name="title">Settings…</string>
+            <ostype name="command">OEca</ostype>
+            <object name="layoutInfo" class="IBCarbonHILayoutInfo">
+              <int name="bindingLeftKind">1</int>
+            </object>
+          </object>
+          <object class="IBCarbonButton" id="181">
+            <string name="bounds">82 252 102 321 </string>
+            <string name="viewFrame">252 82 69 20 </string>
+            <int name="controlID">2</int>
+            <string name="title">Cancel</string>
+            <ostype name="command">not!</ostype>
+            <object name="layoutInfo" class="IBCarbonHILayoutInfo">
+              <int name="bindingBottomKind">2</int>
+              <int name="bindingRightKind">2</int>
+            </object>
+            <int name="buttonType">2</int>
+          </object>
+          <object class="IBCarbonButton" id="180">
+            <string name="bounds">82 333 102 402 </string>
+            <string name="viewFrame">333 82 69 20 </string>
+            <int name="controlID">1</int>
+            <string name="title">OK</string>
+            <ostype name="command">ok  </ostype>
+            <object name="layoutInfo" class="IBCarbonHILayoutInfo">
+              <int name="bindingBottomKind">2</int>
+              <int name="bindingRightKind">2</int>
+            </object>
+            <int name="buttonType">1</int>
+          </object>
+          <object class="IBCarbonCheckBox" id="184">
+            <string name="bounds">22 20 40 79 </string>
+            <string name="viewFrame">20 22 59 18 </string>
+            <ostype name="controlSignature">XiOE</ostype>
+            <int name="controlID">5</int>
+            <string name="title">Video</string>
+            <ostype name="command">OEev</ostype>
+            <int name="initialState">1</int>
+            <boolean name="autoToggle">FALSE</boolean>
+          </object>
+          <object class="IBCarbonCheckBox" id="185">
+            <string name="bounds">54 20 72 79 </string>
+            <string name="viewFrame">20 54 59 18 </string>
+            <ostype name="controlSignature">XiOE</ostype>
+            <int name="controlID">6</int>
+            <string name="title">Audio</string>
+            <ostype name="command">OEea</ostype>
+            <int name="initialState">1</int>
+            <boolean name="autoToggle">FALSE</boolean>
+          </object>
+        </array>
+      </object>
+      <boolean name="receiveUpdates">FALSE</boolean>
+      <boolean name="isResizable">FALSE</boolean>
+      <boolean name="compositing">TRUE</boolean>
+      <int name="carbonWindowClass">4</int>
+      <int name="windowPosition">7</int>
+    </object>
+    <reference idRef="167"/>
+    <reference idRef="180"/>
+    <reference idRef="181"/>
+    <reference idRef="182"/>
+    <reference idRef="183"/>
+    <reference idRef="184"/>
+    <reference idRef="185"/>
+  </array>
+  <array count="8" name="allParents">
+    <reference idRef="1"/>
+    <reference idRef="166"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+  </array>
+  <dictionary count="2" name="nameTable">
+    <string>File&apos;s Owner</string>
+    <reference idRef="1"/>
+    <string>Settings</string>
+    <reference idRef="166"/>
+  </dictionary>
+  <unsigned_int name="nextObjectID">186</unsigned_int>
+</object>

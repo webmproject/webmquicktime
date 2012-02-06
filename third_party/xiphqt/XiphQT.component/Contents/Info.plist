@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>XiphQT</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Xiph QuickTime Components 0.1.9, Copyright © 2005-2009 Arek Korbik</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.xiph.xiph-qt.xiphqt</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.9</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>0.1.9</string>
+	<key>CSResourcesFileMapped</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>Xiph QuickTime Components 0.1.9, Copyright © 2005-2009 Arek Korbik</string>
+</dict>
+</plist>
