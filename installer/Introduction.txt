@@ -1,0 +1,12 @@
+Thank you for installing the WebM QuickTime package.
+
+It contains:
+  VP8 Encoder
+  VP8 Decoder
+  WebM Importer
+  WebM Exporter
+  XiphQT
+
+These components enable your computer to create and play WebM files in QuickTime applications.
+
+XiphQT depends on a number of open-source libraries. See the COPYING.*.txt files in the WebM QuickTime disk image for their corresponding distribution terms.
