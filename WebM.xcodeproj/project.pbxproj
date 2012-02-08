@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1026A2B11250DCBA00A4A761 /* WebM.component in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8D01CCD20486CAD60068D4B7 /* WebM.component */; };
 		103EF9A5128B2DC60032CEE6 /* WebMImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1025BBB21253EB900091053E /* WebMImport.cpp */; };
 		103EF9A6128B2DCB0032CEE6 /* mkvreaderqt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 10D73AE5124D4A2A00673FEC /* mkvreaderqt.cpp */; };
 		10C2262C122D91CC00359ACF /* WebMImport.r in Rez */ = {isa = PBXBuildFile; fileRef = 10C2262B122D91CC00359ACF /* WebMImport.r */; };
@@ -66,19 +65,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		1026A29C1250DBC400A4A761 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 8;
-			dstPath = /Library/QuickTime/;
-			dstSubfolderSpec = 0;
-			files = (
-				1026A2B11250DCBA00A4A761 /* WebM.component in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
@@ -91,7 +77,7 @@
 		374E1CE713FD7BFB00A14F1C /* libvpx.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libvpx.xcodeproj; path = external/libvpx.xcodeproj; sourceTree = "<group>"; };
 		374E201313FD891100A14F1C /* libwebm.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libwebm.xcodeproj; path = external/libwebm.xcodeproj; sourceTree = "<group>"; };
 		8D01CCD10486CAD60068D4B7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D01CCD20486CAD60068D4B7 /* WebM.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WebM.component; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D01CCD20486CAD60068D4B7 /* AWebM.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWebM.component; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB124ADE12392B0300A26F24 /* VP8EncoderGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VP8EncoderGui.h; sourceTree = "<group>"; };
 		BB124ADF12392B0300A26F24 /* VP8EncoderGui.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = VP8EncoderGui.c; sourceTree = "<group>"; };
 		BB155ABC1236A314003707C7 /* VP8Encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VP8Encoder.h; sourceTree = "<group>"; };
@@ -236,7 +222,7 @@
 		19C28FB4FE9D528D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D01CCD20486CAD60068D4B7 /* WebM.component */,
+				8D01CCD20486CAD60068D4B7 /* AWebM.component */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -355,15 +341,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D01CCC60486CAD60068D4B7 /* WebM */ = {
+		8D01CCC60486CAD60068D4B7 /* AWebM */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2BF1EBEB08A92C280070D853 /* Build configuration list for PBXNativeTarget "WebM" */;
+			buildConfigurationList = 2BF1EBEB08A92C280070D853 /* Build configuration list for PBXNativeTarget "AWebM" */;
 			buildPhases = (
 				8D01CCC90486CAD60068D4B7 /* Resources */,
 				8D01CCCB0486CAD60068D4B7 /* Sources */,
 				8D01CCCD0486CAD60068D4B7 /* Frameworks */,
 				FBFA8DFA0829E7D800560632 /* Rez */,
-				1026A29C1250DBC400A4A761 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -371,10 +356,10 @@
 				374E1D2413FD7C2600A14F1C /* PBXTargetDependency */,
 				374E201C13FD894800A14F1C /* PBXTargetDependency */,
 			);
-			name = WebM;
+			name = AWebM;
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = ExampleIPBCodec;
-			productReference = 8D01CCD20486CAD60068D4B7 /* WebM.component */;
+			productReference = 8D01CCD20486CAD60068D4B7 /* AWebM.component */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -384,7 +369,6 @@
 			isa = PBXProject;
 			buildConfigurationList = 2BF1EBEF08A92C280070D853 /* Build configuration list for PBXProject "WebM" */;
 			compatibilityVersion = "Xcode 2.4";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -406,7 +390,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				8D01CCC60486CAD60068D4B7 /* WebM */,
+				8D01CCC60486CAD60068D4B7 /* AWebM */,
 			);
 		};
 /* End PBXProject section */
@@ -511,7 +495,7 @@
 					"$(inherited)",
 					external/build/libvpxbuild,
 				);
-				PRODUCT_NAME = WebM;
+				PRODUCT_NAME = AWebM;
 				WRAPPER_EXTENSION = component;
 			};
 			name = Debug;
@@ -590,7 +574,7 @@
 					"$(inherited)",
 					external/build/libvpxbuild,
 				);
-				PRODUCT_NAME = WebM;
+				PRODUCT_NAME = AWebM;
 				WRAPPER_EXTENSION = component;
 			};
 			name = Release;
@@ -598,7 +582,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2BF1EBEB08A92C280070D853 /* Build configuration list for PBXNativeTarget "WebM" */ = {
+		2BF1EBEB08A92C280070D853 /* Build configuration list for PBXNativeTarget "AWebM" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2B8BCBA408A92EED00C014B9 /* Debug */,
