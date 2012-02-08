@@ -9,18 +9,20 @@
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string>com.google.google-qt.vp8codec</string>
+	<string>org.webmproject.webmquicktime.component</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
 	<string>thng</string>
-	<key>CFBundleShortVersionString</key>
-	<string>0.0.1</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.1</string>
+	<string>0.3.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.3.0</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
+	<key>CFBundleGetInfoString</key>
+	<string>WebM Project QuickTime Components v0.3.0 Copyright © 2012 WebM Project Authors</string>
 </dict>
 </plist>
