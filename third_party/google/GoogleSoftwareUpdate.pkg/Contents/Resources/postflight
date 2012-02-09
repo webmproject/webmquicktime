@@ -1,0 +1,15 @@
+#!/bin/sh
+# Copyright 2008 Google, Inc
+
+cd "${PACKAGE_PATH}"
+cd Contents/Resources
+
+if [ ! -f Keystone.tbz -o ! -f install.py ]; then
+    # Corrupt package?
+    exit 1
+fi
+
+# This should be the last line so it's exit code is returned
+./install.py --install=Keystone.tbz
+
+
