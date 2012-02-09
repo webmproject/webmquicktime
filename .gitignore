@@ -1,5 +1,6 @@
 *.pbxuser
 *.mode1v3
+.DS_Store
 
 build/*
 external/build/*
