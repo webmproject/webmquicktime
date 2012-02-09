@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//we8\u003d",
+        "filename": "installer/WebMInstaller.pmdoc/01google.xml",
+        "patchSetId": 4
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-09T23:59:34Z",
+      "side": 1,
+      "message": "I sure the filters were inherited from somewhere, not sure if it\u0027s important, but add .git*?",
+      "revId": "ddb55b8af15245bda502306194daf6222e340798",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//wfA\u003d",
+        "filename": "installer/WebMInstaller.pmdoc/01google.xml",
+        "patchSetId": 4
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-09T23:59:34Z",
+      "side": 1,
+      "message": "I sure the filters were inherited from somewhere, not sure if it\u0027s important, but add .git*?",
+      "revId": "ddb55b8af15245bda502306194daf6222e340798",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//weg\u003d",
+        "filename": "installer/scripts/webm/preinstall.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-09T23:59:34Z",
+      "side": 1,
+      "message": "these can be readonly (or declare -r after the first assignment)",
+      "revId": "ddb55b8af15245bda502306194daf6222e340798",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//wes\u003d",
+        "filename": "installer/scripts/webm/preinstall.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-09T23:59:34Z",
+      "side": 1,
+      "message": "maybe make a delete() function?",
+      "revId": "ddb55b8af15245bda502306194daf6222e340798",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//wec\u003d",
+        "filename": "installer/scripts/xiphqt/preinstall.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-09T23:59:34Z",
+      "side": 1,
+      "message": "2012",
+      "revId": "ddb55b8af15245bda502306194daf6222e340798",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//weY\u003d",
+        "filename": "installer/scripts/xiphqt/preinstall.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-09T23:59:34Z",
+      "side": 1,
+      "message": "readonly here too",
+      "revId": "ddb55b8af15245bda502306194daf6222e340798",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//weU\u003d",
+        "filename": "installer/scripts/xiphqt/preinstall.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-09T23:59:34Z",
+      "side": 1,
+      "message": "function",
+      "revId": "ddb55b8af15245bda502306194daf6222e340798",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
