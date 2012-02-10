@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//wA8\u003d",
+        "filename": "installer/scripts/xiphqt/preinstall.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-10T20:39:33Z",
+      "side": 1,
+      "message": "s/any existing any existing/any existing/",
+      "revId": "242445036afa0d0c4f8615357a037fa29b89863d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
