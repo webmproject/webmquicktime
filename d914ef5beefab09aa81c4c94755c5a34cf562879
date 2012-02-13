@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//vDs\u003d",
+        "filename": "installer/scripts/uninstall.applescript",
+        "patchSetId": 14
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-13T22:26:59Z",
+      "side": 1,
+      "message": "This actually ended up being amusing-- the applescript line continuation character is \u0027¬\u0027 (option-L)... awesome.\n\nDone.",
+      "parentUuid": "AAAAHn//vUE\u003d",
+      "revId": "d914ef5beefab09aa81c4c94755c5a34cf562879",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//vUA\u003d",
         "filename": "installer/scripts/uninstall_helper.sh",
         "patchSetId": 14
@@ -30,6 +48,24 @@
       "writtenOn": "2012-02-13T19:20:06Z",
       "side": 1,
       "message": "could use ${PKGUTIL} here",
+      "revId": "d914ef5beefab09aa81c4c94755c5a34cf562879",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//vDo\u003d",
+        "filename": "installer/scripts/uninstall_helper.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-13T22:26:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//vUA\u003d",
       "revId": "d914ef5beefab09aa81c4c94755c5a34cf562879",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
