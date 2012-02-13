@@ -1,0 +1,11 @@
+YourSway Create-DMG
+
+Used to create the final WebM QuickTime Disk Images.
+
+Repository: https://github.com/andreyvit/yoursway-create-dmg.git
+hash: d0bc2cb8ddab11128c0f6c2829882ce97f0badb9
+
+http://www.yoursway.com/free/#createdmg notes that the code is GPL
+based on the presence of code with Adium ancestry. A copy of GPL v1
+is in the file License.txt included in the same directory as this
+README.
