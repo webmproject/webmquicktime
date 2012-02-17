@@ -7,20 +7,82 @@
 ##  tree. An additional intellectual property rights grant can be found
 ##  in the file PATENTS.  All contributing project authors may
 ##  be found in the AUTHORS file in the root of the source tree.
+set -e
 
 readonly BACKGROUND_IMAGE="Background.png"
-readonly CREATE_DMG_PATH="../third_party/yoursway-create-dmg/"
-readonly CREATE_DMG="./create-dmg"
-readonly DMG_FILE="webm_quicktime_installer.dmg"
 readonly INSTALLER_DIR="$(pwd)"
-readonly UNINSTALL_APP="uninstall.app"
-readonly UNINSTALL_SCRIPT="scripts/uninstall_helper.sh"
-readonly WEBM_NAME="WebM QuickTime Installer"
-readonly WEBM_MPKG="${WEBM_NAME}.mpkg"
-readonly XIPHQT_LICENSE_PATH="../third_party/xiphqt/"
 
-dbglog() {
-  echo "build_dmg: $@"
+build_full_install_dmg() {
+  local readonly DMG_FILE="webm_quicktime_installer.dmg"
+  local readonly WEBM_NAME="WebM QuickTime Installer"
+  local readonly WEBM_MPKG="${WEBM_NAME}.mpkg"
+
+  # Copy the contents of the disk image to |TEMP_DIR|.
+  copy_uninstaller
+  copy_xiphqt_licenses
+  copy_bundle "${WEBM_MPKG}" "${TEMP_DIR}"
+
+  # Create the disk image.
+  create_dmg --window-size 720 380 --icon-size 48 \
+    --background "${INSTALLER_DIR}/${BACKGROUND_IMAGE}" \
+    --volname "${WEBM_NAME}" "/tmp/${DMG_FILE}" "${TEMP_DIR}"
+
+  cleanup
+  mv "/tmp/${DMG_FILE}" "${INSTALLER_DIR}"
+}
+
+build_webm_update_dmg() {
+  local readonly DMG_FILE="webm_quicktime_updater.dmg"
+  local readonly WEBM_NAME="WebM QuickTime Updater"
+  local readonly WEBM_UPDATE_PKG="${WEBM_NAME}.pkg"
+
+  # Copy the contents of the disk image to |TEMP_DIR|.
+  copy_uninstaller
+  copy_bundle "${WEBM_UPDATE_PKG}" "${TEMP_DIR}"
+
+  # Create the disk image.
+  create_dmg --window-size 720 380 --icon-size 48 \
+    --background "${INSTALLER_DIR}/${BACKGROUND_IMAGE}" \
+    --volname "${WEBM_NAME}" "/tmp/${DMG_FILE}" "${TEMP_DIR}"
+
+  cleanup
+  mv "/tmp/${DMG_FILE}" "${INSTALLER_DIR}"
+}
+
+build_xiphqt_update_dmg() {
+  local readonly DMG_FILE="xiphqt_updater.dmg"
+  local readonly XIPHQT_NAME="XiphQT Updater"
+  local readonly XIPHQT_UPDATE_PKG="${XIPHQT_NAME}.pkg"
+
+  # Copy the contents of the disk image to |TEMP_DIR|.
+  copy_uninstaller
+  copy_xiphqt_licenses
+  copy_bundle "${XIPHQT_UPDATE_PKG}" "${TEMP_DIR}"
+
+  # Create the disk image.
+  create_dmg --window-size 720 380 --icon-size 48 \
+    --background "${INSTALLER_DIR}/${BACKGROUND_IMAGE}" \
+    --volname "${XIPHQT_NAME}" "/tmp/${DMG_FILE}" "${TEMP_DIR}"
+
+  cleanup
+  mv "/tmp/${DMG_FILE}" "${INSTALLER_DIR}"
+}
+
+cleanup() {
+  local readonly RM="rm -r -f"
+  ${RM} "${TEMP_DIR}"*
+}
+
+copy_uninstaller() {
+  local readonly UNINSTALL_APP="uninstall.app"
+  local readonly UNINSTALL_SCRIPT="scripts/uninstall_helper.sh"
+  copy_bundle "${UNINSTALL_APP}" "${TEMP_DIR}"
+  cp -p "${UNINSTALL_SCRIPT}" "${TEMP_DIR}"
+}
+
+copy_xiphqt_licenses() {
+  local readonly XIPHQT_LICENSE_PATH="../third_party/xiphqt/"
+  cp -p "${XIPHQT_LICENSE_PATH}"/*.txt "${TEMP_DIR}"
 }
 
 copy_bundle() {
@@ -43,28 +105,43 @@ copy_bundle() {
   ${COPY} "${BUNDLE}" "${TARGET}"
 }
 
-set -e
+create_dmg() {
+  local readonly CREATE_DMG_PATH="../third_party/yoursway-create-dmg/"
+  local readonly CREATE_DMG="./create-dmg"
+
+  # Note: must cd into |CREATE_DMG_PATH| for create-dmg to work.
+  local readonly OLD_DIR="$(pwd)"
+  cd "${CREATE_DMG_PATH}"
+  ${CREATE_DMG} "$@"
+  cd "${OLD_DIR}"
+}
+
+dbglog() {
+  echo "build_dmg: $@"
+}
 
 # Create temporary directory.
 readonly TEMP_DIR="$(mktemp -d /tmp/webmqt_dmg.XXXXXX)/"
+
+if [[ -z "${TEMP_DIR}" ]] || [[ "{TEMP_DIR}" == "/" ]]; then
+  # |TEMP_DIR| will be passed to "rm -r -f" in |cleanup|. Avoid any possible
+  # mktemp shenanigans.
+  dbglog "ERROR, TEMP_DIR path empty or unsafe (TEMP_DIR=${TEMP_DIR})."
+  exit 1
+fi
 
 if [[ ! -e "${UNINSTALL_APP}" ]]; then
   scripts/build/build_uninstaller.sh
 fi
 
-# Copy the contents of the disk image to |TEMP_DIR|.
-copy_bundle "${UNINSTALL_APP}" "${TEMP_DIR}"
-copy_bundle "${WEBM_MPKG}" "${TEMP_DIR}"
-cp -p "${XIPHQT_LICENSE_PATH}"/*.txt "${TEMP_DIR}"
-cp -p "${UNINSTALL_SCRIPT}" "${TEMP_DIR}"
+if [[ -z "$1" ]] || [[ "$1" == "all" ]]; then
+  build_full_install_dmg
+  build_webm_update_dmg
+  build_xiphqt_update_dmg
+elif [[ "$1" == "webm" ]]; then
+  build_webm_update_dmg
+elif [[ "$1" == "xiph" ]]; then
+  build_xiphqt_update_dmg
+fi
 
-# Create the disk image.
-# Note: have to cd into |CREATE_DMG_PATH| for create-dmg to work.
-cd "${CREATE_DMG_PATH}"
-${CREATE_DMG} --window-size 720 380 --icon-size 48 \
-  --background "${INSTALLER_DIR}/${BACKGROUND_IMAGE}" \
-  --volname "${WEBM_NAME}" "/tmp/${DMG_FILE}" "${TEMP_DIR}"
-
-readonly RM="rm -r -f"
-${RM} "${TEMP_DIR}"
-mv "/tmp/${DMG_FILE}" "${INSTALLER_DIR}"
+dbglog "Done."
