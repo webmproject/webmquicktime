@@ -4,3 +4,7 @@
 
 build/*
 external/build/*
+installer/*.pkg
+installer/*.mpkg
+installer/*.dmg
+installer/*.app
