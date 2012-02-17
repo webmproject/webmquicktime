@@ -29,9 +29,8 @@
 
 #include "VP8Encoder.h"
 #include "VP8EncoderGui.h"
-
-//TODO change this!!
-#define kWebMExportBundleID "com.google.google-qt.vp8codec"
+#include "WebMExportStructs.h"
+#include "WebMExportGuiVideo.h"
 
 static void setUIntFromControl(UInt32 * i, WindowRef w, int id)
 {

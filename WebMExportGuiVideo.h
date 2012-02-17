@@ -10,11 +10,8 @@
 #ifndef _WEBMEXPORTGUIVIDEO_H_
 #define _WEBMEXPORTGUIVIDEO_H_ 1
 
-#if !defined(MKV_BUNDLE_ID)
-#define kWebMExportBundleID "com.google.google-qt.vp8codec"
-#else
-#error TODO
-#define kWebMExportBundleID "TODO"
+#if !defined(kWebMExportBundleID)
+#define kWebMExportBundleID "org.webmproject.webmquicktime.component"
 #endif
 
 ComponentResult getDefaultVP8Atom(WebMExportGlobalsPtr globals);
