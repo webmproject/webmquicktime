@@ -11,6 +11,7 @@
 # Builds the WebM QuickTime and XiphQT component installers, and then
 # includes each package in one final mpkg along with
 # GoogleSoftwareUpdate.pkg
+set -e
 
 dbglog() {
   echo "build_installers: $@"
@@ -50,26 +51,51 @@ build_installer() {
   dbglog "${PACKAGE} build successful."
 }
 
+show_full_installer_warning() {
+  # Full installer project and output package file names.
+  local readonly INSTALLER_PMDOC="installer.pmdoc"
+  local readonly INSTALLER_PACKAGE="WebM QuickTime Installer.mpkg"
+
+  # Nice long note about PackageMaker manual build requirements. Why, oh why,
+  # does the stupid thing have to crash _every_ time when used on the command
+  # line.
+  dbglog "${INSTALLER_PMDOC} must be opened in PackageMaker and built manually"
+  dbglog "to create ${INSTALLER_PACKAGE}. PackageMaker will always crash when"
+  dbglog "${INSTALLER_PMDOC} is built from the command line."
+}
+
 # WebM components installer project and output package file names.
-readonly WEBM_PMDOC="webm_component_install.pmdoc"
-readonly WEBM_PACKAGE="webm_component_installer.pkg"
+readonly WEBM_INSTALLER_PMDOC="webm_component_install.pmdoc"
+readonly WEBM_INSTALLER_PACKAGE="webm_component_installer.pkg"
+
+# WebM components updater project and output package file names.
+readonly WEBM_UPDATER_PMDOC="webm_component_update.pmdoc"
+readonly WEBM_UPDATER_PACKAGE="WebM QuickTime Updater.pkg"
 
 # XiphQT components installer project and output package file names.
-readonly XIPHQT_PMDOC="xiphqt_component_install.pmdoc"
-readonly XIPHQT_PACKAGE="xiphqt_component_installer.pkg"
+readonly XIPHQT_INSTALLER_PMDOC="xiphqt_component_install.pmdoc"
+readonly XIPHQT_INSTALLER_PACKAGE="xiphqt_component_installer.pkg"
 
-# Full installer project and output package file names.
-readonly INSTALLER_PMDOC="installer.pmdoc"
-readonly INSTALLER_PACKAGE="WebM QuickTime Installer.mpkg"
+# XiphQT components updater project and output package file names.
+readonly XIPHQT_UPDATER_PMDOC="xiphqt_component_update.pmdoc"
+readonly XIPHQT_UPDATER_PACKAGE="XiphQT Updater.pkg"
 
-build_installer "${WEBM_PMDOC}" "${WEBM_PACKAGE}"
-build_installer "${XIPHQT_PMDOC}" "${XIPHQT_PACKAGE}"
-
-# Nice long note about PackageMaker manual build requirements. Why, oh why,
-# does the stupid thing have to crash _every_ time when used on the command
-# line.
-dbglog "${INSTALLER_PMDOC} must be opened in PackageMaker and built manually"
-dbglog "to create ${INSTALLER_PACKAGE}. PackageMaker will always crash when"
-dbglog "${INSTALLER_PMDOC} is built from the command line."
+if [[ -z "$1" ]] || [[ "$1" == "all" ]]; then
+  build_installer "${WEBM_INSTALLER_PMDOC}" "${WEBM_INSTALLER_PACKAGE}"
+  build_installer "${WEBM_UPDATER_PMDOC}" "${WEBM_UPDATER_PACKAGE}"
+  build_installer "${XIPHQT_INSTALLER_PMDOC}" "${XIPHQT_INSTALLER_PACKAGE}"
+  build_installer "${XIPHQT_UPDATER_PMDOC}" "${XIPHQT_UPDATER_PACKAGE}"
+  show_full_installer_warning
+elif [[ "$1" == "full" ]]; then
+  build_installer "${WEBM_INSTALLER_PMDOC}" "${WEBM_INSTALLER_PACKAGE}"
+  build_installer "${XIPHQT_INSTALLER_PMDOC}" "${XIPHQT_INSTALLER_PACKAGE}"
+  show_full_installer_warning
+elif [[ "$1" == "webm" ]]; then
+  build_installer "${WEBM_INSTALLER_PMDOC}" "${WEBM_INSTALLER_PACKAGE}"
+  build_installer "${WEBM_UPDATER_PMDOC}" "${WEBM_UPDATER_PACKAGE}"
+elif [[ "$1" == "xiph" ]]; then
+  build_installer "${XIPHQT_INSTALLER_PMDOC}" "${XIPHQT_INSTALLER_PACKAGE}"
+  build_installer "${XIPHQT_UPDATER_PMDOC}" "${XIPHQT_UPDATER_PACKAGE}"
+fi
 
 dbglog "Done."
