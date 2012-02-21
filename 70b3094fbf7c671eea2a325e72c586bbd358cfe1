@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//p+U\u003d",
+        "filename": "installer/scripts/build/build_dmg.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000856
+      },
+      "writtenOn": "2012-02-21T17:51:54Z",
+      "side": 1,
+      "message": "should find a way to factor out the common parts of these build_*_dmg() functions.",
+      "revId": "70b3094fbf7c671eea2a325e72c586bbd358cfe1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
