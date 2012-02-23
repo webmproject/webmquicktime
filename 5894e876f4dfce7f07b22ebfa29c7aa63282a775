@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//nyU\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T18:49:40Z",
+      "side": 1,
+      "message": "why are you $()ing these? you don\u0027t need the output; just call the command and have it output things",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//nyQ\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T18:49:40Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//nyM\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T18:49:40Z",
+      "side": 1,
+      "message": "and here",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//nxw\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T18:49:40Z",
+      "side": 1,
+      "message": "just FYI getopt does some manner of this, allowing long options to be abbreviated if unambiguous",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//nyI\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T18:49:40Z",
+      "side": 1,
+      "message": "and here",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
