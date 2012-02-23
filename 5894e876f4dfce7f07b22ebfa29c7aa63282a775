@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//npk\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-23T20:08:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//nyU\u003d",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//nyQ\u003d",
         "filename": "installer/scripts/build/read_bundle_plist.sh",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2012-02-23T18:49:40Z",
       "side": 1,
       "message": "same here",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//npg\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-23T20:08:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//nyQ\u003d",
       "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//npc\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-23T20:08:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//nyM\u003d",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//nxw\u003d",
         "filename": "installer/scripts/build/read_bundle_plist.sh",
         "patchSetId": 5
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//npQ\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-23T20:08:25Z",
+      "side": 1,
+      "message": "Will read docs on getopt before next script w/command line parsing :)",
+      "parentUuid": "AAAAHn//nxw\u003d",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//nyI\u003d",
         "filename": "installer/scripts/build/read_bundle_plist.sh",
         "patchSetId": 5
@@ -81,6 +153,24 @@
       "writtenOn": "2012-02-23T18:49:40Z",
       "side": 1,
       "message": "and here",
+      "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//npM\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-23T20:08:25Z",
+      "side": 1,
+      "message": "possibly stupid bash question...\nThe above gives me a single line of output like this:\nbundle.id 1.0\n\nIs there a better way of doing that, or is echo/$() abuse what I want?",
+      "parentUuid": "AAAAHn//nyI\u003d",
       "revId": "5894e876f4dfce7f07b22ebfa29c7aa63282a775",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
