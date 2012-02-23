@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//na8\u003d",
+        "filename": "installer/scripts/build/util.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1000856
+      },
+      "writtenOn": "2012-02-23T23:06:59Z",
+      "side": 1,
+      "message": "you\u0027re having entirely too much fun with these ANSI sequences :)",
+      "revId": "8254fe9e17d2b3c987b7877adb6496bee6b5b450",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
