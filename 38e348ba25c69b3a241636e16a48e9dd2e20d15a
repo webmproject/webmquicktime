@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//nWU\u003d",
+        "filename": "installer/scripts/build/build_dmg.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-23T23:44:32Z",
+      "side": 1,
+      "message": "Usage comment.",
+      "revId": "38e348ba25c69b3a241636e16a48e9dd2e20d15a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
