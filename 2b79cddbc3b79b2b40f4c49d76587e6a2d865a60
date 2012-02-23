@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//nmM\u003d",
+        "filename": "installer/scripts/build/generate_omaha_config.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T20:40:06Z",
+      "side": 1,
+      "message": "you might want -x instead, but I guess the invocation would cause an error in that case.",
+      "revId": "2b79cddbc3b79b2b40f4c49d76587e6a2d865a60",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
