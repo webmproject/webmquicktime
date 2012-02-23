@@ -53,6 +53,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//nwU\u003d",
+        "filename": "installer/scripts/build/util.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-23T19:46:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//nzk\u003d",
+      "revId": "91421eeccbe1d7222ad6f65b4ffc5132861bf101",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//nzg\u003d",
         "filename": "installer/scripts/build/util.sh",
         "patchSetId": 4
@@ -64,6 +82,24 @@
       "writtenOn": "2012-02-23T18:40:06Z",
       "side": 1,
       "message": "ditto",
+      "revId": "91421eeccbe1d7222ad6f65b4ffc5132861bf101",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//nwQ\u003d",
+        "filename": "installer/scripts/build/util.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-23T19:46:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//nzg\u003d",
       "revId": "91421eeccbe1d7222ad6f65b4ffc5132861bf101",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
