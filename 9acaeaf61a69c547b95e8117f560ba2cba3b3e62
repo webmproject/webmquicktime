@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//oLs\u003d",
+        "filename": "installer/scripts/build/util.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T07:46:34Z",
+      "side": 1,
+      "message": "embedding control characters seems fragile to me. everything is bash dependent anyway, so builtin echo -e with \\e\u0027s should do.",
+      "revId": "9acaeaf61a69c547b95e8117f560ba2cba3b3e62",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//oLY\u003d",
+        "filename": "installer/scripts/build/util.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T07:46:34Z",
+      "side": 1,
+      "message": "ERROR: ?\ni.e., s/,/:/",
+      "revId": "9acaeaf61a69c547b95e8117f560ba2cba3b3e62",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//oLo\u003d",
+        "filename": "installer/scripts/build/util.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T07:46:34Z",
+      "side": 1,
+      "message": "return isn\u0027t strictly necessary. the return value from the last command should be returned\n\nalso test is a builtin so $() shouldn\u0027t be needed either",
+      "revId": "9acaeaf61a69c547b95e8117f560ba2cba3b3e62",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
