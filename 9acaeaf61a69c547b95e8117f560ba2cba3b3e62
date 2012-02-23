@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//nzs\u003d",
+        "filename": "installer/scripts/build/util.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-23T18:40:11Z",
+      "side": 1,
+      "message": "Your preference I guess. Usually red is enough given it will be the last message printed.",
+      "parentUuid": "AAAAHn//n8c\u003d",
+      "revId": "9acaeaf61a69c547b95e8117f560ba2cba3b3e62",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//oLo\u003d",
         "filename": "installer/scripts/build/util.sh",
         "patchSetId": 2
