@@ -13,15 +13,16 @@
 # GoogleSoftwareUpdate.pkg
 set -e
 
-dbglog() {
-  echo "build_installers: $@"
-}
-
-readonly PKGMAKER="/Developer/usr/bin/packagemaker"
-if [[ ! -e "${PKGMAKER}" ]]; then
-  dbglog "ERROR, ${PKGMAKER} does not exist."
+if [[ $(basename $(pwd)) != "installer" ]] || \
+    [[ $(basename $(dirname $(pwd))) != "webmquicktime" ]]; then
+  echo "$(basename $0) must be run from webmquicktime/installer"
   exit 1
 fi
+
+source scripts/build/util.sh
+
+readonly PKGMAKER="/Developer/usr/bin/packagemaker"
+file_exists "${PKGMAKER}" || die "${PKGMAKER} does not exist."
 
 build_installer() {
   local readonly PMDOC="$1"
@@ -29,10 +30,7 @@ build_installer() {
   local readonly RM="rm -r -f"
 
   # Confirm the pmdoc exists.
-  if [[ ! -e "${PMDOC}" ]]; then
-    dbglog "ERROR, PMDOC ${PMDOC} does not exist!"
-    exit 1
-  fi
+  file_exists "${PMDOC}" || die "${PMDOC} does not exist!"
 
   # Delete the output package if it exists.
   if [[ -e "${PACKAGE}" ]]; then
@@ -43,12 +41,9 @@ build_installer() {
   ${PKGMAKER} -d "${PMDOC}" -o "${PACKAGE}"
 
   # Confirm that the package was built.
-  if [[ ! -e "${PACKAGE}" ]]; then
-    dbglog "ERROR, build failed for PACKAGE ${PACKAGE}!"
-    exit 1
-  fi
+  file_exists "${PACKAGE}"|| die "${PACKAGE} build failed."
 
-  dbglog "${PACKAGE} build successful."
+  debuglog "${PACKAGE} build successful."
 }
 
 show_full_installer_warning() {
@@ -59,9 +54,9 @@ show_full_installer_warning() {
   # Nice long note about PackageMaker manual build requirements. Why, oh why,
   # does the stupid thing have to crash _every_ time when used on the command
   # line.
-  dbglog "${INSTALLER_PMDOC} must be opened in PackageMaker and built manually"
-  dbglog "to create ${INSTALLER_PACKAGE}. PackageMaker will always crash when"
-  dbglog "${INSTALLER_PMDOC} is built from the command line."
+  debuglog "${INSTALLER_PMDOC} must be opened in PackageMaker and built manually"
+  debuglog "to create ${INSTALLER_PACKAGE}. PackageMaker will always crash when"
+  debuglog "${INSTALLER_PMDOC} is built from the command line."
 }
 
 # WebM components installer project and output package file names.
@@ -98,4 +93,4 @@ elif [[ "$1" == "xiph" ]]; then
   build_installer "${XIPHQT_UPDATER_PMDOC}" "${XIPHQT_UPDATER_PACKAGE}"
 fi
 
-dbglog "Done."
+debuglog "Done."
