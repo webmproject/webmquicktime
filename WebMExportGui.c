@@ -16,6 +16,7 @@
 #include <QuickTimeComponents.h>
 #endif
 
+#include "bundle_info.h"
 #include "log.h"
 #include "WebMExportVersions.h"
 
@@ -25,7 +26,7 @@ ComponentResult getWindow(WindowRef *window)
     CFBundleRef bundle = NULL;
     IBNibRef    nibRef = NULL;
 
-    bundle = CFBundleGetBundleWithIdentifier(CFSTR(kWebMExportBundleID));
+    bundle = CFBundleGetBundleWithIdentifier(CFSTR(kWebmBundleId));
 
     if (bundle == NULL)
     {

@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 
+#include "bundle_info.h"
 #include "log.h"
 #include "Raw_debug.h"
 
@@ -29,8 +30,6 @@
 
 #include "VP8Encoder.h"
 #include "VP8EncoderGui.h"
-#include "WebMExportStructs.h"
-#include "WebMExportGuiVideo.h"
 
 static void setUIntFromControl(UInt32 * i, WindowRef w, int id)
 {
@@ -147,7 +146,7 @@ static ComponentResult GetWindowAdvanced(WindowRef *window)
     CFBundleRef bundle = NULL;
     IBNibRef    nibRef = NULL;
 
-    bundle = CFBundleGetBundleWithIdentifier(CFSTR(kWebMExportBundleID));
+    bundle = CFBundleGetBundleWithIdentifier(CFSTR(kWebmBundleId));
 
     if (bundle == NULL)
     {

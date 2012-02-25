@@ -76,6 +76,7 @@
 		10D73AE6124D4A2A00673FEC /* mkvreaderqt.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = mkvreaderqt.hpp; sourceTree = "<group>"; };
 		374E1CE713FD7BFB00A14F1C /* libvpx.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libvpx.xcodeproj; path = external/libvpx.xcodeproj; sourceTree = "<group>"; };
 		374E201313FD891100A14F1C /* libwebm.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libwebm.xcodeproj; path = external/libwebm.xcodeproj; sourceTree = "<group>"; };
+		6A0610C214F731A4003AC5D2 /* bundle_info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bundle_info.h; sourceTree = "<group>"; };
 		8D01CCD10486CAD60068D4B7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D01CCD20486CAD60068D4B7 /* AWebM.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWebM.component; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB124ADE12392B0300A26F24 /* VP8EncoderGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VP8EncoderGui.h; sourceTree = "<group>"; };
@@ -307,6 +308,7 @@
 				BB9815BC11FF1C5F0031AA75 /* Raw_debug.h */,
 				BB9815BD11FF1C5F0031AA75 /* VP8Codec_Prefix.pch */,
 				BB9815BE11FF1C5F0031AA75 /* VP8CodecVersion.h */,
+				6A0610C214F731A4003AC5D2 /* bundle_info.h */,
 			);
 			name = Common;
 			sourceTree = "<group>";

@@ -10,13 +10,8 @@
 #ifndef _WEBMEXPORTGUIVIDEO_H_
 #define _WEBMEXPORTGUIVIDEO_H_ 1
 
-#if !defined(kWebMExportBundleID)
-#define kWebMExportBundleID "org.webmproject.webmquicktime.component"
-#endif
-
 ComponentResult getDefaultVP8Atom(WebMExportGlobalsPtr globals);
 ComponentResult OpenVP8Dlg(WebMExportGlobalsPtr globals, WindowRef window);
 ComponentResult getVideoComponentInstace(WebMExportGlobalsPtr glob, ComponentInstance *videoCI);
-
 
 #endif
