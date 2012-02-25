@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//lpk\u003d",
+        "filename": "keystone_util.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-25T03:35:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//lqw\u003d",
+      "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//lqU\u003d",
         "filename": "keystone_util.cpp",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2012-02-25T03:20:38Z",
       "side": 1,
       "message": "careful. npos+1 will equal 0; you should check for it explicitly or break below.",
+      "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//lpQ\u003d",
+        "filename": "keystone_util.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-25T03:35:22Z",
+      "side": 1,
+      "message": "Damn. I originally wrote the loop as for (;;), and forgot to check npos when I switched over to this version. Done.",
+      "parentUuid": "AAAAHn//lqU\u003d",
       "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//lpM\u003d",
+        "filename": "keystone_util.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-25T03:35:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//lqg\u003d",
+      "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//lqE\u003d",
         "filename": "keystone_util.cpp",
         "patchSetId": 4
@@ -64,6 +118,24 @@
       "writtenOn": "2012-02-25T03:20:38Z",
       "side": 1,
       "message": "mode_t",
+      "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//lpw\u003d",
+        "filename": "keystone_util.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-25T03:35:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//lqE\u003d",
       "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//lps\u003d",
+        "filename": "keystone_util.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-25T03:35:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//lqA\u003d",
+      "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//lp8\u003d",
         "filename": "keystone_util.cpp",
         "patchSetId": 4
@@ -98,6 +188,24 @@
       "writtenOn": "2012-02-25T03:20:38Z",
       "side": 1,
       "message": "necessary?\n\n\"\"\"\n If O_CREAT is set and the file did not previously exist, upon successful completion, open() shall mark for update the st_atime, st_ctime, and st_mtime fields of the file and the st_ctime and st_mtime fields of the  parent  direc‐\n       tory.\n\"\"\"",
+      "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//lpo\u003d",
+        "filename": "keystone_util.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-25T03:35:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//lp8\u003d",
       "revId": "8131ed83e6cd28571c05133c8df624af016c3cc2",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
