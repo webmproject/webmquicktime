@@ -13,6 +13,7 @@
 #include <QuickTimeComponents.h>
 #endif
 
+#include "keystone_util.h"
 #include "log.h"
 #include "WebMExportStructs.h"
 #include "WebMExportVersions.h"
@@ -80,6 +81,8 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr store, ComponentInsta
   ComponentResult err;
 
   dbg_printf("[WebM -- %08lx] Open()\n", (UInt32) store);
+
+  TouchActivityFile();
 
   store = (WebMExportGlobalsPtr) NewPtrClear(sizeof(WebMExportGlobals));
   err = MemError();
