@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//luM\u003d",
+        "filename": "bundle_info.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-25T02:39:26Z",
+      "side": 1,
+      "message": "not overly important, but can this be static const char*?",
+      "revId": "6d3c92c961524bf6c067600d46418cc992977177",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
