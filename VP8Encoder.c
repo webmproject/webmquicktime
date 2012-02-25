@@ -22,6 +22,7 @@
 #endif
 
 #include "log.h"
+#include "keystone_util.h"
 #include "Raw_debug.h"
 
 
@@ -70,6 +71,8 @@ VP8_Encoder_Open(
 {
   ComponentResult err = noErr;
   dbg_printf("[vp8e - %08lx] Open Called\n", (UInt32)glob);
+
+  TouchActivityFile();
 
   glob = calloc(sizeof(VP8EncoderGlobalsRecord), 1);
 
