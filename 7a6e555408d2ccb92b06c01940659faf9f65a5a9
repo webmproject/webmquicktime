@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//lo4\u003d",
+        "filename": "keystone_util.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-25T03:43:38Z",
+      "side": 1,
+      "message": "oh sorry. misleading comment by me. actually the increment will happen first so pos will roll then the check will be done.",
+      "revId": "7a6e555408d2ccb92b06c01940659faf9f65a5a9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//lo0\u003d",
+        "filename": "keystone_util.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 150,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-25T03:43:38Z",
+      "side": 1,
+      "message": "const",
+      "revId": "7a6e555408d2ccb92b06c01940659faf9f65a5a9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
