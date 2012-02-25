@@ -16,6 +16,24 @@
       "revId": "6d3c92c961524bf6c067600d46418cc992977177",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//ls0\u003d",
+        "filename": "bundle_info.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-02-25T02:43:57Z",
+      "side": 1,
+      "message": "Yes, in a sane world. Given this is QuickTime, I don\u0027t want to touch it because it gets used w/CFSTR and other evil things. Not sure if it\u0027s really safe to change.",
+      "parentUuid": "AAAAHn//luM\u003d",
+      "revId": "6d3c92c961524bf6c067600d46418cc992977177",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
