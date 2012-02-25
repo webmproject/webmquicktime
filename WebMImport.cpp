@@ -41,6 +41,7 @@
 #include "mkvparser.hpp"
 #include "mkvreaderqt.hpp"
 
+#include "keystone_util.h"
 #include "log.h"
 
 
@@ -205,6 +206,8 @@ pascal ComponentResult WebMImportOpen(WebMImportGlobals store,
                                       ComponentInstance self) {
   OSErr err;
   dbg_printf("[WebM Import]  >> [%08lx] :: Open()\n", (UInt32) store);
+
+  TouchActivityFile();
 
   store = (WebMImportGlobals) NewPtrClear(sizeof(WebMImportGlobalsRec));
   if ((err = MemError()) == noErr) {

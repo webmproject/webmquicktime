@@ -21,15 +21,14 @@
 #include <ImageCodec.h>
 #endif
 
+#include "keystone_util.h"
 #include "log.h"
 #include "Raw_debug.h"
-
 
 #include "VP8CodecVersion.h"
 #include "VP8Encoder.h"
 #include "VP8EncoderEncode.h"
 #include "VP8EncoderGui.h"
-
 
 // Setup required for ComponentDispatchHelper.c
 #define IMAGECODEC_BASENAME()       VP8_Encoder_
@@ -70,6 +69,8 @@ VP8_Encoder_Open(
 {
   ComponentResult err = noErr;
   dbg_printf("[vp8e - %08lx] Open Called\n", (UInt32)glob);
+
+  TouchActivityFile();
 
   glob = calloc(sizeof(VP8EncoderGlobalsRecord), 1);
 

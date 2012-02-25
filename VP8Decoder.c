@@ -20,6 +20,7 @@
 #include "vpx/vpx_codec_impl_top.h"
 #include "vpx/vpx_codec_impl_bottom.h"
 #include "vpx/vp8dx.h"
+#include "keystone_util.h"
 #include "log.h"
 
 #include "VP8CodecVersion.h"
@@ -89,8 +90,10 @@ typedef struct
 // Component Open Request - Required
 pascal ComponentResult VP8_Decoder_Open(VP8DecoderGlobals glob, ComponentInstance self)
 {
-  dbg_printf("[vp8d - %08lx] VP8_Decoder_Open\n", (UInt32) glob);
   ComponentResult err;
+  dbg_printf("[vp8d - %08lx] VP8_Decoder_Open\n", (UInt32) glob);
+
+  TouchActivityFile();
 
   // Allocate memory for our globals, set them up and inform the component manager that we've done so
   glob = calloc(sizeof(VP8DecoderGlobalsRecord), 1);
