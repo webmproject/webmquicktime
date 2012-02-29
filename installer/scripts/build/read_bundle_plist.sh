@@ -23,7 +23,13 @@ readonly PLIST_BUDDY="/usr/local/bin/PlistBuddy"
 read_bundle_info() {
   local readonly NAME="$1"
   local readonly COMMAND="Print :CFBundle${NAME}"
-  local readonly PLIST_PATH="${BUNDLE}/Contents/Info.plist"
+  # When |BUNDLE| file name is a plist file, just read from the plist file.
+  if [[ "$(basename "${BUNDLE}")" =~ \.plist$ ]]; then
+    local readonly PLIST_PATH="${BUNDLE}"
+  else
+    local readonly PLIST_PATH="${BUNDLE}/Contents/Info.plist"
+  fi
+  [[ -n "${NAME}" ]] || die "missing command name in ${FUNCNAME}."
   file_exists "${PLIST_PATH}" || die "${PLIST_PATH} does not exist."
   ${PLIST_BUDDY} -c "${COMMAND}" "${PLIST_PATH}"
 }
