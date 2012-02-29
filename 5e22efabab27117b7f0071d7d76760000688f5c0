@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//ijA\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-02-29T20:14:50Z",
+      "side": 1,
+      "message": "basename is probably unnecessary considering you\u0027re testing the end of the string",
+      "revId": "5e22efabab27117b7f0071d7d76760000688f5c0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
