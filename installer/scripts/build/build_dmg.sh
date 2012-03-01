@@ -52,19 +52,10 @@ build_dmg() {
   local readonly PKG_FILE="$3"
   local readonly COPY_XIPH_LICENSES="$4"
 
-  if [[ -z "${DMG_FILE}" ]]; then
-    die "${FUNCNAME}: DMG file name empty."
-  fi
+  [[ -n "${DMG_FILE}" ]] || die "DMG file name empty in ${FUNCNAME}."
+  [[ -n "${VOL_NAME}" ]] || die "Volume name empty in ${FUNCNAME}."
+  file_exists "${PKG_FILE}" || die "${PKG_FILE} does not exist in ${FUNCNAME}."
 
-  if [[ -z "${VOL_NAME}" ]]; then
-    die "${FUNCNAME}: Volume name empty."
-  fi
-
-  if [[ -z "${PKG_FILE}" ]]; then
-    die "${FUNCNAME}: package file name empty."
-  fi
-
-  file_exists "${PKG_FILE}" || die "${PKG_FILE} does not exist."
   copy_uninstaller
 
   if [[ -n "${COPY_XIPH_LICENSES}" ]]; then
@@ -124,16 +115,28 @@ if [[ ! -e "${UNINSTALL_APP}" ]]; then
   scripts/build/build_uninstaller.sh
 fi
 
-readonly WEBM_DMG_FILE="webm_quicktime_installer.dmg"
+# Read the component version strings.
+readonly READ_PLIST="scripts/build/read_bundle_plist.sh"
+readonly WEBM_PLIST="../Info.plist"
+readonly WEBM_VERSION="$(${READ_PLIST} ${WEBM_PLIST} v)"
+readonly XIPHQT_COMPONENT="../third_party/xiphqt/XiphQT.component"
+readonly XIPHQT_VERSION="$(${READ_PLIST} ${XIPHQT_COMPONENT} v)"
+
+# Confirm the version strings are non-zero length.
+[[ -n "${WEBM_VERSION}" ]] || die "empty WebM version string."
+[[ -n "${XIPHQT_VERSION}" ]] || die "empty XiphQT version string."
+
+readonly WEBM_DMG_FILE="webm_quicktime_installer_${WEBM_VERSION}.dmg"
 readonly WEBM_NAME="WebM QuickTime Installer"
 readonly WEBM_MPKG="${WEBM_NAME}.mpkg"
-readonly WEBM_UPDATE_DMG_FILE="webm_quicktime_updater.dmg"
+readonly WEBM_UPDATE_DMG_FILE="webm_quicktime_updater_${WEBM_VERSION}.dmg"
 readonly WEBM_UPDATE_NAME="WebM QuickTime Updater"
 readonly WEBM_UPDATE_PKG="${WEBM_UPDATE_NAME}.pkg"
-readonly XIPHQT_DMG_FILE="xiphqt_updater.dmg"
+readonly XIPHQT_DMG_FILE="xiphqt_updater_${XIPHQT_VERSION}.dmg"
 readonly XIPHQT_NAME="XiphQT Updater"
 readonly XIPHQT_PKG="${XIPHQT_NAME}.pkg"
 
+# Build the DMG files.
 if [[ -z "$1" ]] || [[ "$1" == "all" ]]; then
   debuglog "Building all disk images."
   build_dmg "${WEBM_DMG_FILE}" "${WEBM_NAME}" "${WEBM_MPKG}" xiph
