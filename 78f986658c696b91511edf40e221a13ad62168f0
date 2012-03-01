@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//hRY\u003d",
+        "filename": "installer/scripts/build/read_bundle_plist.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-03-01T21:14:37Z",
+      "side": 1,
+      "message": "I think you\u0027re trying to test for sourcing in the current shell with this. I\u0027ve seen, e.g., \u0027/bin/bash\u0027 \u0026 \u0027bash\u0027 returned for this as well.\n\nAnother option might be to add a \u0027sourced\u0027 argument. Though this looks like it will work well enough.",
+      "revId": "78f986658c696b91511edf40e221a13ad62168f0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
