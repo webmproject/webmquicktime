@@ -21,6 +21,7 @@ if [[ $(basename $(pwd)) != "installer" ]] || \
   exit 1
 fi
 
+source scripts/build/read_bundle_plist.sh
 source scripts/build/util.sh
 file_exists "$(which openssl)" || die "openssl does not exist in PATH."
 
@@ -42,11 +43,9 @@ generate_config() {
   [[ -n "${CONFIG_NAME}" ]] || die "empty CONFIG_NAME in ${FUNCNAME}."
 
   # Read the application ID and version from |COMPONENT|.
-  local readonly READ_PLIST="scripts/build/read_bundle_plist.sh"
-  file_exists "${READ_PLIST}" || die "${READ_PLIST} does not exist."
-  local readonly BUNDLE_ID=$(${READ_PLIST} "${COMPONENT}" id)
+  local readonly BUNDLE_ID=$(read_bundle_id "${COMPONENT}")
   [[ -n "${BUNDLE_ID}" ]] || die "empty BUNDLE_ID in ${FUNCNAME}."
-  local readonly VERSION=$(${READ_PLIST} "${COMPONENT}" v)
+  local readonly VERSION=$(read_bundle_version "${COMPONENT}")
   [[ -n "${VERSION}" ]] || die "empty VERSION in ${FUNCNAME}."
 
   # TODO(tomfinegan): Integrate the DMG build and config generation, and pass
