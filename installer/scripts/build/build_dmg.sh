@@ -29,6 +29,7 @@ if [[ $(basename $(pwd)) != "installer" ]] || \
   exit 1
 fi
 
+source scripts/build/read_bundle_plist.sh
 source scripts/build/util.sh
 readonly BACKGROUND_IMAGE="Background.png"
 readonly INSTALLER_DIR="$(pwd)"
@@ -116,11 +117,10 @@ if [[ ! -e "${UNINSTALL_APP}" ]]; then
 fi
 
 # Read the component version strings.
-readonly READ_PLIST="scripts/build/read_bundle_plist.sh"
 readonly WEBM_PLIST="../Info.plist"
-readonly WEBM_VERSION="$(${READ_PLIST} ${WEBM_PLIST} v)"
+readonly WEBM_VERSION="$(read_bundle_version ${WEBM_PLIST})"
 readonly XIPHQT_COMPONENT="../third_party/xiphqt/XiphQT.component"
-readonly XIPHQT_VERSION="$(${READ_PLIST} ${XIPHQT_COMPONENT} v)"
+readonly XIPHQT_VERSION="$(read_bundle_version ${XIPHQT_COMPONENT})"
 
 # Confirm the version strings are non-zero length.
 [[ -n "${WEBM_VERSION}" ]] || die "empty WebM version string."
