@@ -116,6 +116,8 @@ typedef struct
   Movie              setdlg_movie;
   Track              setdlg_track;
 
+  Boolean            bCanExportAudio;
+
 } WebMExportGlobals, *WebMExportGlobalsPtr;
 
 #endif /* __exporter_types_h__ */

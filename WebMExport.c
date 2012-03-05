@@ -15,14 +15,13 @@
 
 #include "keystone_util.h"
 #include "log.h"
+#include "quicktime_util.h"
 #include "WebMExportStructs.h"
 #include "WebMExportVersions.h"
 #include "VP8CodecVersion.h"
 #include "WebMExport.h"
-
-
-
 #include "WebMExportGui.h"
+
 /* component selector methods, TODO find out why only these 3 need to be declared */
 pascal ComponentResult WebMExportGetComponentPropertyInfo(WebMExportGlobalsPtr   store,
                                                           ComponentPropertyClass inPropClass,
@@ -115,6 +114,10 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr store, ComponentInsta
     store->bMovieHasVideo = true;
 
     store->webmTimeCodeScale = 1000000; ///TODO figure out about how to use this
+
+    store->bCanExportAudio = CanExportVorbisAudio();
+    dbg_printf("[WebMExport:%s] bCanExportAudio=%s\n", __func__,
+        (store->bCanExportAudio ? "true" : "false"));
 
     SetComponentInstanceStorage(self, (Handle) store);
 
