@@ -15,11 +15,11 @@
 
 #include "keystone_util.h"
 #include "log.h"
+#include "quicktime_util.h"
 #include "WebMExportStructs.h"
 #include "WebMExportVersions.h"
 #include "VP8CodecVersion.h"
 #include "WebMExport.h"
-
 
 
 #include "WebMExportGui.h"
@@ -115,6 +115,11 @@ pascal ComponentResult WebMExportOpen(WebMExportGlobalsPtr store, ComponentInsta
     store->bMovieHasVideo = true;
 
     store->webmTimeCodeScale = 1000000; ///TODO figure out about how to use this
+
+    store->can_export_audio = CanExportVorbisAudio();
+    dbg_printf("[WebMExport:%s] can_export_audio=%s\n", __func__,
+        (store->can_export_audio ? "true" : "false"));
+    store->can_export_audio = true;
 
     SetComponentInstanceStorage(self, (Handle) store);
 

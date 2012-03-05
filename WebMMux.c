@@ -102,7 +102,7 @@ static ComponentResult _writeTracks(WebMExportGlobalsPtr globals, EbmlGlobal *eb
                         0, /*flag lacing*/
                         "V_VP8", id->width, id->height, fps);
       }
-      else if (gs->trackType == SoundMediaType)
+      else if (gs->trackType == SoundMediaType && globals->can_export_audio)
       {
         AudioStreamPtr as = &gs->aud;
         unsigned int trackNumber;
