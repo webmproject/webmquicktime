@@ -13,6 +13,7 @@
 		374E201D13FD898300A14F1C /* libwebm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 374E201813FD891100A14F1C /* libwebm.a */; };
 		374E203513FD8B4400A14F1C /* libvpx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BB98158C11FF19600031AA75 /* libvpx.a */; };
 		6A0610C114F72EFB003AC5D2 /* keystone_util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A0610C014F72EFB003AC5D2 /* keystone_util.cpp */; };
+		6A22654C150566BF007BE07A /* quicktime_util.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6A22654B150566BF007BE07A /* quicktime_util.cc */; };
 		8D01CCCA0486CAD60068D4B7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D01CCCE0486CAD60068D4B7 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		BB124AE012392B0300A26F24 /* VP8EncoderGui.c in Sources */ = {isa = PBXBuildFile; fileRef = BB124ADF12392B0300A26F24 /* VP8EncoderGui.c */; };
@@ -80,6 +81,8 @@
 		6A0610BF14F72EFB003AC5D2 /* keystone_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keystone_util.h; sourceTree = "<group>"; };
 		6A0610C014F72EFB003AC5D2 /* keystone_util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = keystone_util.cpp; sourceTree = "<group>"; };
 		6A0610C214F731A4003AC5D2 /* bundle_info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bundle_info.h; sourceTree = "<group>"; };
+		6A22654A150566BF007BE07A /* quicktime_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = quicktime_util.h; sourceTree = "<group>"; };
+		6A22654B150566BF007BE07A /* quicktime_util.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = quicktime_util.cc; sourceTree = "<group>"; };
 		8D01CCD10486CAD60068D4B7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D01CCD20486CAD60068D4B7 /* AWebM.component */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AWebM.component; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB124ADE12392B0300A26F24 /* VP8EncoderGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VP8EncoderGui.h; sourceTree = "<group>"; };
@@ -321,6 +324,8 @@
 		BB9817C811FF47060031AA75 /* Mux */ = {
 			isa = PBXGroup;
 			children = (
+				6A22654A150566BF007BE07A /* quicktime_util.h */,
+				6A22654B150566BF007BE07A /* quicktime_util.cc */,
 				BB98159411FF1BCF0031AA75 /* WebMAudioStream.h */,
 				BB98159311FF1BCF0031AA75 /* WebMAudioStream.c */,
 				BB9815A611FF1BCF0031AA75 /* WebMVideoStream.h */,
@@ -463,6 +468,7 @@
 				103EF9A5128B2DC60032CEE6 /* WebMImport.cpp in Sources */,
 				103EF9A6128B2DCB0032CEE6 /* mkvreaderqt.cpp in Sources */,
 				6A0610C114F72EFB003AC5D2 /* keystone_util.cpp in Sources */,
+				6A22654C150566BF007BE07A /* quicktime_util.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
