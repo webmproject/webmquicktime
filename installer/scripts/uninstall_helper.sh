@@ -34,16 +34,19 @@ delete_component () {
     dbglog "${BUNDLE} does not exist."
   fi
 
-  # Always unregister the component bundle ID; the user might have manually
-  # deleted the component.
-  local readonly KEYSTONE="/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin"
-  if [[ -e "${KEYSTONE}" ]]; then
-    dbglog "${KEYSTONE} --delete --productid ${BUNDLE_ID}"
-    ${KEYSTONE} --delete --productid ${BUNDLE_ID}
+  # Only the WebM bundle is registered with keystone, so unregister only when
+  # |BUNDLE_ID| and |WEBM_ID| match.
+  if [[ "${BUNDLE_ID}" == "${WEBM_ID}" ]]; then
+    # Don't bother checking if the bundle exists-- always unregister the WebM
+    # component bundle ID; the user might have manually deleted the component.
+    local readonly KEYSTONE="/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin"
+    if [[ -e "${KEYSTONE}" ]]; then
+      dbglog "${KEYSTONE} --delete --productid ${BUNDLE_ID}"
+      ${KEYSTONE} --delete --productid ${BUNDLE_ID}
+    fi
   fi
 
-  # Same for the package receipt; always remove it from the package receipt
-  # data base.
+  # Always remove receipt from the package receipt database.
   local readonly PKGUTIL="/usr/sbin/pkgutil"
   local readonly PACKAGE_ID_SUFFIX=".pkg"
   local readonly PACKAGE_ID="${BUNDLE_ID}${PACKAGE_ID_SUFFIX}"

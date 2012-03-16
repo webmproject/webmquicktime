@@ -12,7 +12,7 @@ readonly QT_SYS_PATH="/Library/QuickTime/"
 readonly WEBM_COMPONENT="AWebM.component"
 readonly WEBM_ID="org.webmproject.webmquicktime.component"
 readonly WEBM_VERSION="0.3.0"
-readonly UPDATE_URL="TODO"
+readonly UPDATE_URL="https://tools.google.com/service/update2"
 
 dbglog() {
   logger "WebM postinstall: $@"
@@ -23,5 +23,5 @@ dbglog "script args=$@"
 ${KEYSTONE} --register \
   --productid "${WEBM_ID}" \
   --version "${WEBM_VERSION}" \
-  --xcpath "${QT_SYS_PATH}{WEBM_COMPONENT}" \
+  --xcpath "${QT_SYS_PATH}${WEBM_COMPONENT}" \
   --url "${UPDATE_URL}"
