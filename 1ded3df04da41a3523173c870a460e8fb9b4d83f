@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//Tb8\u003d",
+        "filename": "installer/ReadMe.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-03-16T18:06:02Z",
+      "side": 1,
+      "message": "\u003e Super long line in the text is to allow wrapping by installer.app-- manually wrapping at 80 col looks wrong in the UI.",
+      "parentUuid": "AAAAHn//TfY\u003d",
+      "revId": "1ded3df04da41a3523173c870a460e8fb9b4d83f",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//TfM\u003d",
         "filename": "installer/ReadMe.txt",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2012-03-16T17:36:41Z",
       "side": 1,
       "message": "Necessary formatting?",
+      "revId": "1ded3df04da41a3523173c870a460e8fb9b4d83f",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//TcE\u003d",
+        "filename": "installer/ReadMe.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-03-16T18:06:02Z",
+      "side": 1,
+      "message": "Inattentive ReadMe writer. Fixed.",
+      "parentUuid": "AAAAHn//TfM\u003d",
       "revId": "1ded3df04da41a3523173c870a460e8fb9b4d83f",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
