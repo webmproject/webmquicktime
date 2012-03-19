@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//RIo\u003d",
+        "filename": "installer/scripts/keystone_install.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-03-19T20:44:39Z",
+      "side": 1,
+      "message": "any need to check the arg count or is this solely called from another script?",
+      "revId": "91897b922f40ae179ae58216f772fd18b86f8b17",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
