@@ -59,6 +59,9 @@ build_dmg() {
 
   copy_uninstaller
 
+  # Copy the update install script.
+  cp -p "scripts/keystone_install.sh" "${TEMP_DIR}/.keystone_install"
+
   if [[ -n "${COPY_XIPH_LICENSES}" ]]; then
     # Copy the XiphQT COPYING.*.txt files.
     copy_xiphqt_licenses
@@ -129,27 +132,7 @@ readonly XIPHQT_VERSION="$(read_bundle_version ${XIPHQT_COMPONENT})"
 readonly WEBM_DMG_FILE="webm_quicktime_installer_${WEBM_VERSION}.dmg"
 readonly WEBM_NAME="WebM QuickTime Installer"
 readonly WEBM_MPKG="${WEBM_NAME}.mpkg"
-readonly WEBM_UPDATE_DMG_FILE="webm_quicktime_updater_${WEBM_VERSION}.dmg"
-readonly WEBM_UPDATE_NAME="WebM QuickTime Updater"
-readonly WEBM_UPDATE_PKG="${WEBM_UPDATE_NAME}.pkg"
-readonly XIPHQT_DMG_FILE="xiphqt_updater_${XIPHQT_VERSION}.dmg"
-readonly XIPHQT_NAME="XiphQT Updater"
-readonly XIPHQT_PKG="${XIPHQT_NAME}.pkg"
 
-# Build the DMG files.
-if [[ -z "$1" ]] || [[ "$1" == "all" ]]; then
-  debuglog "Building all disk images."
-  build_dmg "${WEBM_DMG_FILE}" "${WEBM_NAME}" "${WEBM_MPKG}" xiph
-  build_dmg "${XIPHQT_DMG_FILE}" "${XIPHQT_NAME}" "${XIPHQT_PKG}" xiph
-  build_dmg "${WEBM_UPDATE_DMG_FILE}" "${WEBM_UPDATE_NAME}" \
-      "${WEBM_UPDATE_PKG}"
-elif [[ "$1" =~ webm ]]; then
-  debuglog "Building WebM update disk image."
-  build_dmg "${WEBM_UPDATE_DMG_FILE}" "${WEBM_UPDATE_NAME}" \
-      "${WEBM_UPDATE_PKG}"
-elif [[ "$1" =~ xiph ]]; then
-  debuglog "Building XiphQT update disk image."
-  build_dmg "${XIPHQT_DMG_FILE}" "${XIPHQT_NAME}" "${XIPHQT_PKG}" xiph
-fi
-
+# Build the DMG file.
+build_dmg "${WEBM_DMG_FILE}" "${WEBM_NAME}" "${WEBM_MPKG}" xiph
 debuglog "Done."
