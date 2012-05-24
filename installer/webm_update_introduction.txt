@@ -1,9 +1,0 @@
-Thank you for installing the WebM QuickTime update package.
-
-It contains the latest versions of the following components:
-  VP8 Encoder
-  VP8 Decoder
-  WebM Importer
-  WebM Exporter
-
-These components help support creation and playback of WebM files.

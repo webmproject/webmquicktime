@@ -1,3 +1,0 @@
-Thank you for installing the WebM Project XiphQT update package. It will install the latest version of XiphQT.
-
-This component enables your computer to create and play WebM files in QuickTime applications.
