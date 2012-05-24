@@ -131,7 +131,7 @@ readonly XIPHQT_VERSION="$(read_bundle_version ${XIPHQT_COMPONENT})"
 
 readonly WEBM_DMG_FILE="webm_quicktime_installer_${WEBM_VERSION}.dmg"
 readonly WEBM_NAME="WebM QuickTime Installer"
-readonly WEBM_MPKG="${WEBM_NAME}.mpkg"
+readonly WEBM_PKG="${WEBM_NAME}.pkg"
 
 # Build the DMG file.
 build_dmg "${WEBM_DMG_FILE}" "${WEBM_NAME}" "${WEBM_MPKG}" xiph
