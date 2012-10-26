@@ -33,6 +33,16 @@ Code-Review+2: Tom Finegan <tomfinegan@google.com>
 Verified+1: Tom Finegan <tomfinegan@google.com>
 Code-Review+1: James Zern <jzern@google.com>
 Submitted-by: Tom Finegan <tomfinegan@google.com>
+Submitted-at: Wed, 22 Feb 2012 14:02:46 -0700
+Reviewed-on: https://gerrit.chromium.org/gerrit/16194
+Project: webm/webmquicktime
+Branch: refs/heads/master
+
+Code-Review+2: John Koleszar <jkoleszar@google.com>
+Code-Review+2: Tom Finegan <tomfinegan@google.com>
+Verified+1: Tom Finegan <tomfinegan@google.com>
+Code-Review+1: James Zern <jzern@google.com>
+Submitted-by: Tom Finegan <tomfinegan@google.com>
 Submitted-at: Wed, 22 Feb 2012 13:02:46 -0800
 Reviewed-on: https://gerrit.chromium.org/gerrit/16194
 Project: webm/webmquicktime
