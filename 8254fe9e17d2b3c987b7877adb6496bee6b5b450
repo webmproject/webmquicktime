@@ -11,6 +11,15 @@ Code-Review+2: John Koleszar <jkoleszar@google.com>
 Code-Review+2: Tom Finegan <tomfinegan@google.com>
 Verified+1: Tom Finegan <tomfinegan@google.com>
 Submitted-by: Tom Finegan <tomfinegan@google.com>
+Submitted-at: Thu, 23 Feb 2012 16:10:36 -0700
+Reviewed-on: https://gerrit.chromium.org/gerrit/16434
+Project: webm/webmquicktime
+Branch: refs/heads/master
+
+Code-Review+2: John Koleszar <jkoleszar@google.com>
+Code-Review+2: Tom Finegan <tomfinegan@google.com>
+Verified+1: Tom Finegan <tomfinegan@google.com>
+Submitted-by: Tom Finegan <tomfinegan@google.com>
 Submitted-at: Thu, 23 Feb 2012 15:10:36 -0800
 Reviewed-on: https://gerrit.chromium.org/gerrit/16434
 Project: webm/webmquicktime
